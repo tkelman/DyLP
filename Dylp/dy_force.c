@@ -25,7 +25,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_force.c	4.6	10/15/05" ;
@@ -232,7 +231,7 @@ static int scanPrimVarDualInfeas (fdcand_struct **p_fdcands)
 	  fdcands[purgecnt].delta = lbj-ubj ; } }
 #     ifndef NDEBUG
       if (dy_opts->print.varmgmt >= 3)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n      queuing %s (%d) for %s, %s, cbar<%d> = %g",
 	       consys_nme(dy_sys,'v',j,TRUE,NULL),j,
 	       (fdcands[purgecnt].flippable == TRUE)?"flip":"deactivation",
@@ -257,7 +256,7 @@ static int scanPrimVarDualInfeas (fdcand_struct **p_fdcands)
 
 # ifndef NDEBUG
   if (dy_opts->print.varmgmt >= 2)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n    queued %d variables, %d deactivate, %d flip.",
 	   purgecnt,purgecnt-flipcnt,flipcnt) ; }
 # endif
@@ -430,7 +429,7 @@ dyphase_enum dy_forcePrimal2Dual (consys_struct *orig_sys)
     { varcnt++ ; 
 #     ifndef NDEBUG
       if (dy_opts->print.varmgmt >= 2)
-      { outfmt(logchn,gtxecho,"\n    flipping variable %s (%d)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n    flipping variable %s (%d)",
 	       consys_nme(dy_sys,'v',j,TRUE,NULL),j) ; }
 #     endif
       upd_retval = dy_updateprimals(j,candidates[ndx].delta,NULL) ;
@@ -452,7 +451,7 @@ dyphase_enum dy_forcePrimal2Dual (consys_struct *orig_sys)
     { varcnt++ ;
 #     ifndef NDEBUG
       if (dy_opts->print.varmgmt >= 2)
-      { outfmt(logchn,gtxecho,"\n    deactivating variable %s (%d)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n    deactivating variable %s (%d)",
 	       consys_nme(dy_sys,'v',j,TRUE,NULL),j) ; }
 #     endif
       retval = dy_deactNBPrimArch(orig_sys,j) ;
@@ -472,7 +471,7 @@ dyphase_enum dy_forcePrimal2Dual (consys_struct *orig_sys)
     { concnt++ ;
 #     ifndef NDEBUG
       if (dy_opts->print.varmgmt >= 2)
-      { outfmt(logchn,gtxecho,"\n    deactivating constraint %s (%d)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n    deactivating constraint %s (%d)",
 	       consys_nme(dy_sys,'c',j,TRUE,NULL),j) ; }
 #     endif
       retval = dy_deactNBLogPrimCon(orig_sys,j) ;
@@ -491,9 +490,9 @@ dyphase_enum dy_forcePrimal2Dual (consys_struct *orig_sys)
 
 # ifndef NDEBUG
   if (dy_opts->print.conmgmt >= 1)
-  { if (dy_opts->print.conmgmt >= 2) outfmt(logchn,gtxecho,"\n    ") ;
-    outfmt(logchn,gtxecho," %d+%d deletions.",concnt,varcnt) ;
-    outfmt(logchn,gtxecho,"\n  constraint system %s now %d x %d (%d + %d).",
+  { if (dy_opts->print.conmgmt >= 2) outfmt(dy_logchn,dy_gtxecho,"\n    ") ;
+    outfmt(dy_logchn,dy_gtxecho," %d+%d deletions.",concnt,varcnt) ;
+    outfmt(dy_logchn,dy_gtxecho,"\n  constraint system %s now %d x %d (%d + %d).",
 	   dy_sys->nme,dy_sys->concnt,dy_sys->varcnt,dy_sys->archvcnt,
 	   dy_sys->logvcnt) ; }
 # endif
@@ -509,7 +508,7 @@ dyphase_enum dy_forcePrimal2Dual (consys_struct *orig_sys)
 */
 # ifndef NDEBUG
   if (dy_opts->print.varmgmt >= 3)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n      factoring, checking accuracy and feasibility ...") ; }
 # endif
   calcflgs = ladFACTOR|ladPRIMALCHK|ladDUALCHK|
@@ -522,16 +521,16 @@ dyphase_enum dy_forcePrimal2Dual (consys_struct *orig_sys)
 #     ifndef NDEBUG
       if (dy_opts->print.conmgmt >= 3)
       { if (factorresult == dyrOK)
-	  outfmt(logchn,gtxecho,"\n    done.") ;
+	  outfmt(dy_logchn,dy_gtxecho,"\n    done.") ;
 	else
-	  outfmt(logchn,gtxecho,"\n    patched.") ; }
+	  outfmt(dy_logchn,dy_gtxecho,"\n    patched.") ; }
 #     endif
       break ; }
     default:
     { next_phase = dyINV ;
 #     ifndef NDEBUG
       if (dy_opts->print.conmgmt >= 3)
-	outfmt(logchn,gtxecho,"\n    failed.") ;
+	outfmt(dy_logchn,dy_gtxecho,"\n    failed.") ;
 #     endif
       break ; } }
 /*
@@ -648,17 +647,17 @@ static int scanPrimConForceDeact (int **p_acndxs)
 #     ifndef NDEBUG
       if (dy_opts->print.conmgmt >= 2)
       { if (j <= m)
-	{ outfmt(logchn,gtxecho,"\n    queued %s %s (%d) for deactivation, ",
+	{ outfmt(dy_logchn,dy_gtxecho,"\n    queued %s %s (%d) for deactivation, ",
 		 consys_prtcontyp(dy_sys->ctyp[j]),
 		 consys_nme(dy_sys,'c',j,TRUE,NULL),j) ;
-	  outfmt(logchn,gtxecho,"%s (%d) = %g, status %s, basis pos'n %d.",
+	  outfmt(dy_logchn,dy_gtxecho,"%s (%d) = %g, status %s, basis pos'n %d.",
 		 consys_nme(dy_sys,'v',j,TRUE,NULL),j,
 		 dy_x[j],dy_prtvstat(statj),bpos) ; }
 	else
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n    queued %s (%d) = %g for deactivation, ",
 		 consys_nme(dy_sys,'v',j,TRUE,NULL),j,dy_x[j]) ;
-	  outfmt(logchn,gtxecho,"status %s, basis pos'n %d.",
+	  outfmt(dy_logchn,dy_gtxecho,"status %s, basis pos'n %d.",
 		 dy_prtvstat(statj),bpos) ; } }
 #     endif
 
@@ -672,7 +671,7 @@ static int scanPrimConForceDeact (int **p_acndxs)
 
 # ifndef NDEBUG
   if (dy_opts->print.varmgmt >= 2)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n    queued %d constraints for deactivation.",purgecnt) ; }
 # endif
 
@@ -802,7 +801,7 @@ dyphase_enum dy_forceDual2Primal (consys_struct *orig_sys)
     { concnt++ ;
 #     ifndef NDEBUG
       if (dy_opts->print.varmgmt >= 2)
-      { outfmt(logchn,gtxecho,"\n    deactivating constraint %s (%d)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n    deactivating constraint %s (%d)",
 	       consys_nme(dy_sys,'c',j,TRUE,NULL),j) ; }
 #     endif
       retval = dy_deactBLogPrimCon(orig_sys,j) ;
@@ -820,7 +819,7 @@ dyphase_enum dy_forceDual2Primal (consys_struct *orig_sys)
     { varcnt++ ;
 #     ifndef NDEBUG
       if (dy_opts->print.conmgmt >= 2)
-      { outfmt(logchn,gtxecho,"\n    deactivating variable %s (%d)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n    deactivating variable %s (%d)",
 	       consys_nme(dy_sys,'v',j,TRUE,NULL),j) ; }
 #     endif
       retval = dy_deactBPrimArch(orig_sys,j) ;
@@ -839,9 +838,9 @@ dyphase_enum dy_forceDual2Primal (consys_struct *orig_sys)
 
 # ifndef NDEBUG
   if (dy_opts->print.conmgmt >= 1)
-  { if (dy_opts->print.conmgmt >= 2) outfmt(logchn,gtxecho,"\n    ") ;
-    outfmt(logchn,gtxecho," %d+%d deletions.",concnt,varcnt) ;
-    outfmt(logchn,gtxecho,"\n  constraint system %s now %d x %d (%d + %d).",
+  { if (dy_opts->print.conmgmt >= 2) outfmt(dy_logchn,dy_gtxecho,"\n    ") ;
+    outfmt(dy_logchn,dy_gtxecho," %d+%d deletions.",concnt,varcnt) ;
+    outfmt(dy_logchn,dy_gtxecho,"\n  constraint system %s now %d x %d (%d + %d).",
 	   dy_sys->nme,dy_sys->concnt,dy_sys->varcnt,dy_sys->archvcnt,
 	   dy_sys->logvcnt) ; }
 # endif
@@ -857,7 +856,7 @@ dyphase_enum dy_forceDual2Primal (consys_struct *orig_sys)
 */
 # ifndef NDEBUG
   if (dy_opts->print.varmgmt >= 3)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n      factoring, checking accuracy and feasibility.") ; }
 # endif
   calcflgs = ladFACTOR|ladPRIMALCHK|ladDUALCHK|
@@ -870,16 +869,16 @@ dyphase_enum dy_forceDual2Primal (consys_struct *orig_sys)
 #     ifndef NDEBUG
       if (dy_opts->print.conmgmt >= 3)
       { if (factorresult == dyrOK)
-	  outfmt(logchn,gtxecho,"\n    done.") ;
+	  outfmt(dy_logchn,dy_gtxecho,"\n    done.") ;
 	else
-	  outfmt(logchn,gtxecho,"\n    patched.") ; }
+	  outfmt(dy_logchn,dy_gtxecho,"\n    patched.") ; }
 #     endif
       break ; }
     default:
     { 
 #     ifndef NDEBUG
       if (dy_opts->print.conmgmt >= 3)
-	outfmt(logchn,gtxecho,"\n    failed.") ;
+	outfmt(dy_logchn,dy_gtxecho,"\n    failed.") ;
 #     endif
       return (dyINV) ; } }
 /*
@@ -978,7 +977,7 @@ static int scanPrimVarForceAct (consys_struct *orig_sys, int **p_ovndxs)
     ovndxs[actcnt++] = j ;
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 2)
-    { outfmt(logchn,gtxecho,"\n    queued %s variable %s (%d),",
+    { outfmt(dy_logchn,dy_gtxecho,"\n    queued %s variable %s (%d),",
 	     consys_prtvartyp(orig_sys->vtyp[j]),
 	     consys_nme(orig_sys,'v',j,FALSE,NULL),j) ; }
 #   endif
@@ -994,7 +993,7 @@ static int scanPrimVarForceAct (consys_struct *orig_sys, int **p_ovndxs)
 
 # ifndef NDEBUG
   if (dy_opts->print.conmgmt >= 1)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n  queued %d variables for activation.",actcnt) ; }
 # endif
 
@@ -1053,7 +1052,7 @@ static int scanPrimConForceAct (consys_struct *orig_sys, int **p_ocndxs)
     ocndxs[actcnt++] = i ;
 #   ifndef NDEBUG
     if (dy_opts->print.conmgmt >= 2)
-    { outfmt(logchn,gtxecho,"\n    queued %s constraint %s (%d),",
+    { outfmt(dy_logchn,dy_gtxecho,"\n    queued %s constraint %s (%d),",
 	     consys_prtcontyp(orig_sys->ctyp[i]),
 	     consys_nme(orig_sys,'c',i,FALSE,NULL),i) ; }
 #   endif
@@ -1069,7 +1068,7 @@ static int scanPrimConForceAct (consys_struct *orig_sys, int **p_ocndxs)
 
 # ifndef NDEBUG
   if (dy_opts->print.conmgmt >= 1)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n  queued %d constraints for activation.",actcnt) ; }
 # endif
 
@@ -1175,8 +1174,8 @@ dyphase_enum dy_forceFull (consys_struct *orig_sys)
 # endif
 # ifndef NDEBUG
   if (mgmtprint >= 1)
-  { outfmt(logchn,gtxecho,"\n  %d+%d activations.",concnt,varcnt) ;
-    outfmt(logchn,gtxecho,"\n  constraint system %s now %d x %d (%d + %d).",
+  { outfmt(dy_logchn,dy_gtxecho,"\n  %d+%d activations.",concnt,varcnt) ;
+    outfmt(dy_logchn,dy_gtxecho,"\n  constraint system %s now %d x %d (%d + %d).",
 	   dy_sys->nme,dy_sys->concnt,dy_sys->varcnt,dy_sys->archvcnt,
 	   dy_sys->logvcnt) ; }
 # endif
@@ -1187,7 +1186,7 @@ dyphase_enum dy_forceFull (consys_struct *orig_sys)
 */
 # ifndef NDEBUG
   if (lpprint >= 2)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n      factoring, checking accuracy and feasibility ...") ; }
 # endif
   calcflgs = ladFACTOR|ladPRIMALCHK|ladDUALCHK|
@@ -1200,16 +1199,16 @@ dyphase_enum dy_forceFull (consys_struct *orig_sys)
 #     ifndef NDEBUG
       if (lpprint >= 2)
       { if (factorresult == dyrOK)
-	  outfmt(logchn,gtxecho,"\n    done.") ;
+	  outfmt(dy_logchn,dy_gtxecho,"\n    done.") ;
 	else
-	  outfmt(logchn,gtxecho,"\n    patched.") ; }
+	  outfmt(dy_logchn,dy_gtxecho,"\n    patched.") ; }
 #     endif
       break ; }
     default:
     { next_phase = dyINV ;
 #     ifndef NDEBUG
       if (lpprint >= 2)
-	outfmt(logchn,gtxecho,"\n    failed.") ;
+	outfmt(dy_logchn,dy_gtxecho,"\n    failed.") ;
 #     endif
       break ; } }
 /*

@@ -46,7 +46,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_scaling.c	4.5	11/06/04" ;
@@ -175,7 +174,7 @@ bool dy_initlclsystem (lpprob_struct *orig_lp, bool hotstart)
 #     endif
 #     ifndef NDEBUG
       if (dy_opts->print.scaling >= 2)
-      { outfmt(logchn,gtxecho,"\n      [%s]: scaling with client vectors",
+      { outfmt(dy_logchn,dy_gtxecho,"\n      [%s]: scaling with client vectors",
 	       orig_sys->nme) ; }
 #     endif
       break ; }
@@ -188,12 +187,12 @@ bool dy_initlclsystem (lpprob_struct *orig_lp, bool hotstart)
 #     ifndef NDEBUG
       if (dy_opts->print.scaling >= 2)
       { if (scale == TRUE)
-	{ outfmt(logchn,gtxecho,"\n      [%s]: system will be scaled;",
+	{ outfmt(dy_logchn,dy_gtxecho,"\n      [%s]: system will be scaled;",
 		 orig_sys->nme) ; }
 	else
-	{ outfmt(logchn,gtxecho,"\n      [%s]: scaling not required;",
+	{ outfmt(dy_logchn,dy_gtxecho,"\n      [%s]: scaling not required;",
 		 orig_sys->nme) ; }
-	outfmt(logchn,gtxecho," %g <= |a<ij>| <= %g, metric = %g.",
+	outfmt(dy_logchn,dy_gtxecho," %g <= |a<ij>| <= %g, metric = %g.",
 	       orig_sys->minaij,orig_sys->maxaij,orig_scm) ; }
 #     endif
       break ; }
@@ -242,9 +241,9 @@ bool dy_initlclsystem (lpprob_struct *orig_lp, bool hotstart)
 #     ifndef NDEBUG
       if (dy_opts->print.scaling >= 2)
       { scaled_scm = sqrt(local_sys->maxaij/local_sys->minaij) ;
-	outfmt(logchn,gtxecho,"\n      [%s]: after geometric scaling",
+	outfmt(dy_logchn,dy_gtxecho,"\n      [%s]: after geometric scaling",
 	       local_sys->nme) ;
-	outfmt(logchn,gtxecho," %g <= |a<ij>| <= %g, geom = %g.",
+	outfmt(dy_logchn,dy_gtxecho," %g <= |a<ij>| <= %g, geom = %g.",
 	       local_sys->minaij,local_sys->maxaij,scaled_scm) ; }
 #     endif
       if (consys_equiscale(local_sys,&local_sys->rowscale,
@@ -254,9 +253,9 @@ bool dy_initlclsystem (lpprob_struct *orig_lp, bool hotstart)
 #     ifndef NDEBUG
       if (dy_opts->print.scaling >= 2)
       { scaled_scm = sqrt(local_sys->maxaij/local_sys->minaij) ;
-	outfmt(logchn,gtxecho,"\n      [%s]: after equilibration scaling",
+	outfmt(dy_logchn,dy_gtxecho,"\n      [%s]: after equilibration scaling",
 	       local_sys->nme) ;
-	outfmt(logchn,gtxecho," %g <= |a<ij>| <= %g, geom = %g.",
+	outfmt(dy_logchn,dy_gtxecho," %g <= |a<ij>| <= %g, geom = %g.",
 	       local_sys->minaij,local_sys->maxaij,scaled_scm) ; }
 #       endif
     }
@@ -270,8 +269,8 @@ bool dy_initlclsystem (lpprob_struct *orig_lp, bool hotstart)
     scaled_scm = sqrt(local_sys->maxaij/local_sys->minaij) ;
 #   ifndef NDEBUG
     if (dy_opts->print.scaling >= 1)
-      { outfmt(logchn,gtxecho,"\n      [%s]: after scaling",local_sys->nme) ;
-	outfmt(logchn,gtxecho," %g <= |a<ij>| <= %g, geom = %g.",
+      { outfmt(dy_logchn,dy_gtxecho,"\n      [%s]: after scaling",local_sys->nme) ;
+	outfmt(dy_logchn,dy_gtxecho," %g <= |a<ij>| <= %g, geom = %g.",
 	       local_sys->minaij,local_sys->maxaij,scaled_scm) ; }
 #   endif
   }
@@ -288,10 +287,10 @@ bool dy_initlclsystem (lpprob_struct *orig_lp, bool hotstart)
     dy_tols->dfeas_scale *= pow(10,(double) scalefactor) ;
 #   ifndef NDEBUG
     if (dy_opts->print.scaling >= 2)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    [%s]: adjusting pfeas scale by 1.0e+%d to %g.",
 	     local_sys->nme,scalefactor,dy_tols->pfeas_scale) ;
-      outfmt(logchn,gtxecho,
+      outfmt(dy_logchn,dy_gtxecho,
 	     "\n    [%s]: adjusting dfeas scale by 1.0e+%d to %g.",
 	     local_sys->nme,scalefactor,dy_tols->dfeas_scale) ; } 
 #   endif
@@ -302,9 +301,9 @@ bool dy_initlclsystem (lpprob_struct *orig_lp, bool hotstart)
     dy_tols->cost /= pow(10,(double) scalefactor) ;
 #   ifndef NDEBUG
     if (dy_opts->print.scaling >= 2)
-    { outfmt(logchn,gtxecho,"\n    [%s]: adjusting primal zero by 1.0e-%d to %g.",
+    { outfmt(dy_logchn,dy_gtxecho,"\n    [%s]: adjusting primal zero by 1.0e-%d to %g.",
 	     local_sys->nme,scalefactor,dy_tols->zero) ;
-      outfmt(logchn,gtxecho,"\n    [%s]: adjusting dual zero by 1.0e-%d to %g.",
+      outfmt(dy_logchn,dy_gtxecho,"\n    [%s]: adjusting dual zero by 1.0e-%d to %g.",
 	     local_sys->nme,scalefactor,dy_tols->cost) ; }
 #   endif
   }

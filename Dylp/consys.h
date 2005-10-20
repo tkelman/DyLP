@@ -586,8 +586,8 @@ extern char *consys_prtvartyp(vartyp_enum vartyp),
 
 # ifndef NDEBUG
 
-#include "io.h"
-#include "loustd.h"
+#include "dylib_io.h"
+#include "dylib_std.h"
 
 extern void consys_prtcon(ioid chn, bool echo,
 			  consys_struct *consys, int i, char *pfx) ;

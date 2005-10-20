@@ -30,9 +30,9 @@
 */
 
 
-#include "bonsai.h"
-#include "bnfrdr.h"
-#include "strrtns.h"
+#include "dy_cmdint.h"
+#include "dylib_bnfrdr.h"
+#include "dylib_strrtns.h"
 
 static char sccsid[] UNUSED = "@(#)options.c	3.5	09/25/04" ;
 
@@ -66,12 +66,12 @@ bool string_opt (char **str)
   Initialise the reader, parse the string, and check for errors.
 */
   rdrinit() ;
-  if (parse(cmdchn,&zgetstring,&result) == FALSE)
+  if (parse(dy_cmdchn,&zgetstring,&result) == FALSE)
   { rdrclear() ;
     errmsg(240,rtnnme,"zgetstring") ;
     return (FALSE) ; }
-  outfmt(logchn,cmdecho," %s",*(char **) result.g) ;
-  flushio(logchn,cmdecho) ;
+  outfmt(dy_logchn,dy_cmdecho," %s",*(char **) result.g) ;
+  flushio(dy_logchn,dy_cmdecho) ;
 
   *str = *(char **) result.g ;
 
@@ -112,12 +112,12 @@ bool integer_opt (int *iloc)
   Initialise the reader, parse the integer, and check for errors.
 */
   rdrinit() ;
-  if (parse(cmdchn,&zgetnum,&result) == FALSE)
+  if (parse(dy_cmdchn,&zgetnum,&result) == FALSE)
   { rdrclear() ;
     errmsg(240,rtnnme,"zgetnum") ;
     return (FALSE) ; }
-  outfmt(logchn,cmdecho," %d",*(int *) result.g) ;
-  flushio(logchn,cmdecho) ;
+  outfmt(dy_logchn,dy_cmdecho," %d",*(int *) result.g) ;
+  flushio(dy_logchn,dy_cmdecho) ;
 
   *iloc = *(int *) result.g ;
 
@@ -159,12 +159,12 @@ bool double_opt (double *rloc)
   Initialise the reader, parse the real, and check for errors.
 */
   rdrinit() ;
-  if (parse(cmdchn,&zgetnum,&result) == FALSE)
+  if (parse(dy_cmdchn,&zgetnum,&result) == FALSE)
   { rdrclear() ;
     errmsg(240,rtnnme,"zgetnum") ;
     return (FALSE) ; }
-  outfmt(logchn,cmdecho," %g",*(double *) result.g) ;
-  flushio(logchn,cmdecho) ;
+  outfmt(dy_logchn,dy_cmdecho," %g",*(double *) result.g) ;
+  flushio(dy_logchn,dy_cmdecho) ;
 
   *rloc = *(double *) result.g ;
 
@@ -206,12 +206,12 @@ bool real_opt (float *rloc)
   Initialise the reader, parse the real, and check for errors.
 */
   rdrinit() ;
-  if (parse(cmdchn,&zgetnum,&result) == FALSE)
+  if (parse(dy_cmdchn,&zgetnum,&result) == FALSE)
   { rdrclear() ;
     errmsg(240,rtnnme,"zgetnum") ;
     return (FALSE) ; }
-  outfmt(logchn,cmdecho," %g",*(float *) result.g) ;
-  flushio(logchn,cmdecho) ;
+  outfmt(dy_logchn,dy_cmdecho," %g",*(float *) result.g) ;
+  flushio(dy_logchn,dy_cmdecho) ;
 
   *rloc = *(float *) result.g ;
 
@@ -278,15 +278,15 @@ bool bool_opt (bool *bloc)
   Initialise the reader, parse the string, and check for errors.
 */
   rdrinit() ;
-  if (parse(cmdchn,&zgetbool,&result) == FALSE)
+  if (parse(dy_cmdchn,&zgetbool,&result) == FALSE)
   { rdrclear() ;
     errmsg(240,rtnnme,"zgetbool") ;
     return (FALSE) ; }
   boolopt = (struct boolopt_struct *) result.g ;
   rdrclear() ;
   
-  outfmt(logchn,cmdecho," %s",boolopt->str) ;
-  flushio(logchn,cmdecho) ;
+  outfmt(dy_logchn,dy_cmdecho," %s",boolopt->str) ;
+  flushio(dy_logchn,dy_cmdecho) ;
 
   *bloc = boolopt->val ;
 

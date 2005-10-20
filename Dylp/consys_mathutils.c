@@ -30,8 +30,8 @@
 
 
 
-#include "errs.h"
-#include "loustd.h"
+#include "dylib_errs.h"
+#include "dylib_std.h"
 #include "consys.h"
 
 static char sccsid[] UNUSED = "@(#)consys_mathutils.c	4.5	11/11/04" ;

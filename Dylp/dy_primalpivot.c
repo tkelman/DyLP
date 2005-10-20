@@ -111,7 +111,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_primalpivot.c	4.6	10/15/05" ;
@@ -193,7 +192,7 @@ dyret_enum dy_degenout (int level)
 
 # ifndef NDEBUG
   if (dy_opts->print.degen >= 1)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
        "\n    (%s)%d: antidegeneracy dropping to level %d after %d pivots.",
 	   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,level,
 	   dy_lp->tot.pivs-degenstats.iterin[dy_lp->degen]) ; }
@@ -291,16 +290,16 @@ dyret_enum dy_degenout (int level)
       if ((dy_opts->print.degen >= 4 &&
 		    flgoff(dy_status[xkndx],vstatBLB|vstatBFX|vstatBUB)) ||
 	  dy_opts->print.degen >= 5)
-      { outfmt(logchn,gtxecho,"\n\t%s (%d) restored to %g, status %s",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\t%s (%d) restored to %g, status %s",
 	       consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,
 	       val,dy_prtvstat(dy_status[xkndx])) ;
 	if (flgoff(dy_status[xkndx],vstatBLB|vstatBFX|vstatBUB|vstatBFR))
 	{ if (fabs(val-vlb[xkndx]) < fabs(val-vub[xkndx]))
-	    outfmt(logchn,gtxecho,", accum. error %g (tol. %g)",
+	    outfmt(dy_logchn,dy_gtxecho,", accum. error %g (tol. %g)",
 		   fabs(val-vlb[xkndx]),
 		   dy_tols->zero*(1.0+fabs(vlb[xkndx]))) ;
 	  else
-	    outfmt(logchn,gtxecho,", accum. error %g (tol. %g)",
+	    outfmt(dy_logchn,dy_gtxecho,", accum. error %g (tol. %g)",
 		   fabs(val-vub[xkndx]),
 		   dy_tols->zero*(1.0+fabs(vub[xkndx]))) ; } }
 #     endif
@@ -311,7 +310,7 @@ dyret_enum dy_degenout (int level)
       { retval = dyrREQCHK ;
 #       ifndef NDEBUG
 	if (dy_opts->print.degen >= 4)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n\t%s (%d) unperturbed, accum. error %g (tol. %g)",
 		 consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,
 		 fabs(val-dy_xbasic[xkpos]),
@@ -379,12 +378,12 @@ static void dy_degenin (void)
 
 # ifndef NDEBUG
   if (dy_opts->print.degen >= 1)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n    (%s)%d: antidegeneracy increasing to level %d",
 	   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,dy_lp->degen) ;
     if (degen_cyclecnt > 0)
-      outfmt(logchn,gtxecho,", cycle %d",degen_cyclecnt) ;
-    outfmt(logchn,gtxecho,", base perturbation %g%s",
+      outfmt(dy_logchn,dy_gtxecho,", cycle %d",degen_cyclecnt) ;
+    outfmt(dy_logchn,dy_gtxecho,", base perturbation %g%s",
 	   base,(dy_opts->print.degen >= 4)?":":".") ; }
 # endif
 # if defined(DYLP_STATISTICS) || !defined(NDEBUG)
@@ -441,15 +440,15 @@ static void dy_degenin (void)
 	(dy_opts->print.degen >= 4 &&
 	 flgon(dy_status[xkndx],vstatNOPER) &&
 	 flgoff(dy_status[xkndx],vstatBFX)))
-    { outfmt(logchn,gtxecho,"\n\t%s %s (%d) in pos'n %d ",
+    { outfmt(dy_logchn,dy_gtxecho,"\n\t%s %s (%d) in pos'n %d ",
 	     dy_prtvstat(dy_status[xkndx]),
 	     consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,xkpos) ;
       if (flgon(dy_status[xkndx],vstatNOPER))
-	outfmt(logchn,gtxecho,"unperturbed.") ;
+	outfmt(dy_logchn,dy_gtxecho,"unperturbed.") ;
       else
-      { outfmt(logchn,gtxecho,"perturbed from %g (%s) to %g",
+      { outfmt(dy_logchn,dy_gtxecho,"perturbed from %g (%s) to %g",
 	       dy_x[xkndx],dy_prtvstat(xkstatus),dy_xbasic[xkpos]) ;
-	outfmt(logchn,gtxecho,", breakout %s.",
+	outfmt(dy_logchn,dy_gtxecho,", breakout %s.",
 	       (dy_brkout[xkpos] == 1)?"up":"down") ; } }
 #   endif
   }
@@ -461,7 +460,7 @@ static void dy_degenin (void)
 # endif
 # ifndef NDEBUG
   if (dy_opts->print.degen >= 1)
-  { outfmt(logchn,gtxecho,"%s%d variables.",
+  { outfmt(dy_logchn,dy_gtxecho,"%s%d variables.",
 	   (dy_opts->print.degen <= 4)?", ":"\n\ttotal ",degencnt) ; }
 # endif
 # ifdef DYLP_STATISTICS
@@ -531,7 +530,7 @@ static bool pricexk (int k,
 
 # ifndef NDEBUG
   if (dy_opts->print.pricing >= 3)
-  { outfmt(logchn,gtxecho,"\n\tpricing %s (%d), status %s; ",
+  { outfmt(dy_logchn,dy_gtxecho,"\n\tpricing %s (%d), status %s; ",
 	   consys_nme(dy_sys,'v',k,FALSE,NULL),k,
 	   dy_prtvstat(statk)) ; }
 # endif
@@ -544,7 +543,7 @@ static bool pricexk (int k,
   { 
 #   ifndef NDEBUG
     if (dy_opts->print.pricing >= 3)
-      outfmt(logchn,gtxecho," << reject (vstatSB) >>") ;
+      outfmt(dy_logchn,dy_gtxecho," << reject (vstatSB) >>") ;
 #   endif
     return (FALSE) ; }
 /*
@@ -559,7 +558,7 @@ static bool pricexk (int k,
   { 
 #   ifndef NDEBUG
     if (dy_opts->print.pricing >= 3)
-      outfmt(logchn,gtxecho," << reject (incompatible status) >>") ;
+      outfmt(dy_logchn,dy_gtxecho," << reject (incompatible status) >>") ;
 #   endif
     return (FALSE) ; }
   if (flgoff(statk,vstatSB|vstatNBFR))
@@ -567,14 +566,14 @@ static bool pricexk (int k,
     {
 #     ifndef NDEBUG
       if (dy_opts->print.pricing >= 3)
-	outfmt(logchn,gtxecho," << reject (zero) >>") ;
+	outfmt(dy_logchn,dy_gtxecho," << reject (zero) >>") ;
 #     endif
       return (FALSE) ; } }
   ncbark = fabs(cbark)/sqrt(dy_gamma[k]) ;
   setcleanzero(ncbark,dy_tols->cost) ;
 # ifndef NDEBUG
   if (dy_opts->print.pricing >= 3)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "cbar<k> = %g, ||h<k>|| = %g, |cbar<k>|/||h<k>|| = %g.",
 	   cbark,sqrt(dy_gamma[k]),ncbark) ; }
 # endif
@@ -586,7 +585,7 @@ static bool pricexk (int k,
   { *p_pivreject = TRUE ;
 #   ifndef NDEBUG
     if (dy_opts->print.pricing >= 3)
-      outfmt(logchn,gtxecho," << reject (vstatNOPIVOT) >>") ;
+      outfmt(dy_logchn,dy_gtxecho," << reject (vstatNOPIVOT) >>") ;
 #   endif
     return (FALSE) ; }
 /*
@@ -600,7 +599,7 @@ static bool pricexk (int k,
   { j = k ;
 #   ifndef NDEBUG
     if (dy_opts->print.pricing >= 3)
-      outfmt(logchn,gtxecho," << accept (vstatSB) >>") ;
+      outfmt(dy_logchn,dy_gtxecho," << accept (vstatSB) >>") ;
 #   endif
   }
   else
@@ -608,7 +607,7 @@ static bool pricexk (int k,
   { j = k ;
 #   ifndef NDEBUG
     if (dy_opts->print.pricing >= 3)
-      outfmt(logchn,gtxecho," << accept (ncbar) >>") ;
+      outfmt(dy_logchn,dy_gtxecho," << accept (ncbar) >>") ;
 #   endif
   }
   else
@@ -617,14 +616,14 @@ static bool pricexk (int k,
   { j = k ;
 #   ifndef NDEBUG
     if (dy_opts->print.pricing >= 3)
-      outfmt(logchn,gtxecho," << accept (vstatNBFR) >>") ;
+      outfmt(dy_logchn,dy_gtxecho," << accept (vstatNBFR) >>") ;
 #   endif
   }
   else
   { 
 #   ifndef NDEBUG
     if (dy_opts->print.pricing >= 3)
-      outfmt(logchn,gtxecho," << reject (inferior) >>") ;
+      outfmt(dy_logchn,dy_gtxecho," << reject (inferior) >>") ;
 #   endif
   }
 
@@ -707,7 +706,7 @@ dyret_enum dy_primalin (int startcol, int scan, int *xjndx, int *nextcol)
   retval = dyrINV ;
 # ifndef NDEBUG
   if (dy_opts->print.pricing >= 1)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n%s: pricing %d columns from %d for %d candidate.",
 	   rtnnme,scan_blk,xkndx,1) ; }
 # endif
@@ -740,7 +739,7 @@ dyret_enum dy_primalin (int startcol, int scan, int *xjndx, int *nextcol)
       { 
 #       ifndef NDEBUG
 	if (dy_opts->print.pricing >= 3)
-	{ outfmt(logchn,gtxecho,"\n\tpricing %s (%d), status %s; << status >>",
+	{ outfmt(dy_logchn,dy_gtxecho,"\n\tpricing %s (%d), status %s; << status >>",
 		   consys_nme(dy_sys,'v',xkndx,TRUE,NULL),xkndx,
 		   dy_prtvstat(xkstatus)) ; }
 #       endif
@@ -789,21 +788,21 @@ dyret_enum dy_primalin (int startcol, int scan, int *xjndx, int *nextcol)
   
 # ifndef NDEBUG
   if (dy_opts->print.pricing >= 1)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n%s: (%s)%d: scanned %d columns %d to %d, selected %d",
 	   rtnnme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	   total_scanned,startcol,(xkndx-1 < 1)?dy_sys->varcnt:(xkndx-1),
 	   (*xjndx == 0)?0:1) ;
     if (dy_opts->print.pricing >= 2 && *xjndx != 0)
-    { outchr(logchn,gtxecho,':') ;
-      outfmt(logchn,gtxecho,"\n\t%s (%d) scaled reduced cost %g.",
+    { outchr(dy_logchn,dy_gtxecho,':') ;
+      outfmt(dy_logchn,dy_gtxecho,"\n\t%s (%d) scaled reduced cost %g.",
 	     consys_nme(dy_sys,'v',*xjndx,TRUE,NULL),*xjndx,ncbarj) ; }
     else
     if (retval == dyrPUNT)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     ",\n\tall suitable x<j> on rejected pivot list.") ; }
     else
-    { outchr(logchn,gtxecho,'.') ; } }
+    { outchr(dy_logchn,dy_gtxecho,'.') ; } }
 # endif
 
 /*
@@ -1077,13 +1076,13 @@ static dyret_enum primalout (int xjndx, int indir,
   retval = dyrINV ;
 # ifndef NDEBUG
   if (dy_opts->print.pivoting >= 1)
-  { outfmt(logchn,gtxecho,"\n%s: selecting leaving variable, iteration %d",
+  { outfmt(dy_logchn,dy_gtxecho,"\n%s: selecting leaving variable, iteration %d",
 	   rtnnme,dy_lp->tot.iters+1) ;
     if (dy_opts->print.pivoting >= 3)
-    { outfmt(logchn,gtxecho,"\n\tentering variable %s (%d) %s",
+    { outfmt(dy_logchn,dy_gtxecho,"\n\tentering variable %s (%d) %s",
 	     consys_nme(dy_sys,'v',xjndx,FALSE,NULL),xjndx,
 	     (indir > 0)?"increasing":"decreasing") ;
-      outfmt(logchn,gtxecho,
+      outfmt(dy_logchn,dy_gtxecho,
 	     "\n\tPos'n\tVariable\tValue\tabar<k,j>\tbound\tdelta\tDisp") ; } }
 # endif
 /*
@@ -1123,7 +1122,7 @@ static dyret_enum primalout (int xjndx, int indir,
 # endif
 # ifndef NDEBUG
   if (dy_opts->print.pivoting >= 3 && *deltaj < dy_tols->inf)
-    outfmt(logchn,gtxecho,
+    outfmt(dy_logchn,dy_gtxecho,
 	   "\n\t  n/a\t%-8s (%d)\t%7g\t%9g\t%7g\t%7g\tleaving at %s",
 	   consys_nme(dy_sys,'v',xjndx,FALSE,NULL),xjndx,
 	   (indir > 0)?dy_sys->vlb[xjndx]:dy_sys->vub[xjndx],1.0,
@@ -1158,7 +1157,7 @@ static dyret_enum primalout (int xjndx, int indir,
     if (indir < 0) abarkj = -abarkj ;
 #   ifndef NDEBUG
     if (dy_opts->print.pivoting >= 3)
-      outfmt(logchn,gtxecho,"\n\t%5d\t%-8s (%d)\t%g\t%g\t",xkpos,
+      outfmt(dy_logchn,dy_gtxecho,"\n\t%5d\t%-8s (%d)\t%g\t%g\t",xkpos,
              consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,dy_xbasic[xkpos],
 	     (indir < 0)?-abarkj:abarkj) ;
 #   endif
@@ -1240,7 +1239,7 @@ static dyret_enum primalout (int xjndx, int indir,
     setcleanzero(deltak,dy_tols->zero) ;
 #   ifndef NDEBUG
     if (dy_opts->print.pivoting >= 3)
-      outfmt(logchn,gtxecho,"%g\t%g\t",bndk,deltak) ;
+      outfmt(dy_logchn,dy_gtxecho,"%g\t%g\t",bndk,deltak) ;
 #   endif
 /*
   We have delta<k>. Now, is x<k> a better candidate to leave than the current
@@ -1336,7 +1335,7 @@ static dyret_enum primalout (int xjndx, int indir,
 #     ifndef NDEBUG
       if (dy_opts->print.pivoting >= 3)
       { if (*xindx == xkndx)
-	  outfmt(logchn,gtxecho,"\tleaving at %s",
+	  outfmt(dy_logchn,dy_gtxecho,"\tleaving at %s",
 		 (bndk == dy_sys->vub[xkndx])?"ub":"lb") ; } 
 #     endif
       if (dy_opts->degenlite == 0 && deltak == 0 && ratioij >= 1.0) break ; } }
@@ -1403,39 +1402,39 @@ static dyret_enum primalout (int xjndx, int indir,
   We're done, except perhaps for printing some information.
 */
 # ifndef NDEBUG
-  if (dy_opts->print.pivoting == 1) outfmt(logchn,gtxecho,"...") ;
+  if (dy_opts->print.pivoting == 1) outfmt(dy_logchn,dy_gtxecho,"...") ;
   if ((retval == dyrOK || retval == dyrDEGEN) && dy_opts->print.pivoting >= 1)
   { if (xjndx != *xindx)
     { xkpos = dy_var2basis[*xindx] ;
-      outfmt(logchn,gtxecho,"\n    selected %s (%d) = %g to leave pos'n %d at",
+      outfmt(dy_logchn,dy_gtxecho,"\n    selected %s (%d) = %g to leave pos'n %d at",
 	     consys_nme(dy_sys,'v',*xindx,FALSE,NULL),*xindx,
 	     dy_xbasic[xkpos],xkpos) ;
       if (*outdir > 0)
-      { outfmt(logchn,gtxecho," %s = %g, ",
+      { outfmt(dy_logchn,dy_gtxecho," %s = %g, ",
 	       (dy_status[*xindx] != vstatBLLB)?"ub":"lb",
 	       (dy_status[*xindx] != vstatBLLB)?dy_sys->vub[*xindx]:
 					       dy_sys->vlb[*xindx]) ; }
       else
-      { outfmt(logchn,gtxecho," %s = %g, ",
+      { outfmt(dy_logchn,dy_gtxecho," %s = %g, ",
 	       (dy_status[*xindx] != vstatBUUB)?"lb":"ub",
 	       (dy_status[*xindx] != vstatBUUB)?dy_sys->vlb[*xindx]:
 					       dy_sys->vub[*xindx]) ; }
-      outfmt(logchn,gtxecho,"abar<%d,%d> = %g, ",xjndx,*xindx,abarij) ; }
+      outfmt(dy_logchn,dy_gtxecho,"abar<%d,%d> = %g, ",xjndx,*xindx,abarij) ; }
     else
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    selected %s (%d) = %g to change to %s = %g, ",
 	     consys_nme(dy_sys,'v',*xindx,FALSE,NULL),*xindx,dy_x[*xindx],
 	     (*outdir > 0)?"ub":"lb",
 	     (*outdir > 0)?dy_sys->vub[*xindx]:dy_sys->vlb[*xindx]) ; }
     if (retval == dyrOK)
-      outfmt(logchn,gtxecho,"delta = %g.",*deltaj) ;
+      outfmt(dy_logchn,dy_gtxecho,"delta = %g.",*deltaj) ;
     else
-      outfmt(logchn,gtxecho,"degenerate.") ; }
+      outfmt(dy_logchn,dy_gtxecho,"degenerate.") ; }
   if (retval == dyrDEGEN &&
       (dy_opts->print.phase1 >= 3 || dy_opts->print.phase2 >= 3))
   { xkpos = dy_var2basis[*xindx] ;
     xkstatus = dy_status[*xindx] ;
-    outfmt(logchn,gtxecho,
+    outfmt(dy_logchn,dy_gtxecho,
        "\n   (%s)%d %s pos'n %d, %s %s (%d) = %g = %s = %g",
 	   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	   dy_prtdyret(retval),xkpos,dy_prtvstat(xkstatus),
@@ -1444,9 +1443,9 @@ static dyret_enum primalout (int xjndx, int indir,
 	   (*outdir > 0)?dy_sys->vub[*xindx]:dy_sys->vlb[*xindx]) ;
     if (dy_opts->degenlite >= 2 && dy_opts->degenlite <= 5)
     { if (degencnt > 0)
-	outfmt(logchn,gtxecho,", align = %g, deg = %d.",aligni,degencnt) ; }
+	outfmt(dy_logchn,dy_gtxecho,", align = %g, deg = %d.",aligni,degencnt) ; }
     else
-    { outchr(logchn,gtxecho,'.') ; } }
+    { outchr(dy_logchn,dy_gtxecho,'.') ; } }
 # endif
 
   return (retval) ; }
@@ -1530,22 +1529,22 @@ static dyret_enum primalupdate (int xjndx, int indir,
     print = dy_opts->print.phase2 ;
 
   if (print >= 5)
-  { outfmt(logchn,gtxecho,"\n%s: updating at iteration %d:",rtnnme,
+  { outfmt(dy_logchn,dy_gtxecho,"\n%s: updating at iteration %d:",rtnnme,
 	   dy_lp->tot.iters+1) ;
-    outfmt(logchn,gtxecho,
+    outfmt(dy_logchn,dy_gtxecho,
 	   "\n\t%s (%d) entering pos'n %d from %s%g, delta %g, cbarj %g.",
 	   consys_nme(dy_sys,'v',xjndx,FALSE,NULL),xjndx,xipos,
 	   (dy_status[xjndx] == vstatSB)?"":((indir == 1)?"lb ":"ub "),
 	   dy_x[xjndx],(indir == 1)?delta:-delta,dy_cbar[xjndx]) ;
-    outfmt(logchn,gtxecho,"\n\t%s (%d) = %g leaving at ",
+    outfmt(dy_logchn,dy_gtxecho,"\n\t%s (%d) = %g leaving at ",
 	   consys_nme(dy_sys,'v',xindx,FALSE,NULL),xindx,dy_xbasic[xipos]) ;
     if (outdir == 1)
-    { outfmt(logchn,gtxecho,"%s %g, pivot %g.",
+    { outfmt(dy_logchn,dy_gtxecho,"%s %g, pivot %g.",
 	     flgon(dy_status[xindx],vstatBLLB)?"lb":"ub",
 	     flgon(dy_status[xindx],vstatBLLB)?
 		    dy_sys->vlb[xindx]:dy_sys->vub[xindx],abarij) ; }
     else
-    { outfmt(logchn,gtxecho,"%s %g, pivot %g.",
+    { outfmt(dy_logchn,dy_gtxecho,"%s %g, pivot %g.",
 	     flgon(dy_status[xindx],vstatBUUB)?"ub":"lb",
 	     flgon(dy_status[xindx],vstatBUUB)?
 		    dy_sys->vub[xindx]:dy_sys->vlb[xindx],abarij) ; } }
@@ -1820,7 +1819,7 @@ static dyret_enum primalupdate (int xjndx, int indir,
 
 #   ifndef NDEBUG
     if (dy_opts->print.pivoting >= 1)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	   "\n      %s (%d) = %g, %s, leaving at %s, dirty degenerate pivot.",
 	     consys_nme(dy_sys,'v',xindx,FALSE,NULL),xindx,dy_xbasic[xipos],
 	     dy_prtvstat(dy_status[xindx]),(outdir < 0)?"lb":"ub") ; }
@@ -1985,7 +1984,7 @@ static dyret_enum primalupdate (int xjndx, int indir,
     dy_lp->ubnd.ratio = maxswing ;
 #   ifndef NDEBUG
     if (print >= 2)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    Pseudo-unbounded: growth %e for %s (%d)",
 	     dy_lp->ubnd.ratio,
 	     consys_nme(dy_sys,'v',dy_lp->ubnd.ndx,FALSE,NULL),
@@ -1999,12 +1998,12 @@ static dyret_enum primalupdate (int xjndx, int indir,
   if (print >= 5)
   { bool first,all ;
   
-    outfmt(logchn,gtxecho,"\n\trevised objective %g.",dy_lp->z) ;
+    outfmt(dy_logchn,dy_gtxecho,"\n\trevised objective %g.",dy_lp->z) ;
 #   ifdef PARANOIA
     if (dy_lp->phase == dyPRIMAL2)
     { deltak = dy_calcobj() ;
       if (!atbnd(deltak,dy_lp->z))
-	outfmt(logchn,gtxecho,
+	outfmt(dy_logchn,dy_gtxecho,
 	       "\n\tWHOOPS! updated obj - true obj = %g - %g = %g > %g",
 	       dy_lp->z,deltak,dy_lp->z-deltak,dy_tols->dchk) ; }
 #   endif
@@ -2016,28 +2015,28 @@ static dyret_enum primalupdate (int xjndx, int indir,
     for (xkpos = 1 ; xkpos <= dy_sys->concnt ; xkpos++)
       if (abarj[xkpos] != 0 || all == TRUE)
       { if (first == TRUE)
-	{ outfmt(logchn,gtxecho,"\n\t%sprimal variables:",
+	{ outfmt(dy_logchn,dy_gtxecho,"\n\t%sprimal variables:",
 		 (all == TRUE)?"":"revised ") ;
-	  outfmt(logchn,gtxecho,"\n%8s%20s%16s%16s%16s %s","pos'n","var (ndx)",
+	  outfmt(dy_logchn,dy_gtxecho,"\n%8s%20s%16s%16s%16s %s","pos'n","var (ndx)",
 		 "lb","val","ub","status") ;
 	  first = FALSE ; }
 	xkndx = dy_basis[xkpos] ;
-	outfmt(logchn,gtxecho,"\n%8d%14s (%3d)%16.8g%16.8g%16.8g %s",xkpos,
+	outfmt(dy_logchn,dy_gtxecho,"\n%8d%14s (%3d)%16.8g%16.8g%16.8g %s",xkpos,
 	       consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,
 	       dy_sys->vlb[xkndx],dy_xbasic[xkpos],dy_sys->vub[xkndx],
 	       dy_prtvstat(dy_status[xkndx])) ; }
     if (first == TRUE)
-      outfmt(logchn,gtxecho,"\n\tno change to primal variables.") ;
+      outfmt(dy_logchn,dy_gtxecho,"\n\tno change to primal variables.") ;
     if (print >= 7)
     { if (xindx != xjndx)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n    dual variables, cbar tolerance %g",dy_tols->dfeas) ;
-	outfmt(logchn,gtxecho,"\n%8s%20s%16s","pos'n","constraint","val") ;
+	outfmt(dy_logchn,dy_gtxecho,"\n%8s%20s%16s","pos'n","constraint","val") ;
 	for (xkpos = 1 ; xkpos <= dy_sys->concnt ; xkpos++)
-	{ outfmt(logchn,gtxecho,"\n%8d%20s%16.8g",xkpos,
+	{ outfmt(dy_logchn,dy_gtxecho,"\n%8d%20s%16.8g",xkpos,
 		 consys_nme(dy_sys,'c',xkpos,FALSE,NULL),dy_y[xkpos]) ; } }
       else
-      { outfmt(logchn,gtxecho,"\n    no change to dual variables.") ; } } }
+      { outfmt(dy_logchn,dy_gtxecho,"\n    no change to dual variables.") ; } } }
 # endif
 
   return (retval) ; }
@@ -2246,11 +2245,11 @@ static dyret_enum pseupdate (int xjndx, int xindx, int *candxj,
   { reset = TRUE ;
 #   ifndef NDEBUG
     if (dy_opts->print.pivoting >= 1)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n  %s: (%s)%d: resetting reference frame; trigger %s (%d)",
 	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	     consys_nme(dy_sys,'v',xjndx,FALSE,NULL),xjndx) ;
-      outfmt(logchn,gtxecho,
+      outfmt(dy_logchn,dy_gtxecho,
 	     "\n\texact gamma<j> = %g, approx = %g, error = %g, tol = %g.",
 	     gammaj,dy_gamma[xjndx],fabs(gammaj-dy_gamma[xjndx]),
 	     dy_tols->reframe*gammaj) ; }
@@ -2396,17 +2395,17 @@ static dyret_enum pseupdate (int xjndx, int xindx, int *candxj,
 # ifndef NDEBUG
   if (dy_opts->print.pricing >= 2)
   { if (*candxj != 0)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n%s: (%s)%d: selected %s (%d), PSE price %g.",
 	     rtnnme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	     consys_nme(dy_sys,'v',*candxj,TRUE,NULL),*candxj,candcbarj) ; }
     else
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n%s: (%s)%d: no suitable candidates.",
 	     rtnnme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; } }
   if (dy_opts->print.pricing >= 1)
   { if (retval == dyrPUNT)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n%s: (%s)%d: all suitable x<j> on rejected pivot list.",
 	     rtnnme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; } }
 # endif
@@ -2534,21 +2533,21 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
   and the print will expose them if they occur.
 */
   if (dy_opts->print.pivoting >= 1)
-  { outfmt(logchn,gtxecho,"\n%s: x<%d> (%s) entering, status %s, %s from %g, ",
+  { outfmt(dy_logchn,dy_gtxecho,"\n%s: x<%d> (%s) entering, status %s, %s from %g, ",
 	   rtnnme,xjndx,consys_nme(dy_sys,'v',xjndx,FALSE,NULL),
 	   dy_prtvstat(dy_status[xjndx]),(indir < 0)?"decreasing":"increasing",
 	   dy_x[xjndx]) ;
-    outfmt(logchn,gtxecho,"lb<j> = %g, ub<j> = %g.",
+    outfmt(dy_logchn,dy_gtxecho,"lb<j> = %g, ub<j> = %g.",
 	   dy_sys->vlb[xjndx],dy_sys->vub[xjndx]) ;
     if (dy_opts->print.pivoting >= 3)
-    { outfmt(logchn,gtxecho,"\n    entering column a<%d>:",xjndx) ;
+    { outfmt(dy_logchn,dy_gtxecho,"\n    entering column a<%d>:",xjndx) ;
       xkpos = 1 ;
       for (xipos = 1 ; xipos <= dy_sys->concnt ; xipos++)
       { if (abarj[xipos] == 0) continue ;
 	xkpos = (xkpos+1)%2 ;
-	if (xkpos == 0) outchr(logchn,gtxecho,'\n') ;
+	if (xkpos == 0) outchr(dy_logchn,dy_gtxecho,'\n') ;
 	xindx = dy_basis[xipos] ;
-	outfmt(logchn,gtxecho,"\t%ca<%d,%d> = %g",
+	outfmt(dy_logchn,dy_gtxecho,"\t%ca<%d,%d> = %g",
 	     (dy_lp->degen > 0 && dy_lp->degen == dy_degenset[xindx])?'*':'\0',
 	     xipos,xjndx,abarj[xipos]) ; } } }
 # endif
@@ -2561,16 +2560,16 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
   Print the ftran'd column. Again, there should be no dirty zeroes.
 */
   if (dy_opts->print.pivoting >= 3)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n    entering column abar<%d> = inv(B)a<%d>, max %g:",
 	   xjndx,xjndx,maxabarj) ;
     xkpos = 1 ;
     for (xipos = 1 ; xipos <= dy_sys->concnt ; xipos++)
     { if (abarj[xipos] == 0) continue ;
       xkpos = (xkpos+1)%2 ;
-      if (xkpos == 0) outchr(logchn,gtxecho,'\n') ;
+      if (xkpos == 0) outchr(dy_logchn,dy_gtxecho,'\n') ;
       xindx = dy_basis[xipos] ;
-      outfmt(logchn,gtxecho,"\t%ca<%d,%d> = %g",
+      outfmt(dy_logchn,dy_gtxecho,"\t%ca<%d,%d> = %g",
              (dy_lp->degen > 0 && dy_lp->degen == dy_degenset[xindx])?'*':'\0',
 	     xipos,xjndx,abarj[xipos]) ; } }
 # endif
@@ -2619,7 +2618,7 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
 	  return (dyrUNBOUND) ; }
 #	ifndef NDEBUG
 	if (dy_opts->print.pivoting >= 1 || dy_opts->print.degen >= 1)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 	       "\n  (%s)%d: backing out level %d after %d pivots, unbounded.",
 		 dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,dy_lp->degen,
 		 dy_lp->tot.pivs-degenstats.iterin[dy_lp->degen]) ; }
@@ -2659,12 +2658,12 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
 	{
 #	  ifndef NDEBUG
 	  if (dy_opts->print.pivoting >= 1 || dy_opts->print.degen >= 1)
-	  { outfmt(logchn,gtxecho,
+	  { outfmt(dy_logchn,dy_gtxecho,
 		   "\n  (%s)%d: backing out level %d after %d pivots, ",
 		   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 		   dy_lp->degen,
 		   dy_lp->tot.pivs-degenstats.iterin[dy_lp->degen]) ;
-	    outfmt(logchn,gtxecho,"nondegenerate pivot.") ; }
+	    outfmt(dy_logchn,dy_gtxecho,"nondegenerate pivot.") ; }
 #	  endif
 	  if (dy_degenout(dy_lp->degen-1) != dyrOK)
 	  { outretval = dyrREQCHK ;
@@ -2709,13 +2708,13 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
 	  xipos = dy_var2basis[xindx] ;
 #         ifndef NDEBUG
 	  if (dy_opts->print.degen >= 3)
-	  { outfmt(logchn,gtxecho,
+	  { outfmt(dy_logchn,dy_gtxecho,
 		   "\n      (%s)%d: constructive degenerate pivot.",
 		   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ;
-	    outfmt(logchn,gtxecho,"\n\t%s %s (%d) leaving,",
+	    outfmt(dy_logchn,dy_gtxecho,"\n\t%s %s (%d) leaving,",
 		   dy_prtvstat(dy_status[xindx]),
 		   consys_nme(dy_sys,'v',xindx,FALSE,NULL),xindx) ;
-	    outfmt(logchn,gtxecho," %s %s (%d) entering.",
+	    outfmt(dy_logchn,dy_gtxecho," %s %s (%d) entering.",
 		   dy_prtvstat(dy_status[xjndx]),
 		   consys_nme(dy_sys,'v',xjndx,FALSE,NULL),xjndx) ; }
 #	  endif
@@ -2727,7 +2726,7 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
 	{ 
 #	  ifndef NDEBUG
 	  if (dy_opts->print.pivoting >= 1 || dy_opts->print.degen >= 1)
-	  { outfmt(logchn,gtxecho,
+	  { outfmt(dy_logchn,dy_gtxecho,
 		   "\n  (%s)%d: antidegeneracy increasing to level %d.",
 		   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 		   dy_lp->degen+1) ; }
@@ -2739,16 +2738,16 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
 	  xipos = dy_var2basis[xindx] ;
 #	  ifndef NDEBUG
 	  if (dy_opts->print.degen >= 2 && degen_cyclecnt >= 3)
-	  { outfmt(logchn,gtxecho,
+	  { outfmt(dy_logchn,dy_gtxecho,
 		   "\n    (%s)%d: forced degenerate pivot after %d cycles;",
 		   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 		   degen_cyclecnt) ;
-	    outfmt(logchn,gtxecho,"\n\t%s %s (%d) leaving.",
+	    outfmt(dy_logchn,dy_gtxecho,"\n\t%s %s (%d) leaving.",
 		   dy_prtvstat(dy_status[xindx]),
 		   consys_nme(dy_sys,'v',xindx,FALSE,NULL),xindx) ; }
 	  else
 	  if (dy_opts->print.degen >= 3)
-	  { outfmt(logchn,gtxecho,
+	  { outfmt(dy_logchn,dy_gtxecho,
 		   "\n      (%s)%d: degenerate pivot, %s %s (%d) leaving.",
 		   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 		   dy_prtvstat(dy_status[xindx]),

@@ -153,10 +153,10 @@
 
 
 
-#include "errs.h"
-#include "io.h"
-#include "loustd.h"
-#include "strrtns.h"
+#include "dylib_errs.h"
+#include "dylib_io.h"
+#include "dylib_std.h"
+#include "dylib_strrtns.h"
 #include "consys.h"
 
 static char sccsid[] UNUSED = "@(#)consys_utils.c	4.7	10/15/05" ;

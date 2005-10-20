@@ -30,9 +30,9 @@
 
 
 
-#include "errs.h"
-#include "io.h"
-#include "loustd.h"
+#include "dylib_errs.h"
+#include "dylib_io.h"
+#include "dylib_std.h"
 #include "consys.h"
 
 static char sccsid[] UNUSED = "@(#)consys_io.c	4.6	11/11/04" ;

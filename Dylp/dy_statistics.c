@@ -40,7 +40,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 #include <float.h>
 #include <limits.h>

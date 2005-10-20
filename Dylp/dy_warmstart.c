@@ -30,7 +30,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_warmstart.c	4.5	11/06/04" ;
@@ -67,7 +66,7 @@ static void correct_for_patch (void)
 
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 3)
-  { outfmt(logchn,gtxecho,"\n\tcorrecting status due to basis patch ...") ; }
+  { outfmt(dy_logchn,dy_gtxecho,"\n\tcorrecting status due to basis patch ...") ; }
 # endif
   
   cnt = 0 ;
@@ -98,10 +97,10 @@ static void correct_for_patch (void)
 	dy_x[j] = 0 ; }
 #     ifndef NDEBUG
       if (dy_opts->print.crash >= 4)
-      { outfmt(logchn,gtxecho,"\n\t  changing status for %s (%d) to %s,",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\t  changing status for %s (%d) to %s,",
 	       consys_nme(dy_sys,'v',j,FALSE,NULL),j,
 	       dy_prtvstat(dy_status[j])) ;
-	outfmt(logchn,gtxecho," value %g.",dy_x[j]) ; }
+	outfmt(dy_logchn,dy_gtxecho," value %g.",dy_x[j]) ; }
 #     endif
       cnt++ ; } }
 
@@ -114,7 +113,7 @@ static void correct_for_patch (void)
   can do is print a message.
 */
   if (cnt == 0 && dy_opts->print.crash >= 4)
-  { outfmt(logchn,gtxecho,"\n\t  no architecturals corrected.") ; }
+  { outfmt(dy_logchn,dy_gtxecho,"\n\t  no architecturals corrected.") ; }
 # endif
 
   return ; }
@@ -215,10 +214,10 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 	{ 
 #	  ifndef NDEBUG
 	  if (dy_opts->print.setup >= 3)
-	  { outfmt(logchn,gtxecho,"\n\tForcing equal bound %g for %s (%d)",
+	  { outfmt(dy_logchn,dy_gtxecho,"\n\tForcing equal bound %g for %s (%d)",
 		   (vlb[vndx]+vub[vndx])/2,
 		   consys_nme(orig_sys,'v',vndx,0,0),vndx) ;
-	    outfmt(logchn,gtxecho,
+	    outfmt(dy_logchn,dy_gtxecho,
 		   "\n\t  original lb = %g, ub = %g, diff = %g, tol = %g",
 		   vlb[vndx],vub[vndx],vub[vndx]-vlb[vndx],dy_tols->pfeas) ; }
 #	  endif
@@ -236,10 +235,10 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 	{ 
 #	  ifndef NDEBUG
 	  if (dy_opts->print.setup >= 3)
-	  { outfmt(logchn,gtxecho,"\n\tForcing equal bound %g for %s (g)",
+	  { outfmt(dy_logchn,dy_gtxecho,"\n\tForcing equal bound %g for %s (g)",
 		   (vlb[vndx]+vub[vndx])/2,
 		   consys_nme(orig_sys,'v',vndx,0,0),vndx) ;
-	    outfmt(logchn,gtxecho,
+	    outfmt(dy_logchn,dy_gtxecho,
 		   "\n\t  original lb = %g, ub = %g, diff = %g, tol = %g",
 		   vlb[vndx],vub[vndx],vub[vndx]-vlb[vndx],dy_tols->pfeas) ; }
 #	  endif
@@ -258,11 +257,11 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
   dyvsze += dycsze ;
 # ifndef NDEBUG
   if (dy_opts->print.setup >= 1)
-  { outfmt(logchn,gtxecho,"\n  creating constraint system %s (%d x %d+%d)",
+  { outfmt(dy_logchn,dy_gtxecho,"\n  creating constraint system %s (%d x %d+%d)",
 	   nmebuf,dycsze,dyvsze-dycsze,dycsze) ;
     if (dy_opts->print.setup >= 3)
     { if (flgoff(orig_lp->ctlopts,lpctlACTVARSIN))
-        outfmt(logchn,gtxecho,"\n      %d nonbasic fixed variables excluded.",
+        outfmt(dy_logchn,dy_gtxecho,"\n      %d nonbasic fixed variables excluded.",
 	       nbfxcnt) ; } }
 # endif
   dy_sys = consys_create(nmebuf,parts,opts,dycsze,dyvsze,dy_tols->inf) ;
@@ -311,7 +310,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
   { 
 #   ifndef NDEBUG
     if (dy_opts->print.setup >= 1)
-    { outfmt(logchn,gtxecho,"\n  processing active variable list ...") ; }
+    { outfmt(dy_logchn,dy_gtxecho,"\n  processing active variable list ...") ; }
 #   endif
     pkcol = pkvec_new(0) ;
     for (vndx = 1 ; vndx <= orig_sys->varcnt ; vndx++)
@@ -335,7 +334,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 	dy_actvars[dyvndx] = vndx ;
 #       ifndef NDEBUG
 	if (dy_opts->print.setup >= 3)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n\tactivating %s variable %s (%d) to index %d.",
 		 consys_prtvartyp(orig_sys->vtyp[vndx]),
 		 consys_nme(orig_sys,'v',vndx,FALSE,NULL),vndx,dyvndx) ; }
@@ -373,7 +372,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
   { cndx = orig_basis[bpos].cndx ;
 #   ifndef NDEBUG
     if (dy_opts->print.setup >= 2)
-      outfmt(logchn,gtxecho,"\n    activating %s %s (%d) in pos'n %d",
+      outfmt(dy_logchn,dy_gtxecho,"\n    activating %s %s (%d) in pos'n %d",
 	     consys_prtcontyp(orig_sys->ctyp[cndx]),
 	     consys_nme(orig_sys,'c',cndx,FALSE,NULL),cndx,bpos) ;
 #   endif
@@ -396,7 +395,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
     { 
 #     ifndef NDEBUG
       if (dy_opts->print.setup >= 2)
-	outfmt(logchn,gtxecho,"\n    activating %s %s (%d) in pos'n %d",
+	outfmt(dy_logchn,dy_gtxecho,"\n    activating %s %s (%d) in pos'n %d",
 	       consys_prtcontyp(orig_sys->ctyp[cndx]),
 	       consys_nme(orig_sys,'c',cndx,FALSE,NULL),cndx,cndx) ;
 #     endif
@@ -418,9 +417,9 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 # endif
 # ifndef NDEBUG
   if (dy_opts->print.setup >= 1)
-  { outfmt(logchn,gtxecho,"\n    system %s has %d constraints, %d+%d variables",
+  { outfmt(dy_logchn,dy_gtxecho,"\n    system %s has %d constraints, %d+%d variables",
 	   dy_sys->nme,dy_sys->concnt,dy_sys->archvcnt,dy_sys->logvcnt) ;
-    outfmt(logchn,gtxecho,
+    outfmt(dy_logchn,dy_gtxecho,
 	   "\n    %d constraints, %d variables remain inactive in system %s.",
 	   orig_sys->concnt-dy_sys->concnt,orig_sys->archvcnt-dy_sys->archvcnt,
 	   orig_sys->nme) ;
@@ -448,14 +447,14 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 	      return (dyrINV) ; } }
 	  if (xi != 0)
 	  { if (nbfxcnt == 0)
-	      outfmt(logchn,gtxecho,
+	      outfmt(dy_logchn,dy_gtxecho,
 		     "\n\tinactive variables with nonzero values:") ;
 	    nbfxcnt++ ;
-	    outfmt(logchn,gtxecho,"\n\t%s (%d) = %g, status %s",
+	    outfmt(dy_logchn,dy_gtxecho,"\n\t%s (%d) = %g, status %s",
 		   consys_nme(orig_sys,'v',vndx,FALSE,NULL),vndx,xi,
 		   dy_prtvstat(vstat)) ; } } }
       if (nbfxcnt == 0)
-	outfmt(logchn,gtxecho,"\n\tall inactive variables are zero.") ; } }
+	outfmt(dy_logchn,dy_gtxecho,"\n\tall inactive variables are zero.") ; } }
 # endif
 /*
   Time to assemble the basis. Attach the basis and inverse basis vectors to
@@ -472,9 +471,9 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 1)
   { if (dy_opts->print.setup == 0)
-      outfmt(logchn,gtxecho,"\n %s: regenerating the basis ...",rtnnme) ;
+      outfmt(dy_logchn,dy_gtxecho,"\n %s: regenerating the basis ...",rtnnme) ;
     else
-      outfmt(logchn,gtxecho,"\n  regenerating the basis.",rtnnme) ; }
+      outfmt(dy_logchn,dy_gtxecho,"\n  regenerating the basis.",rtnnme) ; }
 # endif
 /*
   Load the basis. For variables, we need to translate architecturals using
@@ -543,7 +542,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 	retval = dyrFATAL ;
 	break ; }
       if (pkcol->cnt == 0 && dy_opts->print.crash >= 4)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n      %s (%d) has no non-zeros in active constraints.",
 	       consys_nme(dy_sys,'v',dyvndx,TRUE,NULL),dyvndx) ; } }
 #   endif
@@ -566,12 +565,12 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 4)
-  { outfmt(logchn,gtxecho,"\n\t    Pos'n Variable           Constraint") ;
+  { outfmt(dy_logchn,dy_gtxecho,"\n\t    Pos'n Variable           Constraint") ;
     for (bpos = 1 ; bpos <= orig_lp->basis->len ; bpos++)
     { vndx = dy_basis[bpos] ;
-      outfmt(logchn,gtxecho,"\n\t     %3d  (%3d) %-15s",bpos,vndx,
+      outfmt(dy_logchn,dy_gtxecho,"\n\t     %3d  (%3d) %-15s",bpos,vndx,
 	     consys_nme(dy_sys,'v',vndx,FALSE,NULL)) ;
-      outfmt(logchn,gtxecho,"%-15s",
+      outfmt(dy_logchn,dy_gtxecho,"%-15s",
 	     consys_nme(dy_sys,'c',bpos,FALSE,NULL)) ; } }
 # endif
 
@@ -584,7 +583,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
   {
 #   ifndef NDEBUG
     if (dy_opts->print.crash >= 2)
-      outfmt(logchn,gtxecho,"\n    factoring ...") ;
+      outfmt(dy_logchn,dy_gtxecho,"\n    factoring ...") ;
 #   endif
     calcflgs = 0 ;
     retval = dy_factor(&calcflgs) ;
@@ -625,7 +624,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 */
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 2)
-    outfmt(logchn,gtxecho,"\n    calculating dual values ...") ;
+    outfmt(dy_logchn,dy_gtxecho,"\n    calculating dual values ...") ;
 # endif
   dy_calcduals() ;
   if (dy_calccbar() == FALSE)
@@ -645,9 +644,9 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
   vub = dy_sys->vub ;
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 2)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n    establishing initial status and reference frame ...") ;
-    outfmt(logchn,gtxecho,"\n      logicals ...") ; }
+    outfmt(dy_logchn,dy_gtxecho,"\n      logicals ...") ; }
 # endif
   for (dyvndx = 1 ; dyvndx <= dy_sys->concnt ; dyvndx++)
   { if (dy_var2basis[dyvndx] != 0)
@@ -683,13 +682,13 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 	  return (dyrFATAL) ; } } }
 #   ifndef NDEBUG
     if (dy_opts->print.crash >= 4)
-    { outfmt(logchn,gtxecho,"\n\t  %s (%d) %s",
+    { outfmt(dy_logchn,dy_gtxecho,"\n\t  %s (%d) %s",
 	     consys_nme(dy_sys,'v',dyvndx,FALSE,NULL),dyvndx,
 	     dy_prtvstat(dy_status[dyvndx])) ;
       if (flgon(dy_status[dyvndx],vstatNONBASIC|vstatNBFR))
-	outfmt(logchn,gtxecho," with value %g.",dy_x[dyvndx]) ;
+	outfmt(dy_logchn,dy_gtxecho," with value %g.",dy_x[dyvndx]) ;
       else
-	outchr(logchn,gtxecho,'.') ; }
+	outchr(dy_logchn,dy_gtxecho,'.') ; }
 #   endif
   }
 /*
@@ -705,7 +704,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 */
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 2)
-    outfmt(logchn,gtxecho,"\n      architecturals ...") ;
+    outfmt(dy_logchn,dy_gtxecho,"\n      architecturals ...") ;
 # endif
   dy_lp->inactzcorr = 0 ;
   for (vndx = 1 ; vndx <= orig_sys->varcnt ; vndx++)
@@ -757,13 +756,13 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 	} }
 #     ifndef NDEBUG
       if (dy_opts->print.crash >= 4)
-      { outfmt(logchn,gtxecho,"\n\t  %s (%d) %s",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\t  %s (%d) %s",
 	       consys_nme(dy_sys,'v',dyvndx,FALSE,NULL),dyvndx,
 	       dy_prtvstat(dy_status[dyvndx])) ;
 	if (flgon(dy_status[dyvndx],vstatNONBASIC|vstatNBFR))
-	  outfmt(logchn,gtxecho," with value %g.",dy_x[dyvndx]) ;
+	  outfmt(dy_logchn,dy_gtxecho," with value %g.",dy_x[dyvndx]) ;
 	else
-	  outchr(logchn,gtxecho,'.') ; }
+	  outchr(dy_logchn,dy_gtxecho,'.') ; }
 #     endif
     } }
 /*
@@ -781,7 +780,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 */
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 2)
-    outfmt(logchn,gtxecho,"\n    calculating primal values ...") ;
+    outfmt(dy_logchn,dy_gtxecho,"\n    calculating primal values ...") ;
 # endif
   if (dy_calcprimals() == FALSE)
   { errmsg(316,rtnnme,dy_sys->nme) ;
@@ -808,14 +807,14 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 2)
-  { outfmt(logchn,gtxecho,"\n    phase %s, initial objective %g",
+  { outfmt(dy_logchn,dy_gtxecho,"\n    phase %s, initial objective %g",
 	   dy_prtlpphase(dy_lp->simplex.next,FALSE),dy_lp->z) ;
     if (dy_lp->infeascnt != 0)
-      outfmt(logchn,gtxecho,", %d infeasible vars, infeas = %g",
+      outfmt(dy_logchn,dy_gtxecho,", %d infeasible vars, infeas = %g",
 	     dy_lp->infeascnt,dy_lp->infeas) ;
-    outchr(logchn,gtxecho,'.') ; }
+    outchr(dy_logchn,dy_gtxecho,'.') ; }
   if (dy_opts->print.crash >= 3)
-  { outfmt(logchn,gtxecho,"\n\nPos'n\tConstraint\tDual\t\tPrimal\n") ;
+  { outfmt(dy_logchn,dy_gtxecho,"\n\nPos'n\tConstraint\tDual\t\tPrimal\n") ;
     for (bpos = 1 ; bpos <= dy_sys->concnt; bpos++)
     { cndx = dy_actcons[bpos] ;
       dyvndx = dy_basis[bpos] ;
@@ -823,7 +822,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 	vndx = orig_sys->varcnt+dyvndx ;
       else
 	vndx = dy_actvars[dyvndx] ;
-      outfmt(logchn,gtxecho,"\n%5d\t(%4d) %-8s\t%12.4g\t(%4d) %-8s %12.4g",
+      outfmt(dy_logchn,dy_gtxecho,"\n%5d\t(%4d) %-8s\t%12.4g\t(%4d) %-8s %12.4g",
 	     bpos,cndx,consys_nme(dy_sys,'c',bpos,FALSE,NULL),dy_y[bpos],
 	     vndx,consys_nme(dy_sys,'v',dyvndx,FALSE,NULL),dy_x[dyvndx]) ; } }
 # endif

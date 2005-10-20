@@ -58,6 +58,7 @@
   client.
 */
 
+#include "dylib_errs.h"
 #include "consys.h"
 
 /*
@@ -1290,6 +1291,15 @@ typedef struct {
 #ifdef DYLP_INTERNAL
 
 /*
+  dy_logchn		i/o id for the execution log file
+  dy_gtxecho		controls echoing of generated text to stdout
+*/
+
+extern ioid dy_logchn ;
+extern bool dy_gtxecho ;
+
+
+/*
   lp_struct
 
   This structure is the control structure for an LP problem within dylp.
@@ -1782,7 +1792,7 @@ extern bool dy_pricenbvars(lpprob_struct *orig_lp, flags priceme,
   dylp_io.c
 */
 
-#include <io.h>
+#include <dylib_io.h>
 
 #ifdef DYLP_INTERNAL
 

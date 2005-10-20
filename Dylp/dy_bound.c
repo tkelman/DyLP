@@ -32,7 +32,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_bound.c	4.6	11/11/04" ;
@@ -124,16 +123,16 @@ int dbg_scanPrimConBndAct (consys_struct *orig_sys, int act_j,
   dy_ftran(abarj,FALSE) ;
 # ifndef NDEBUG
   if (dy_opts->print.conmgmt >= 4)
-  { outfmt(logchn,gtxecho,"\n    eta<j> for %s (%d) %s:",
+  { outfmt(dy_logchn,dy_gtxecho,"\n    eta<j> for %s (%d) %s:",
 	   consys_nme(dy_sys,'v',act_j,FALSE,NULL),act_j,
 	   (dir < 0)?"increasing":"decreasing") ;
-    outfmt(logchn,gtxecho,"\n%8s%20s%16s","pos'n","var (ndx)","eta<ij>") ;
+    outfmt(dy_logchn,dy_gtxecho,"\n%8s%20s%16s","pos'n","var (ndx)","eta<ij>") ;
     for (bpos = 1 ; bpos <= dy_sys->concnt ; bpos++)
     { if (abarj[bpos] != 0)
-	outfmt(logchn,gtxecho,"\n%8d%14s (%3d)%16.8g",bpos,
+	outfmt(dy_logchn,dy_gtxecho,"\n%8d%14s (%3d)%16.8g",bpos,
 	       consys_nme(dy_sys,'v',dy_basis[bpos],FALSE,NULL),
 	       dy_basis[bpos],-abarj[bpos]) ; }
-    outfmt(logchn,gtxecho,"\n%8s%14s (%3d)%16.8g","n/a",
+    outfmt(dy_logchn,dy_gtxecho,"\n%8s%14s (%3d)%16.8g","n/a",
 	   consys_nme(dy_sys,'v',act_j,FALSE,NULL),act_j,1.0) ; }
 # endif
 /*
@@ -237,7 +236,7 @@ int dbg_scanPrimConBndAct (consys_struct *orig_sys, int act_j,
     {
 #     ifndef NDEBUG
       if (dy_opts->print.conmgmt >= 3)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n    skipping %s %s (%d), dot(a<i>,eta<j>) = %g, ",
 	       consys_prtcontyp(ctypi),
 	       consys_nme(orig_sys,'c',i,FALSE,NULL),i,idotj) ; }
@@ -245,7 +244,7 @@ int dbg_scanPrimConBndAct (consys_struct *orig_sys, int act_j,
       continue ; }
 #   ifndef NDEBUG
     if (dy_opts->print.conmgmt >= 3)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    considering %s %s (%d), dot(a<i>,eta<j>) = %g, ",
 	     consys_prtcontyp(ctypi),
 	     consys_nme(orig_sys,'c',i,FALSE,NULL),i,idotj) ; }
@@ -271,20 +270,20 @@ int dbg_scanPrimConBndAct (consys_struct *orig_sys, int act_j,
 #   ifndef NDEBUG
     if (activate == TRUE)
     { if (dy_opts->print.conmgmt >= 3)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n    queued %s %s (%d), %g <= %g <= %g.",
 	       consys_prtcontyp(orig_ctyp[i]),
 	       consys_nme(orig_sys,'c',i,FALSE,NULL),i,rhslowi,lhsi,rhsi) ; } }
     else
     { if (dy_opts->print.conmgmt >= 2)
-      { outfmt(logchn,gtxecho,"\n    skipping %s constraint %s (%d),",
+      { outfmt(dy_logchn,dy_gtxecho,"\n    skipping %s constraint %s (%d),",
 	       consys_prtcontyp(orig_ctyp[i]),
 	       consys_nme(orig_sys,'c',i,FALSE,NULL),i) ;
 	if (abovebnd(lhsi,rhsi))
-	{ outfmt(logchn,gtxecho," lhs - rhs = %g - %g = %g, tol %g.",
+	{ outfmt(dy_logchn,dy_gtxecho," lhs - rhs = %g - %g = %g, tol %g.",
 		 lhsi,rhsi,lhsi-rhsi,dy_tols->zero*(1+fabs(rhsi))) ; }
 	else
-	{ outfmt(logchn,gtxecho," rhslow - lhs = %g - %g = %g, tol %g.",
+	{ outfmt(dy_logchn,dy_gtxecho," rhslow - lhs = %g - %g = %g, tol %g.",
 		 rhslowi,lhsi,rhslowi-lhsi,
 		 dy_tols->zero*(1+fabs(rhslowi))) ; } } }
 #   endif
@@ -307,7 +306,7 @@ int dbg_scanPrimConBndAct (consys_struct *orig_sys, int act_j,
 
 # ifndef NDEBUG
   if (dy_opts->print.conmgmt >= 1)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n  queued %d constraints for activation.",actcnt) ; }
 # endif
 
@@ -401,16 +400,16 @@ static int scanPrimConBndAct (consys_struct *orig_sys,
   dy_ftran(abarj,FALSE) ;
 # ifndef NDEBUG
   if (dy_opts->print.conmgmt >= 4)
-  { outfmt(logchn,gtxecho,"\n    eta<j> for %s (%d) %s:",
+  { outfmt(dy_logchn,dy_gtxecho,"\n    eta<j> for %s (%d) %s:",
 	   consys_nme(dy_sys,'v',act_j,FALSE,NULL),act_j,
 	   (dir < 0)?"increasing":"decreasing") ;
-    outfmt(logchn,gtxecho,"\n%8s%20s%16s","pos'n","var (ndx)","eta<ij>") ;
+    outfmt(dy_logchn,dy_gtxecho,"\n%8s%20s%16s","pos'n","var (ndx)","eta<ij>") ;
     for (bpos = 1 ; bpos <= dy_sys->concnt ; bpos++)
     { if (abarj[bpos] != 0)
-	outfmt(logchn,gtxecho,"\n%8d%14s (%3d)%16.8g",bpos,
+	outfmt(dy_logchn,dy_gtxecho,"\n%8d%14s (%3d)%16.8g",bpos,
 	       consys_nme(dy_sys,'v',dy_basis[bpos],FALSE,NULL),
 	       dy_basis[bpos],-abarj[bpos]) ; }
-    outfmt(logchn,gtxecho,"\n%8s%14s (%3d)%16.8g","n/a",
+    outfmt(dy_logchn,dy_gtxecho,"\n%8s%14s (%3d)%16.8g","n/a",
 	   consys_nme(dy_sys,'v',act_j,FALSE,NULL),act_j,1.0) ; }
 # endif
 /*
@@ -515,7 +514,7 @@ static int scanPrimConBndAct (consys_struct *orig_sys,
     {
 #     ifndef NDEBUG
       if (dy_opts->print.conmgmt >= 3)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n    skipping %s %s (%d), dot(a<i>,eta<j>) = %g, ",
 	       consys_prtcontyp(ctypi),
 	       consys_nme(orig_sys,'c',i,FALSE,NULL),i,idotj) ; }
@@ -523,7 +522,7 @@ static int scanPrimConBndAct (consys_struct *orig_sys,
       continue ; }
 #   ifndef NDEBUG
     if (dy_opts->print.conmgmt >= 3)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    considering %s %s (%d), dot(a<i>,eta<j>) = %g, ",
 	     consys_prtcontyp(ctypi),
 	     consys_nme(orig_sys,'c',i,FALSE,NULL),i,idotj) ; }
@@ -549,20 +548,20 @@ static int scanPrimConBndAct (consys_struct *orig_sys,
 #   ifndef NDEBUG
     if (activate == TRUE)
     { if (dy_opts->print.conmgmt >= 3)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n    queued %s %s (%d), %g <= %g <= %g.",
 	       consys_prtcontyp(orig_ctyp[i]),
 	       consys_nme(orig_sys,'c',i,FALSE,NULL),i,rhslowi,lhsi,rhsi) ; } }
     else
     { if (dy_opts->print.conmgmt >= 2)
-      { outfmt(logchn,gtxecho,"\n    skipping %s constraint %s (%d),",
+      { outfmt(dy_logchn,dy_gtxecho,"\n    skipping %s constraint %s (%d),",
 	       consys_prtcontyp(orig_ctyp[i]),
 	       consys_nme(orig_sys,'c',i,FALSE,NULL),i) ;
 	if (abovebnd(lhsi,rhsi))
-	{ outfmt(logchn,gtxecho," lhs - rhs = %g - %g = %g, tol %g.",
+	{ outfmt(dy_logchn,dy_gtxecho," lhs - rhs = %g - %g = %g, tol %g.",
 		 lhsi,rhsi,lhsi-rhsi,dy_tols->zero*(1+fabs(rhsi))) ; }
 	else
-	{ outfmt(logchn,gtxecho," rhslow - lhs = %g - %g = %g, tol %g.",
+	{ outfmt(dy_logchn,dy_gtxecho," rhslow - lhs = %g - %g = %g, tol %g.",
 		 rhslowi,lhsi,rhslowi-lhsi,
 		 dy_tols->zero*(1+fabs(rhslowi))) ; } } }
 #   endif
@@ -581,7 +580,7 @@ static int scanPrimConBndAct (consys_struct *orig_sys,
 
 # ifndef NDEBUG
   if (dy_opts->print.conmgmt >= 1)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n  queued %d constraints for activation.",actcnt) ; }
 # endif
 
@@ -649,8 +648,8 @@ int dy_activateBndCons (consys_struct *orig_sys)
   { dy_lp->simplex.init_dse = TRUE ;
 #   ifndef NDEBUG
     if (dy_opts->print.conmgmt >= 3)
-    { outfmt(logchn,gtxecho,"\n      factoring, calculating variables, ") ;
-      outfmt(logchn,gtxecho,"and checking feasibility ...") ; }
+    { outfmt(dy_logchn,dy_gtxecho,"\n      factoring, calculating variables, ") ;
+      outfmt(dy_logchn,dy_gtxecho,"and checking feasibility ...") ; }
 #   endif
     calcflgs = ladFACTOR|ladPRIMFEAS|ladPFQUIET|ladDUALFEAS|ladDFQUIET ;
     factorresult = dy_accchk(&calcflgs) ;
@@ -661,9 +660,9 @@ int dy_activateBndCons (consys_struct *orig_sys)
 #       ifndef NDEBUG
 	if (dy_opts->print.conmgmt >= 3)
 	{ if (factorresult == dyrOK)
-	    outfmt(logchn,gtxecho,"\n    done.") ;
+	    outfmt(dy_logchn,dy_gtxecho,"\n    done.") ;
 	  else
-	    outfmt(logchn,gtxecho,"\n    patched.") ; }
+	    outfmt(dy_logchn,dy_gtxecho,"\n    patched.") ; }
 #       endif
 #	ifdef PARANOIA
 	if (dy_lp->simplex.active == dyPRIMAL2 && factorresult == dyrOK &&
@@ -684,7 +683,7 @@ int dy_activateBndCons (consys_struct *orig_sys)
       { retval = -1 ;
 #       ifndef NDEBUG
 	if (dy_opts->print.conmgmt >= 3)
-	  outfmt(logchn,gtxecho,"\n    failed.") ;
+	  outfmt(dy_logchn,dy_gtxecho,"\n    failed.") ;
 #       endif
 	break ; } } }
   else
@@ -692,9 +691,9 @@ int dy_activateBndCons (consys_struct *orig_sys)
 
 # ifndef NDEBUG
   if (dy_opts->print.conmgmt >= 1)
-  { if (dy_opts->print.conmgmt >= 2) outfmt(logchn,gtxecho,"\n    ") ;
-    outfmt(logchn,gtxecho," %d activations.",cand_cnt) ;
-    outfmt(logchn,gtxecho,"\n    constraint system %s now %d x %d (%d + %d).",
+  { if (dy_opts->print.conmgmt >= 2) outfmt(dy_logchn,dy_gtxecho,"\n    ") ;
+    outfmt(dy_logchn,dy_gtxecho," %d activations.",cand_cnt) ;
+    outfmt(dy_logchn,dy_gtxecho,"\n    constraint system %s now %d x %d (%d + %d).",
 	   dy_sys->nme,dy_sys->concnt,dy_sys->varcnt,dy_sys->archvcnt,
 	   dy_sys->logvcnt) ; }
 # endif
@@ -745,7 +744,7 @@ static int type1var(consys_struct *orig_sys,
   {
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 4)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n\tt1eval: %s %s (%d) not dual feasible; cbar<k> = %g.",
 	     dy_prtvstat(xkstatus),consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),
 	     oxkndx,cbark) ; }
@@ -757,10 +756,10 @@ static int type1var(consys_struct *orig_sys,
 */
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 2)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    type 1 activation %s %s (%d), ",dy_prtvstat(xkstatus),
 	     consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),oxkndx) ;
-        outfmt(logchn,gtxecho,"cbar<k> = %g, abar<ik> = %g.",cbark,abarik) ; }
+        outfmt(dy_logchn,dy_gtxecho,"cbar<k> = %g, abar<ik> = %g.",cbark,abarik) ; }
 #   endif
 
     if (dy_actNBPrimArch(orig_sys,oxkndx) == FALSE)
@@ -826,7 +825,7 @@ static void type2eval (consys_struct *orig_sys,int xindx, int diri,
   {
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 4)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n\tt2eval: %s %s (%d) dual feasible; cbar<k> = %g.",
 	     dy_prtvstat(xkstatus),consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),
 	     oxkndx,cbark) ; }
@@ -861,19 +860,19 @@ static void type2eval (consys_struct *orig_sys,int xindx, int diri,
 	{ *dirj = 1 ; } } }
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 3)
-    { outfmt(logchn,gtxecho,"\n      t2eval: choosing %s %s (%d), delta %g,",
+    { outfmt(dy_logchn,dy_gtxecho,"\n      t2eval: choosing %s %s (%d), delta %g,",
 	     dy_prtvstat(xkstatus),
 	     consys_nme(orig_sys,'v',*oxjndx,TRUE,NULL),*oxjndx,*deltaj) ;
-      outfmt(logchn,gtxecho,"cbar<j> = %g, abar<ij> = %g.",*cbarj,abarik) ; }
+      outfmt(dy_logchn,dy_gtxecho,"cbar<j> = %g, abar<ij> = %g.",*cbarj,abarik) ; }
 #   endif
   }
 # ifndef NDEBUG
   else
   { if (dy_opts->print.varmgmt >= 3)
-    { outfmt(logchn,gtxecho,"\n      t2eval: skipping %s %s (%d), delta %g,",
+    { outfmt(dy_logchn,dy_gtxecho,"\n      t2eval: skipping %s %s (%d), delta %g,",
 	     dy_prtvstat(xkstatus),
 	     consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),oxkndx,deltak) ;
-      outfmt(logchn,gtxecho,"cbar<k> = %g, abar<ik> = %g.",cbark,abarik) ; } }
+      outfmt(dy_logchn,dy_gtxecho,"cbar<k> = %g, abar<ik> = %g.",cbark,abarik) ; } }
 # endif
 
   return ; }
@@ -933,14 +932,14 @@ static void type3eval (consys_struct *orig_sys,
   {
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 3)
-    { outfmt(logchn,gtxecho,"\n      t3eval: skipping %s %s (%d)",
+    { outfmt(dy_logchn,dy_gtxecho,"\n      t3eval: skipping %s %s (%d)",
 	     dy_prtvstat(xkstatus),
 	     consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),oxkndx) ;
       if (lbk <= -dy_tols->inf)
-	outfmt(logchn,gtxecho,", lb = %g",lbk) ;
+	outfmt(dy_logchn,dy_gtxecho,", lb = %g",lbk) ;
       if (ubk >= dy_tols->inf)
-	outfmt(logchn,gtxecho,", ub = %g",ubk) ;
-      outchr(logchn,gtxecho,'.') ; }
+	outfmt(dy_logchn,dy_gtxecho,", ub = %g",ubk) ;
+      outchr(dy_logchn,dy_gtxecho,'.') ; }
 #   endif
     return ; }
 /*
@@ -952,7 +951,7 @@ static void type3eval (consys_struct *orig_sys,
     {
 #     ifndef NDEBUG
       if (dy_opts->print.varmgmt >= 3)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n      t3eval: skipping %s %s (%d), cbar = %g, can't flip.",
 	       dy_prtvstat(xkstatus),
 	       consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),oxkndx,cbark) ; }
@@ -965,7 +964,7 @@ static void type3eval (consys_struct *orig_sys,
     {
 #     ifndef NDEBUG
       if (dy_opts->print.varmgmt >= 3)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n      t3eval: skipping %s %s (%d), cbar = %g, can't flip.",
 	       dy_prtvstat(xkstatus),
 	       consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),oxkndx,cbark) ; }
@@ -981,7 +980,7 @@ static void type3eval (consys_struct *orig_sys,
   {
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 3)
-    { outfmt(logchn,gtxecho,"\n      t3eval: skipping %s %s (%d), delta = 0.",
+    { outfmt(dy_logchn,dy_gtxecho,"\n      t3eval: skipping %s %s (%d), delta = 0.",
 	     dy_prtvstat(xkstatus),consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),
 	     oxkndx) ; }
 #   endif
@@ -990,7 +989,7 @@ static void type3eval (consys_struct *orig_sys,
   {
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 3)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n      t3eval: skipping %s %s (%d), direction; delta = %g.",
 	     dy_prtvstat(xkstatus),consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),
 	     oxkndx,deltak) ; }
@@ -1031,10 +1030,10 @@ static void type3eval (consys_struct *orig_sys,
     *abarij = abarik ;
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 3)
-    { outfmt(logchn,gtxecho,"\n      t3eval: choosing %s %s (%d), ",
+    { outfmt(dy_logchn,dy_gtxecho,"\n      t3eval: choosing %s %s (%d), ",
 	     dy_prtvstat(xkstatus),
 	     consys_nme(orig_sys,'v',*oxjndx,TRUE,NULL),*oxjndx) ;
-      outfmt(logchn,gtxecho,"cbar = %g, delta = %g, dist = %g.",
+      outfmt(dy_logchn,dy_gtxecho,"cbar = %g, delta = %g, dist = %g.",
 	     *cbarj,deltak,*distj) ; }
 #   endif
   }
@@ -1084,10 +1083,10 @@ static int type2activate (consys_struct *orig_sys,
 # ifndef NDEBUG
   if (dy_opts->print.varmgmt >= 1)
   { xjstatus = (flags) -dy_origvars[oxjndx] ;
-    outfmt(logchn,gtxecho,"\n    activating and pivoting %s %s (%d), ",
+    outfmt(dy_logchn,dy_gtxecho,"\n    activating and pivoting %s %s (%d), ",
 	   dy_prtvstat(xjstatus),
 	   consys_nme(orig_sys,'v',oxjndx,TRUE,NULL),oxjndx) ;
-    outfmt(logchn,gtxecho," cbar = %g, %s.",
+    outfmt(dy_logchn,dy_gtxecho," cbar = %g, %s.",
 	   cbarj,(dirj < 0)?"falling":"rising") ; }
 # endif
 /*
@@ -1120,7 +1119,7 @@ static int type2activate (consys_struct *orig_sys,
 # ifndef NDEBUG
   if ((dy_opts->print.varmgmt >= 3) ||
       (dy_opts->print.varmgmt >= 2 && pivresult != dyrOK))
-  { outfmt(logchn,gtxecho,"\n      pivot attempt %s, pivot return code = %s.",
+  { outfmt(dy_logchn,dy_gtxecho,"\n      pivot attempt %s, pivot return code = %s.",
 	   (pivoted == TRUE)?"succeeded":"failed",
 	   dy_prtdyret(pivresult)) ; }
   if (dy_opts->print.dual >= 4)
@@ -1168,19 +1167,19 @@ static int type2activate (consys_struct *orig_sys,
 # ifndef NDEBUG
   if ((dy_opts->print.varmgmt >= 3) ||
       (dy_opts->print.varmgmt >= 2 && duennaresult != dyrOK))
-  { outfmt(logchn,gtxecho,"\n      La Duenna return code %s.",
+  { outfmt(dy_logchn,dy_gtxecho,"\n      La Duenna return code %s.",
 	   dy_prtdyret(duennaresult)) ; }
   if (dy_opts->print.varmgmt >= 1)
-  { if (dy_opts->print.varmgmt >= 2) outfmt(logchn,gtxecho,"\n  ") ;
+  { if (dy_opts->print.varmgmt >= 2) outfmt(dy_logchn,dy_gtxecho,"\n  ") ;
     if (retval == 1)
-    { outfmt(logchn,gtxecho," 1 activation and pivot.") ;
-      outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho," 1 activation and pivot.") ;
+      outfmt(dy_logchn,dy_gtxecho,
 	     "\n    constraint system %s now %d x %d (%d + %d).",
 	     dy_sys->nme,dy_sys->concnt,dy_sys->varcnt,dy_sys->archvcnt,
 	     dy_sys->logvcnt) ; }
     else
     if (retval == 0)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     " activate & pivot failed; reverting to primal.") ; } }
 # endif
 
@@ -1262,10 +1261,10 @@ static int type3activate (consys_struct *orig_sys, double *betai,
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 1)
     { xjstatus = (flags) -dy_origvars[oxjndx] ;
-      outfmt(logchn,gtxecho,"\n    activating and flipping %s %s (%d), ",
+      outfmt(dy_logchn,dy_gtxecho,"\n    activating and flipping %s %s (%d), ",
 	     dy_prtvstat(xjstatus),
 	     consys_nme(orig_sys,'v',oxjndx,TRUE,NULL),oxjndx) ;
-      outfmt(logchn,gtxecho," cbar = %g, %s.",
+      outfmt(dy_logchn,dy_gtxecho," cbar = %g, %s.",
 	     cbarj,(dirj < 0)?"falling":"rising") ; }
 #   endif
 /*
@@ -1363,7 +1362,7 @@ static int type3activate (consys_struct *orig_sys, double *betai,
       {
 #       ifndef NDEBUG
 	if (dy_opts->print.varmgmt >= 3)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n      skipping %s %s (%d).",dy_prtvstat(xkstatus),
 		 consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),oxkndx) ; }
 #       endif
@@ -1391,7 +1390,7 @@ static int type3activate (consys_struct *orig_sys, double *betai,
       {
   #    ifndef NDEBUG
 	if (dy_opts->print.varmgmt >= 3)
-	{ outfmt(logchn,gtxecho,"\n      skipping %s %s (%d), abarik = 0.",
+	{ outfmt(dy_logchn,dy_gtxecho,"\n      skipping %s %s (%d), abarik = 0.",
 		 dy_prtvstat(xkstatus),consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),
 		 oxkndx) ; }
   #     endif
@@ -1543,12 +1542,12 @@ int dy_dualaddvars (consys_struct *orig_sys)
   dy_btran(betai) ;
 # ifndef NDEBUG
   if (dy_opts->print.varmgmt >= 2)
-  { outfmt(logchn,gtxecho,"\n    leaving variable %s (%d) ",
+  { outfmt(dy_logchn,dy_gtxecho,"\n    leaving variable %s (%d) ",
 	   consys_nme(dy_sys,'v',xindx,TRUE,NULL),xindx) ;
     if (diri > 0)
-    { outfmt(logchn,gtxecho,"rising to lb = %g.",dy_sys->vlb[xindx]) ; }
+    { outfmt(dy_logchn,dy_gtxecho,"rising to lb = %g.",dy_sys->vlb[xindx]) ; }
     else
-    { outfmt(logchn,gtxecho,"falling to ub = %g.",dy_sys->vub[xindx]) ; } }
+    { outfmt(dy_logchn,dy_gtxecho,"falling to ub = %g.",dy_sys->vub[xindx]) ; } }
 # endif
 /*
   Now open up a loop to walk the variables in orig_sys and check the inactive
@@ -1588,7 +1587,7 @@ int dy_dualaddvars (consys_struct *orig_sys)
     {
 #     ifndef NDEBUG
       if (dy_opts->print.varmgmt >= 3)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n      skipping %s %s (%d).",dy_prtvstat(xkstatus),
 	       consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),oxkndx) ; }
 #     endif
@@ -1616,7 +1615,7 @@ int dy_dualaddvars (consys_struct *orig_sys)
     {
 #    ifndef NDEBUG
       if (dy_opts->print.varmgmt >= 3)
-      { outfmt(logchn,gtxecho,"\n      skipping %s %s (%d), abarik = 0.",
+      { outfmt(dy_logchn,dy_gtxecho,"\n      skipping %s %s (%d), abarik = 0.",
 	       dy_prtvstat(xkstatus),consys_nme(orig_sys,'v',oxkndx,TRUE,NULL),
 	       oxkndx) ; }
 #     endif
@@ -1669,9 +1668,9 @@ int dy_dualaddvars (consys_struct *orig_sys)
   {
 #   ifndef NDEBUG
     if (dy_opts->print.varmgmt >= 1)
-    { if (dy_opts->print.varmgmt >= 2) outfmt(logchn,gtxecho,"\n    ") ;
-      outfmt(logchn,gtxecho," %d activations.",newcnt) ;
-      outfmt(logchn,gtxecho,"\n    constraint system %s now %d x %d (%d + %d).",
+    { if (dy_opts->print.varmgmt >= 2) outfmt(dy_logchn,dy_gtxecho,"\n    ") ;
+      outfmt(dy_logchn,dy_gtxecho," %d activations.",newcnt) ;
+      outfmt(dy_logchn,dy_gtxecho,"\n    constraint system %s now %d x %d (%d + %d).",
 	     dy_sys->nme,dy_sys->concnt,dy_sys->varcnt,dy_sys->archvcnt,
 	     dy_sys->logvcnt) ; }
 #   endif

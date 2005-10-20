@@ -50,14 +50,15 @@
 
 
 
-#include "errs.h"
-#include "loustd.h"
+#include "dylib_errs.h"
+#include "dylib_std.h"
 #include "consys.h"
 
 #define CONSYS_SCALING_DEBUG 0
 
 #if (CONSYS_SCALING_DEBUG > 0)
-#include "bonsai.h"
+  extern ioid dy_logchn ;
+  extern bool dy_gtxecho ;
 #endif
 
 static char sccsid[] UNUSED = "@(#)consys_scaling.c	4.8	10/15/05" ;
@@ -259,7 +260,7 @@ bool consys_geomscale (consys_struct *consys,
       if (rowscale[i]*rcmax > maxaij) maxaij = rowscale[i]*rcmax ;
       if (rowscale[i]*rcmin < minaij) minaij = rowscale[i]*rcmin ; }
 #   if (CONSYS_SCALING_DEBUG >= 1)
-    outfmt(logchn,gtxecho,
+    outfmt(dy_logchn,dy_gtxecho,
 	   "\n  %s: iter %d: %g <= a<ij> <= %g, geom = %g",
 	   rtnnme,iter,minaij,maxaij,sqrt(maxaij/minaij)) ;
 #   endif
@@ -284,7 +285,7 @@ bool consys_geomscale (consys_struct *consys,
     sqm = sqrt(maxaij/minaij) ;
     eps = (sqm_old-sqm)/sqm_old ;
 #   if (CONSYS_SCALING_DEBUG >= 1)
-    outfmt(logchn,gtxecho,
+    outfmt(dy_logchn,dy_gtxecho,
 	   "\n  %s: iter %d: %g <= a<ij> <= %g, geom = %g, eps = %g",
 	   rtnnme,iter,minaij,maxaij,sqm,eps) ;
 #   endif
@@ -394,7 +395,7 @@ bool consys_equiscale (consys_struct *consys,
   sqm = sqrt(maxaij/minaij) ;
   eps = (sqm_old-sqm)/sqm_old ;
 # if (CONSYS_SCALING_DEBUG >= 1)
-  outfmt(logchn,gtxecho,
+  outfmt(dy_logchn,dy_gtxecho,
 	 "\n  %s: %g <= a<ij> <= %g, geom = %g, eps = %g",
 	 rtnnme,minaij,maxaij,sqm,eps) ;
 # endif

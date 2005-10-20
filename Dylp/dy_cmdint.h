@@ -1,5 +1,5 @@
 /*
-  This file is a portion of the bonsaiG MILP code.
+  This file is a portion of the OsiDylp LP distribution.
 
         Copyright (C) 2004 Lou Hafer
 
@@ -23,40 +23,36 @@
   Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef _BONSAI_H
-#define _BONSAI_H
+#ifndef _DY_CMDINT_H
+#define _DY_CMDINT_H
 
 /*
-  @(#)bonsai.h	3.3	06/22/04
+  @(#)dy_cmdint.h	3.3	06/22/04
 
-  Common definitions used throughout bonsai. Start by hauling in a bunch of
-  standard definitions.
+  Declarations specific to dylp's command interpreter.
 */
 
-#include "loustd.h"
-#include "io.h"
-#include "errs.h"
+#include "dylib_std.h"
+#include "dylib_io.h"
+#include "dylib_errs.h"
 
 /*
-  bonsai.c
+  Globals for log stream and echo control, command input stream and echo
+  control. These must be declared in a main program somewhere.
 
-  Variables which control i/o operations.
+  dy_cmdchn		i/o id for command input
+  dy_cmdecho		controls echoing of command input to stdout
 
-  bonsai_version:	program version
-  bonsai_time:		time the run started
+  dy_logchn		i/o id for log file
+  dy_gtxecho		controls echoing of generated text to stdout
 
-  cmdchn		i/o id for command input
-  logchn		i/o id for the execution log file
-
-  cmdecho		controls echoing of command input to stdout
-  gtxecho		controls echoing of generated text to stdout
+  dylp.h also contains extern declarations for dy_logchn and dy_gtxecho. Turns out
+  that the files related to the command interpreter don't need the main dylp
+  structures, so it's useful to duplicate the extern decl's in both .h files.
 */
 
-extern char *bonsai_version, *bonsai_time ;
-
-extern ioid cmdchn,logchn ;
-
-extern bool cmdecho,gtxecho ;
+extern ioid dy_logchn,dy_cmdchn ;
+extern bool dy_gtxecho,dy_cmdecho ;
 
 
 /*
@@ -87,4 +83,4 @@ typedef enum { cmdOK, cmdHALTERROR, cmdHALTNOERROR } cmd_retval ;
 
 cmd_retval process_cmds(bool silent) ;
 
-#endif	/* _BONSAI_H */
+#endif	/* _DY_CMDINT_H */

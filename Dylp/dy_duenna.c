@@ -31,7 +31,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_duenna.c	4.6	10/15/05" ;
@@ -188,20 +187,20 @@ static bool groombasis ()
 	{
 #	  ifndef NDEBUG
 	  if (print >= 1)
-	  { outfmt(logchn,gtxecho,
+	  { outfmt(dy_logchn,dy_gtxecho,
 		 "\n\tbacking out antidegeneracy at (%s)%d due to accumulated",
 		 dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ;
-	    outfmt(logchn,gtxecho," error;\n\ttrue %s (%d) = %g ;",
+	    outfmt(dy_logchn,dy_gtxecho," error;\n\ttrue %s (%d) = %g ;",
 		   consys_nme(dy_sys,'v',i,FALSE,NULL),i,xi) ;
 	    if (dy_degenset[ipos] > 0)
 	    { if (fabs(xi-vlbi) < fabs(xi-vubi))
-	      { outfmt(logchn,gtxecho," lb = %g ; |x-lb| = %g, tol %g.",
+	      { outfmt(dy_logchn,dy_gtxecho," lb = %g ; |x-lb| = %g, tol %g.",
 		       vlbi,fabs(xi-vlbi),dy_tols->zero*(1+fabs(vlbi))) ; }
 	      else
-	      { outfmt(logchn,gtxecho," ub = %g ; |x-ub| = %g, tol %g.",
+	      { outfmt(dy_logchn,dy_gtxecho," ub = %g ; |x-ub| = %g, tol %g.",
 		       vubi,fabs(xi-vubi),dy_tols->zero*(1+fabs(vubi))) ; } }
 	    else
-	    { outfmt(logchn,gtxecho,"xbasic = %g ; |x-xbasic| = %g, tol %g.",
+	    { outfmt(dy_logchn,dy_gtxecho,"xbasic = %g ; |x-xbasic| = %g, tol %g.",
 		     dy_xbasic[ipos],fabs(xi-dy_xbasic[ipos]),
 		     dy_tols->zero*(1+fabs(xi))) ; } }
   #	  endif
@@ -332,10 +331,10 @@ static bool groombasis ()
       if (statok == TRUE && print >= 3 &&
 	  stati != getflg(newstati,vstatSTATUS))
       { setflg(stati,quali) ;
-	outfmt(logchn,gtxecho,
+	outfmt(dy_logchn,dy_gtxecho,
 	       "\n      status of %s (%d) corrected from %s",
 	       consys_nme(dy_sys,'v',i,TRUE,NULL),i,dy_prtvstat(stati)) ;
-	outfmt(logchn,gtxecho," to %s.",dy_prtvstat(newstati)) ; }
+	outfmt(dy_logchn,dy_gtxecho," to %s.",dy_prtvstat(newstati)) ; }
 #     endif
 
       if (statok == FALSE)
@@ -384,7 +383,7 @@ static bool groombasis ()
 */
 # ifndef NDEBUG
   if (print >= 1 && staterrs > 0)
-  { outfmt(logchn,gtxecho,"\n    (%s)%d: %d major status corrections",
+  { outfmt(dy_logchn,dy_gtxecho,"\n    (%s)%d: %d major status corrections",
 	   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,staterrs) ; }
 # endif
 
@@ -530,21 +529,21 @@ dyret_enum dy_accchk (flags *checks)
       return (dyrFATAL) ; } }
   
   if (print >= 2)
-  { outfmt(logchn,gtxecho,"\n    dy_accchk: ") ;
+  { outfmt(dy_logchn,dy_gtxecho,"\n    dy_accchk: ") ;
     if (flgon(*checks,ladFACTOR))
-    { outfmt(logchn,gtxecho,"factor") ;
-      if (flgon(*checks,ladEXPAND)) outchr(logchn,gtxecho,'*') ;
-      outchr(logchn,gtxecho,' ') ; }
-    if (flgon(*checks,ladPRIMALCHK)) outfmt(logchn,gtxecho,"pchk ") ;
-    if (flgon(*checks,ladDUALCHK)) outfmt(logchn,gtxecho,"dchk ") ;
+    { outfmt(dy_logchn,dy_gtxecho,"factor") ;
+      if (flgon(*checks,ladEXPAND)) outchr(dy_logchn,dy_gtxecho,'*') ;
+      outchr(dy_logchn,dy_gtxecho,' ') ; }
+    if (flgon(*checks,ladPRIMALCHK)) outfmt(dy_logchn,dy_gtxecho,"pchk ") ;
+    if (flgon(*checks,ladDUALCHK)) outfmt(dy_logchn,dy_gtxecho,"dchk ") ;
     if (flgon(*checks,ladPRIMFEAS))
-    { outfmt(logchn,gtxecho,"pfeas") ;
-      if (flgon(*checks,ladPFQUIET)) outchr(logchn,gtxecho,'q') ;
-      outchr(logchn,gtxecho,' ') ; }
+    { outfmt(dy_logchn,dy_gtxecho,"pfeas") ;
+      if (flgon(*checks,ladPFQUIET)) outchr(dy_logchn,dy_gtxecho,'q') ;
+      outchr(dy_logchn,dy_gtxecho,' ') ; }
     if (flgon(*checks,ladDUALFEAS))
-    { outfmt(logchn,gtxecho,"dfeas") ;
-      if (flgon(*checks,ladDFQUIET)) outchr(logchn,gtxecho,'q') ;
-      outchr(logchn,gtxecho,' ') ; } }
+    { outfmt(dy_logchn,dy_gtxecho,"dfeas") ;
+      if (flgon(*checks,ladDFQUIET)) outchr(dy_logchn,dy_gtxecho,'q') ;
+      outchr(dy_logchn,dy_gtxecho,' ') ; } }
   
   if (flgon(*checks,ladDUALCHK))
     dualerrs = (double *) MALLOC((dy_sys->concnt+1)*sizeof(double)) ;
@@ -600,7 +599,7 @@ dyret_enum dy_accchk (flags *checks)
       { if (dy_setpivparms(+1,0) == FALSE) continue ; }
 #     ifndef NDEBUG
       if (print >= 2 || (print >= 1 && results != 0))
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n      [%s] refactoring at (%s)%d, iterf %d, %s ...",
 	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       dy_lp->iterf,dy_prtpivparms(-1)) ; }
@@ -615,13 +614,13 @@ dyret_enum dy_accchk (flags *checks)
 #	ifndef NDEBUG
 	if ((print >= 2) ||
 	    (print >= 1 && flgon(results,ladPRIMALCHK|ladDUALCHK)))
-	  outfmt(logchn,gtxecho,"%sfailed.",(print >= 6)?"\n\t":" ") ;
+	  outfmt(dy_logchn,dy_gtxecho,"%sfailed.",(print >= 6)?"\n\t":" ") ;
 #	endif
 	return (factorresult) ; }
 #     ifndef NDEBUG
       if ((print >= 2) ||
 	  (print >= 1 && flgon(results,ladPRIMALCHK|ladDUALCHK)))
-	outfmt(logchn,gtxecho,"%s%s.",(print >= 6)?"\n\t":" ",
+	outfmt(dy_logchn,dy_gtxecho,"%s%s.",(print >= 6)?"\n\t":" ",
 	       (factorresult == dyrOK)?"done":"patched") ;
 #     endif
       setflg(results,ladFACTOR|factorflags) ; }
@@ -698,33 +697,33 @@ dyret_enum dy_accchk (flags *checks)
 */
     if (print >= 5)
     { if (flgon(*checks,ladPRIMALCHK) && flgoff(results,ladPRIMALCHK))
-      { outfmt(logchn,gtxecho,"\n\tpassed primal accuracy check, ") ;
-	outfmt(logchn,gtxecho,"residual/(1+normb) = %g/%g = %g < %g.",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\tpassed primal accuracy check, ") ;
+	outfmt(dy_logchn,dy_gtxecho,"residual/(1+normb) = %g/%g = %g < %g.",
 	       primalresid,(1+normb),primalresid/(1+normb),dy_tols->pchk) ; }
       if (flgon(*checks,ladDUALCHK) && flgoff(results,ladDUALCHK))
-      { outfmt(logchn,gtxecho,"\n\tpassed dual accuracy check, ") ;
-	outfmt(logchn,gtxecho,"residual/(1+normc) = %g/%g = %g < %g.",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\tpassed dual accuracy check, ") ;
+	outfmt(dy_logchn,dy_gtxecho,"residual/(1+normc) = %g/%g = %g < %g.",
 	       dualresid,(1+normc),dualresid/(1+normc),dy_tols->dchk) ; } }
 
     if (print >= 3)
     { if (flgon(results,ladPRIMALCHK))
       { avgerr = (dy_tols->pchk*(1+normb))/dy_sys->concnt ;
-	outfmt(logchn,gtxecho,
+	outfmt(dy_logchn,dy_gtxecho,
 	       "\n    rows exceeding scaled average tolerance %g:",avgerr) ;
 	for (xkpos = 1 ; xkpos <= dy_sys->concnt ; xkpos++)
 	  if (fabs(primalerrs[xkpos]) > avgerr)
-	  { outfmt(logchn,gtxecho,"\n\trow %s (%d), residual %g.",
+	  { outfmt(dy_logchn,dy_gtxecho,"\n\trow %s (%d), residual %g.",
 		   consys_nme(dy_sys,'c',xkpos,FALSE,NULL),xkpos,
 		   primalerrs[xkpos]) ; } }
 
       if (flgon(results,ladDUALCHK))
       { avgerr = (dy_tols->dchk*(1+normc))/dy_sys->concnt ;
-	outfmt(logchn,gtxecho,
+	outfmt(dy_logchn,dy_gtxecho,
 	       "\n    columns exceeding scaled average tolerance %g:",avgerr) ;
 	for (xkpos = 1 ; xkpos <= dy_sys->concnt ; xkpos++)
 	  if (fabs(dualerrs[xkpos]) > avgerr)
 	  { xkndx = dy_basis[xkpos] ;
-	    outfmt(logchn,gtxecho,"\n\tpos'n %d, column %s (%d), residual %g.",
+	    outfmt(dy_logchn,dy_gtxecho,"\n\tpos'n %d, column %s (%d), residual %g.",
 		   xkpos,consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,
 		   dualerrs[xkpos]) ; } } }
 #   endif
@@ -816,27 +815,27 @@ dyret_enum dy_accchk (flags *checks)
 */
     if (print >= 5)
     { if (flgon(*checks,ladPRIMFEAS) && flgoff(results,ladPRIMFEAS))
-	outfmt(logchn,gtxecho, "\n\tpassed primal feasibility check.") ; }
+	outfmt(dy_logchn,dy_gtxecho, "\n\tpassed primal feasibility check.") ; }
 
     if (print >= 3)
     { if (flgon(results,ladPRIMFEAS))
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n    (%s)%d: %d variables primal infeasible, pinfeas = %g:",
 	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       pfeascnt,pinfeas) ;
 	for (xkndx = 1 ; xkndx <= dy_sys->varcnt ; xkndx++)
 	  if (!withinbnds(dy_sys->vlb[xkndx],dy_x[xkndx],dy_sys->vub[xkndx]))
-	  { outfmt(logchn,gtxecho,
+	  { outfmt(dy_logchn,dy_gtxecho,
 		   "\n\t%s (%d) = %g, status %s, lb = %g, ub = %g,",
 		   consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,dy_x[xkndx],
 		   dy_prtvstat(dy_status[xkndx]),dy_sys->vlb[xkndx],
 		   dy_sys->vub[xkndx]) ;
 	    if (dy_x[xkndx] < dy_sys->vlb[xkndx])
-	      outfmt(logchn,gtxecho,"lb-x = %g, tol = %g",
+	      outfmt(dy_logchn,dy_gtxecho,"lb-x = %g, tol = %g",
 		     dy_sys->vlb[xkndx]-dy_x[xkndx],
 		     dy_tols->pfeas*(1+fabs(dy_sys->vlb[xkndx]))) ;
 	    else
-	      outfmt(logchn,gtxecho,"x-ub = %g, tol = %g",
+	      outfmt(dy_logchn,dy_gtxecho,"x-ub = %g, tol = %g",
 		     dy_x[xkndx]-dy_sys->vub[xkndx],
 		     dy_tols->pfeas*(1+fabs(dy_sys->vub[xkndx]))) ; } } }
 #   endif
@@ -908,18 +907,18 @@ dyret_enum dy_accchk (flags *checks)
 */
     if (print >= 5)
     { if (flgon(*checks,ladDUALFEAS) && flgoff(results,ladDUALFEAS))
-	outfmt(logchn,gtxecho,"\n\tpassed dual feasibility check.") ; }
+	outfmt(dy_logchn,dy_gtxecho,"\n\tpassed dual feasibility check.") ; }
 
     if (print >= 3)
     { if (flgon(results,ladDUALFEAS))
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	 "\n    (%s)%d: %d variables dual infeasible, dinfeas = %g:",
 	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       dfeascnt,dinfeas) ;
 	for (xkndx = 1 ; xkndx <= dy_sys->varcnt ; xkndx++)
 	{ if (dfeaserrs[xkndx] != 0.0)
 	  { vstat = dy_status[xkndx] ;
-	    outfmt(logchn,gtxecho,
+	    outfmt(dy_logchn,dy_gtxecho,
 		   "\n\t%s (%d) = %g, status %s, cbarj = %g, tol %g.",
 		   consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,
 		   (vstat == vstatNBLB)?dy_sys->vlb[xkndx]:dy_sys->vub[xkndx],
@@ -1191,7 +1190,7 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
     { setflg(checkflags,ladFACTOR) ;
 #     ifndef NDEBUG
       if (print >= 1)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n  [%s] refactor requested at (%s)%d, iterf %d.",
 	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       dy_lp->iterf) ; }
@@ -1209,7 +1208,7 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
 #     endif
 #     ifndef NDEBUG
       if (print >= 1)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n  [%s] loss of %s feasibility at iteration %d.",
 	       dy_sys->nme,(pivresult == dyrLOSTPFEAS)?"primal":"dual",
 	       dy_lp->tot.iters) ; }
@@ -1220,9 +1219,9 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
     { setflg(checkflags,ladFACTOR) ;
 #     ifndef NDEBUG
       if (print >= 1)
-      { outfmt(logchn,gtxecho,"\n  [%s](%s)%d: pivot attempt produced ",
+      { outfmt(dy_logchn,dy_gtxecho,"\n  [%s](%s)%d: pivot attempt produced ",
 	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ;
-	outfmt(logchn,gtxecho,"singular basis; attempting recovery.") ; }
+	outfmt(dy_logchn,dy_gtxecho,"singular basis; attempting recovery.") ; }
 #     endif
       if (dy_lp->phase == dyDUAL)
 	retval = dy_addtopivrej(xindx,dyrSINGULAR,0,0) ;
@@ -1237,11 +1236,11 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
 #     ifndef NDEBUG
       if (print >= 1)
       { if (flgoff(checkflags,ladEXPAND))
-	  outfmt(logchn,gtxecho,
+	  outfmt(dy_logchn,dy_gtxecho,
 		 "\n  [%s]: (%s)%d: attempting to compress basis.",dy_sys->nme,
 		 dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ;
 	else
-	  outfmt(logchn,gtxecho,
+	  outfmt(dy_logchn,dy_gtxecho,
 		 "\n  [%s]: (%s)%d: forcing basis expansion.",dy_sys->nme,
 		 dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
 #     endif
@@ -1289,17 +1288,17 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
     dy_checkpivtol() ;
 #   ifndef NDEBUG
     if (print >= 2)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    [%s] (%s)%d: scheduled refactor, iterf %d, interval %d, ",
 	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	     dy_lp->iterf,dy_opts->factor) ;
       if (dy_lp->phase == dyDUAL)
-      { outfmt(logchn,gtxecho,"yb = %g.",dy_calcdualobj()) ; }
+      { outfmt(dy_logchn,dy_gtxecho,"yb = %g.",dy_calcdualobj()) ; }
       else
       if (dy_lp->phase == dyPRIMAL1)
-      { outfmt(logchn,gtxecho,"infeas = %g.",dy_calcpinfeas()) ; }
+      { outfmt(dy_logchn,dy_gtxecho,"infeas = %g.",dy_calcpinfeas()) ; }
       else
-      { outfmt(logchn,gtxecho,"cx = %g.",dy_calcobj()) ; } }
+      { outfmt(dy_logchn,dy_gtxecho,"cx = %g.",dy_calcobj()) ; } }
 #   endif
   }
   if ((dy_lp->iterf%dy_opts->check == 0 && dy_lp->iterf != 0) ||
@@ -1314,7 +1313,7 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
     { setflg(checkflags,ladPRIMALCHK|ladDUALCHK|ladDUALFEAS|ladDFQUIET) ; }
 #   ifndef NDEBUG
     if (dy_lp->iterf%dy_opts->check == 0 && dy_lp->iterf != 0 && print >= 2)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    [%s] (%s)%d: scheduled check, iterf %d, interval %d.",
 	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	     dy_lp->iterf,dy_opts->check) ; }
@@ -1354,10 +1353,10 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
       { retval = dyrRESELECT ;
 #       ifndef NDEBUG
 	if (print >= 1)
-	{ outfmt(logchn,gtxecho,"\n    [%s] (%s)%d: ",
+	{ outfmt(dy_logchn,dy_gtxecho,"\n    [%s] (%s)%d: ",
 		 dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
 		 dy_lp->tot.iters) ;
-	  outfmt(logchn,gtxecho,"forcing reselect after basis patch.") ; }
+	  outfmt(dy_logchn,dy_gtxecho,"forcing reselect after basis patch.") ; }
 #       endif
       }
       else
@@ -1377,14 +1376,14 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
 	  { retval = dyrRESELECT ; } }
 #	ifndef NDEBUG
 	if (print >= 1 && retval == dyrRESELECT)
-	{ outfmt(logchn,gtxecho,"\n    [%s] (%s)%d: ",
+	{ outfmt(dy_logchn,dy_gtxecho,"\n    [%s] (%s)%d: ",
 		 dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
 		 dy_lp->tot.iters) ;
-	  outfmt(logchn,gtxecho,"candidate %s (%d) no longer suitable; ",
+	  outfmt(dy_logchn,dy_gtxecho,"candidate %s (%d) no longer suitable; ",
 		 consys_nme(dy_sys,'v',
 			    (dy_lp->phase == dyDUAL)?xicand:xjcand,FALSE,NULL),
 			    (dy_lp->phase == dyDUAL)?xicand:xjcand) ;
-	  outfmt(logchn,gtxecho,"forcing reselect after refactor.") ; }
+	  outfmt(dy_logchn,dy_gtxecho,"forcing reselect after refactor.") ; }
 #       endif
 	} }
 /*

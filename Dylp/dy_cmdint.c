@@ -29,22 +29,22 @@
   processing the options file, but this is standard boilerplate code.
 */
 
-#include "strrtns.h"
-#include "bonsai.h"
-#include "keytab.h"
+#include "dylib_strrtns.h"
+#include "dy_cmdint.h"
+#include "dylib_keytab.h"
 
 static char sccsid[] UNUSED = "@(#)cmdint.c	3.12	11/11/04" ;
 
 /*
   MAXCMDFILES is pretty much arbitrary. The i/o package enforces the system
-  limit. All we need here is something reasonable for sizing the cmdchns
+  limit. All we need here is something reasonable for sizing the dy_cmdchns
   array.
 */
 
 #define MAXCMDFILES 16
 
 /*
-  cmdchns keeps track of the i/o id and echo status for each command file
+  dy_cmdchns keeps track of the i/o id and echo status for each command file
   that's open. level is the current nesting level.
 */
 
@@ -53,7 +53,7 @@ static bool prompt ;
 static struct { ioid chn ;
 		bool cecho ;
 		bool gecho ;
-		bool prompt ; } cmdchns[MAXCMDFILES-1] ;
+		bool prompt ; } dy_cmdchns[MAXCMDFILES-1] ;
 
 /*
   User command table definitions. It is important that the commands be in 
@@ -178,8 +178,8 @@ static cmd_retval docmd (lex_struct *txt)
   Look up the command in the command table. Return code of -1 means we can't
   find the string, -2 that it's ambiguous.
 */
-  outfmt(logchn,cmdecho,txt->string) ;
-  flushio(logchn,cmdecho) ;
+  outfmt(dy_logchn,dy_cmdecho,txt->string) ;
+  flushio(dy_logchn,dy_cmdecho) ;
   cmd = ambig(txt->string,usercmds,NUMUSERCMDS) ;
   if (cmd < 0) 
   { if (cmd < -1)
@@ -192,9 +192,9 @@ static cmd_retval docmd (lex_struct *txt)
   the command, then revert to line-oriented mode to remove any trailing junk.
 */
   keywd = STRALLOC(txt->string) ;
-  (void) setmode(cmdchn,'f') ;
+  (void) setmode(dy_cmdchn,'f') ;
   retval = cmdHALTERROR ;
-  (void) setmode(cmdchn,'f') ;
+  (void) setmode(dy_cmdchn,'f') ;
   switch (cmd)
   { case LPPRINT_NDX:
     { retval = dy_printopt(keywd) ;
@@ -235,25 +235,25 @@ static cmd_retval docmd (lex_struct *txt)
       break ; }
 #   endif
     case HELP_NDX:
-    { outfmt(logchn,gtxecho,"\n\tHeh heh heh.\t\tSurely you jest?\n") ;
+    { outfmt(dy_logchn,dy_gtxecho,"\n\tHeh heh heh.\t\tSurely you jest?\n") ;
       retval = cmdOK ;
       break ; }
     case UNIMP_NDX:
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\nThe command \"%s\" is unimplemented in this configuration.\n",
 	     keywd) ;
       retval = cmdOK ;
       break ; } }
   STRFREE(keywd) ;
-  (void) setmode(cmdchn,'l') ;
+  (void) setmode(dy_cmdchn,'l') ;
 /*
   Check what happened, and clean up if necessary. Cleanup consists of
   scanning off whatever is left on the command line and echoing it.
 */
   if (retval != cmdHALTERROR)
-  { lex =  scanstr(cmdchn,LCQS,0,'\0','\n') ;
+  { lex =  scanstr(dy_cmdchn,LCQS,0,'\0','\n') ;
     if (!(lex->class == LCNIL || lex->class == LCEOF || lex->class == LCERR))
-      outfmt(logchn,cmdecho," %s",lex->string) ;
+      outfmt(dy_logchn,dy_cmdecho," %s",lex->string) ;
     if (lex->class == LCERR) retval = cmdHALTERROR ; }
   
   return (retval) ; }
@@ -280,41 +280,41 @@ static cmd_retval indcmd (bool silent)
 /*
   Get the file name.
 */
-  file = scanstr(cmdchn,LCQS,0,'"','"') ;
+  file = scanstr(dy_cmdchn,LCQS,0,'"','"') ;
   if (file->class != LCQS)
   { errmsg(236,rtnnme,"file name","parameter","@") ;
     return (cmdHALTERROR) ; }
 /*
   Stash the old command channel, then try to open the new file.
 */
-  cmdchns[level].chn = cmdchn ;
-  cmdchns[level].cecho = cmdecho ;
-  cmdchns[level].gecho = gtxecho ;
-  cmdchns[level].prompt = prompt ;
-  cmdchn = openfile(file->string,"r") ;
-  if (cmdchn < 0)
-  { cmdchn = cmdchns[level].chn ;
+  dy_cmdchns[level].chn = dy_cmdchn ;
+  dy_cmdchns[level].cecho = dy_cmdecho ;
+  dy_cmdchns[level].gecho = dy_gtxecho ;
+  dy_cmdchns[level].prompt = prompt ;
+  dy_cmdchn = openfile(file->string,"r") ;
+  if (dy_cmdchn < 0)
+  { dy_cmdchn = dy_cmdchns[level].chn ;
     return (cmdHALTERROR) ; }
-  (void) setmode(cmdchn,'l') ;
+  (void) setmode(dy_cmdchn,'l') ;
 /*
   Acknowledge that the file is successfully opened.
 */
-  outfmt(logchn,cmdecho," \"%s\"\n",file->string) ;
-  outfmt(logchn,gtxecho,"\tcommand source file now %s\n",file->string) ;
+  outfmt(dy_logchn,dy_cmdecho," \"%s\"\n",file->string) ;
+  outfmt(dy_logchn,dy_gtxecho,"\tcommand source file now %s\n",file->string) ;
 /*
-  Set level and echo control variables. gtxecho stays the same, so no action
-  for it. We have to check cmdecho and prompt, in case the input has switched
+  Set level and echo control variables. dy_gtxecho stays the same, so no action
+  for it. We have to check dy_cmdecho and prompt, in case the input has switched
   to ttyin.
 */
   level++ ;
-  if (ttyq(cmdchn) == TRUE || silent == FALSE)
+  if (ttyq(dy_cmdchn) == TRUE || silent == FALSE)
     prompt = TRUE ;
   else
     prompt = FALSE ;
-  if (ttyq(cmdchn) == FALSE && silent == FALSE)
-    cmdecho = TRUE ;
+  if (ttyq(dy_cmdchn) == FALSE && silent == FALSE)
+    dy_cmdecho = TRUE ;
   else
-    cmdecho = FALSE ;
+    dy_cmdecho = FALSE ;
 
   return (cmdOK) ; }
 
@@ -351,9 +351,9 @@ static cmd_retval dobuiltin (lex_struct *txt, bool silent)
   if (*txt->string == '\n') return cmdOK ;
 
   if (*txt->string == '!')
-  { outchr(logchn,cmdecho,'!') ;
-    lex = scanstr(cmdchn,LCQS,0,'\0','\n') ;
-    if (lex->class != LCNIL) outfmt(logchn,gtxecho," %s",lex->string) ;
+  { outchr(dy_logchn,dy_cmdecho,'!') ;
+    lex = scanstr(dy_cmdchn,LCQS,0,'\0','\n') ;
+    if (lex->class != LCNIL) outfmt(dy_logchn,dy_gtxecho," %s",lex->string) ;
     return (cmdOK) ; }
 
   if (*txt->string != '@')
@@ -372,8 +372,8 @@ static cmd_retval dobuiltin (lex_struct *txt, bool silent)
 cmd_retval process_cmds (bool silent)
 
 /*
-  This routine is a driver routine for processing a command file. cmdchn and
-  logchn must be valid before process_cmds is called.
+  This routine is a driver routine for processing a command file. dy_cmdchn and
+  dy_logchn must be valid before process_cmds is called.
 
   Parameters:
     silent: TRUE if echoing of commands & responses to ttyout should be
@@ -398,22 +398,22 @@ cmd_retval process_cmds (bool silent)
 */
   level = 0 ;
   retval = cmdOK ;
-  if (ttyq(cmdchn) == TRUE || silent == FALSE)
+  if (ttyq(dy_cmdchn) == TRUE || silent == FALSE)
     prompt = TRUE ;
   else
     prompt = FALSE ;
-  if (ttyq(cmdchn) == FALSE && silent == FALSE)
-    cmdecho = TRUE ;
+  if (ttyq(dy_cmdchn) == FALSE && silent == FALSE)
+    dy_cmdecho = TRUE ;
   else
-    cmdecho = FALSE ;
-  gtxecho = !silent ;
+    dy_cmdecho = FALSE ;
+  dy_gtxecho = !silent ;
 /*
   Open the command interpretation loop. First action is to prompt for a
   command. Remember that a return value of cmdOK from a command execution
   is interpreted to mean carry on with command interpretation.
 */
   while (retval == cmdOK)
-  { outfmt(logchn,prompt,"\n(%d)%% ",level) ;
+  { outfmt(dy_logchn,prompt,"\n(%d)%% ",level) ;
     retval = cmdHALTERROR ;
 /*
   Read in the first lexeme of the response and act accordingly. With any luck,
@@ -423,7 +423,7 @@ cmd_retval process_cmds (bool silent)
   level up. If we're at level 0, return. All other possibilities are errors of
   one sort or another.
 */
-    txt = scanlex(cmdchn) ;
+    txt = scanlex(dy_cmdchn) ;
     switch (txt->class)
     { case LCID:
       { retval = docmd(txt) ;
@@ -435,12 +435,12 @@ cmd_retval process_cmds (bool silent)
       { if (level == 0)
 	{ retval = cmdHALTNOERROR ; }
 	else
-	{ if (closefile(cmdchn) == FALSE) warn(232,rtnnme,idtopath(cmdchn)) ;
-	  cmdchn = cmdchns[--level].chn ;
-	  outfmt(logchn,gtxecho,"\n\treturning to command source file %s\n",
-		 idtopath(cmdchn)) ;
-	  cmdecho = cmdchns[level].cecho ;
-	  gtxecho = cmdchns[level].gecho ;
+	{ if (closefile(dy_cmdchn) == FALSE) warn(232,rtnnme,idtopath(dy_cmdchn)) ;
+	  dy_cmdchn = dy_cmdchns[--level].chn ;
+	  outfmt(dy_logchn,dy_gtxecho,"\n\treturning to command source file %s\n",
+		 idtopath(dy_cmdchn)) ;
+	  dy_cmdecho = dy_cmdchns[level].cecho ;
+	  dy_gtxecho = dy_cmdchns[level].gecho ;
 	  retval = cmdOK ; }
 	break ; }
       case LCERR:
@@ -448,7 +448,7 @@ cmd_retval process_cmds (bool silent)
       default: /* LCNIL, LCNUM, LCFS, LCQS */
       { errmsg(230,rtnnme,(txt->string == NULL)?"<<nil>>":txt->string) ;
 	break ; } }
-    flushio(logchn,cmdecho) ; }
+    flushio(dy_logchn,dy_cmdecho) ; }
 /*
   Command interpretation has been stopped. Fix up the return code and return.
 */

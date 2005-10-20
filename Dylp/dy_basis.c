@@ -33,7 +33,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 #include "glpinv.h"
 
@@ -219,7 +218,7 @@ bool dy_setpivparms (int curdelta, int mindelta)
 #     ifndef NDEBUG
       if ((dy_opts->print.basis >= 3) ||
           (dy_opts->print.basis >= 2 && mindelta > 0))
-      { outfmt(logchn,gtxecho,"\n\t    min. pivot ratio unchanged at %s (%d)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\t    min. pivot ratio unchanged at %s (%d)",
 	       dy_prtpivparms(minpivlevel),minpivlevel) ; }
 #     endif
     }
@@ -235,7 +234,7 @@ bool dy_setpivparms (int curdelta, int mindelta)
 	curdelta = maxx(curdelta,(minpivlevel-pivlevel)) ;
 #     ifndef NDEBUG
       if (dy_opts->print.basis >= 2)
-      { outfmt(logchn,gtxecho,"\n\t    setting min. pivot ratio to %s (%d)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\t    setting min. pivot ratio to %s (%d)",
 	       dy_prtpivparms(minpivlevel),minpivlevel) ; }
 #     endif
     } }
@@ -249,7 +248,7 @@ bool dy_setpivparms (int curdelta, int mindelta)
 #     ifndef NDEBUG
       if ((dy_opts->print.basis >= 3) ||
           (dy_opts->print.basis >= 2 && mindelta > 0))
-      { outfmt(logchn,gtxecho,"\n\t    cur. pivot ratio unchanged at %s (%d)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\t    cur. pivot ratio unchanged at %s (%d)",
 	       dy_prtpivparms(-1),pivlevel) ; }
 #     endif
     }
@@ -265,7 +264,7 @@ bool dy_setpivparms (int curdelta, int mindelta)
       luf_basis->luf->piv_lim =  pivtols[pivlevel].look ;
 #     ifndef NDEBUG
       if (dy_opts->print.basis >= 2)
-      { outfmt(logchn,gtxecho,"\n\t    setting cur. pivot ratio to %s (%d)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\t    setting cur. pivot ratio to %s (%d)",
 	       dy_prtpivparms(-1),pivlevel) ; }
 #     endif
     } }
@@ -312,7 +311,7 @@ double dy_chkpiv (double abarij, double maxabar)
 # ifndef NDEBUG
   if (abspiv/stable < 1.0)
   { if (dy_opts->print.pivoting >= 1)
-      outfmt(logchn,gtxecho,
+      outfmt(dy_logchn,dy_gtxecho,
 	     "\n%s: rejecting pivot = %g < %g; column max = %g, ratio = %g.",
 	     rtnnme,abarij,stable,maxabar,ratio) ; }
 # endif
@@ -369,7 +368,7 @@ void dy_initbasis (int concnt, int factor, double zero_tol)
   luf_basis->luf->new_sva = 3*sva_size ;
 # ifndef NDEBUG
   if (dy_opts != NULL && dy_opts->print.basis >= 2)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\ninitbasis: %s(%d) basis capacity %d, piv lim %d.",
 	   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	   luf_basis->luf->n,luf_basis->hh_max) ; }
@@ -380,7 +379,7 @@ void dy_initbasis (int concnt, int factor, double zero_tol)
   (before dy_opts is initialised), but it's sometimes useful when debugging.
   
   else
-  { outfmt(logchn,TRUE,
+  { outfmt(dy_logchn,TRUE,
 	   "\ninitbasis: EXTERN(0) basis capacity %d, piv lim %d.",
 	   luf_basis->luf->n,luf_basis->hh_max) ; }
 */
@@ -474,10 +473,10 @@ static void luf_adjustsize (void)
     luf_basis->luf->max_gro = max_gro ;
 #   ifndef NDEBUG
     if (dy_opts->print.basis >= 2)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    increased basis capacity from %d to %d constraints",
 	     oldcapacity,luf_basis->m) ;
-      outfmt(logchn,gtxecho,", piv lim %d.",luf_basis->hh_max) ; }
+      outfmt(dy_logchn,dy_gtxecho,", piv lim %d.",luf_basis->hh_max) ; }
 #   endif
   }
 /*
@@ -621,7 +620,7 @@ static void adjust_basis (int *p_patchcnt, patch_struct **p_patches)
     patches[pndx].in = i ;
 #   ifndef NDEBUG
     if (dy_opts->print.basis >= 3)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n      pos'n %d (%s (%d)) replacing %s (%d) with %s (%d).",
 	     k,consys_nme(dy_sys,'c',k,FALSE,NULL),k,
 	     consys_nme(dy_sys,'v',j,FALSE,NULL),j,
@@ -818,12 +817,12 @@ static dyret_enum adjust_therest (int patchcnt, patch_struct *patches)
 	return (dyrFATAL) ; } }
 #   ifndef NDEBUG
     if (dy_opts->print.basis >= 3)
-    { outfmt(logchn,gtxecho,"\n\t%s (%d) had status %s, value %g, ",
+    { outfmt(dy_logchn,dy_gtxecho,"\n\t%s (%d) had status %s, value %g, ",
 	     consys_nme(dy_sys,'v',i,FALSE,NULL),i,dy_prtvstat(stati),vali) ;
-      outfmt(logchn,gtxecho,"now status %s.",dy_prtvstat(dy_status[i])) ;
-      outfmt(logchn,gtxecho,"\n\t%s (%d) had status %s, value %g, ",
+      outfmt(dy_logchn,dy_gtxecho,"now status %s.",dy_prtvstat(dy_status[i])) ;
+      outfmt(dy_logchn,dy_gtxecho,"\n\t%s (%d) had status %s, value %g, ",
 	     consys_nme(dy_sys,'v',j,FALSE,NULL),j,dy_prtvstat(statj),valj) ;
-      outfmt(logchn,gtxecho,"now status %s, value %g.",
+      outfmt(dy_logchn,dy_gtxecho,"now status %s, value %g.",
 	     dy_prtvstat(dy_status[j]),dy_x[j]) ; }
 #   endif
   }
@@ -910,9 +909,9 @@ static dyret_enum adjust_therest (int patchcnt, patch_struct *patches)
 	  dy_x[j] = vlb[j] ; } }
 #     ifndef NDEBUG
       if (dy_opts->print.basis >= 3 && dy_status[j] != statj)
-      { outfmt(logchn,gtxecho,"\n\tchanged status of %s (%d) from %s to",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\tchanged status of %s (%d) from %s to",
 	       consys_nme(dy_sys,'v',j,FALSE,NULL),j,dy_prtvstat(statj)) ;
-	outfmt(logchn,gtxecho," %s to maintain dual feasibility; cbar = %g.",
+	outfmt(dy_logchn,dy_gtxecho," %s to maintain dual feasibility; cbar = %g.",
 	       dy_prtvstat(dy_status[j]),cbarj) ; }
 #     endif
     } }
@@ -1109,7 +1108,7 @@ dyret_enum dy_factor (flags *calcflgs)
 #   ifndef NDEBUG
     if ((retval == 0 && dy_opts->print.basis >= 4) ||
 	(retval > 0 && dy_opts->print.basis >= 2))
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    (%s)%d: factored with %s, basis stability %g.",
 	     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	     dy_prtpivparms(-1),luf_basis->min_vrratio) ; }
@@ -1145,7 +1144,7 @@ dyret_enum dy_factor (flags *calcflgs)
 	  return (dyrSINGULAR) ; }
 #	ifndef NDEBUG
 	if (dy_opts->print.basis >= 2)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n    (%s)%d: attempting to patch singular basis.",
 		 dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
 #	endif
@@ -1156,11 +1155,11 @@ dyret_enum dy_factor (flags *calcflgs)
       { retcode = dyrNUMERIC ;
 #	ifndef NDEBUG
 	if (dy_opts->print.basis >= 2)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n    (%s)%d: factor failed at %s, numerical instability,",
 		 dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 		 dy_prtpivparms(-1)) ;
-	  outfmt(logchn,gtxecho," max = %g, gro = %g.",
+	  outfmt(dy_logchn,dy_gtxecho," max = %g, gro = %g.",
 		 luf_basis->luf->big_v,luf_basis->luf->max_gro) ; }
 # 	endif
 	if (dy_setpivparms(+1,0) == FALSE)
@@ -1169,7 +1168,7 @@ dyret_enum dy_factor (flags *calcflgs)
 	  return (retcode) ; }
 #	ifndef NDEBUG
 	if (dy_opts->print.basis >= 2)
-	{ outfmt(logchn,gtxecho,"\n\ttrying again with %s.",
+	{ outfmt(dy_logchn,dy_gtxecho,"\n\ttrying again with %s.",
 		 dy_prtpivparms(-1)) ; }
 #	endif
 	break ; }
@@ -1194,7 +1193,7 @@ dyret_enum dy_factor (flags *calcflgs)
       return (dyrFATAL) ; }
 #   ifndef NDEBUG
     if (dy_opts->print.basis >= 1)
-    { outfmt(logchn,gtxecho,"\n\t[%s]: compensated for basis correction.",
+    { outfmt(dy_logchn,dy_gtxecho,"\n\t[%s]: compensated for basis correction.",
 	     dy_sys->nme) ; }
 #   endif
     if (!(dy_lp->phase == dyINIT))
@@ -1260,7 +1259,7 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
 # ifndef NDEBUG
   if ((retval == 0 && dy_opts->print.basis >= 5) ||
       (retval > 0 && dy_opts->print.basis >= 3))
-  { outfmt(logchn,gtxecho,"\n    %s(%d) stability after basis pivot %g.",
+  { outfmt(dy_logchn,dy_gtxecho,"\n    %s(%d) stability after basis pivot %g.",
            dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	   luf_basis->min_vrratio) ; }
 # endif
@@ -1273,7 +1272,7 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
     { retcode = dyrSINGULAR ;
 #     ifndef NDEBUG
       if (dy_opts->print.basis >= 2)
-      { outfmt(logchn,gtxecho,"\n    %s(%d) singular basis (%s) after pivot.",
+      { outfmt(dy_logchn,dy_gtxecho,"\n    %s(%d) singular basis (%s) after pivot.",
 	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       (retval == 1)?"structural":"numeric") ; }
 #     endif
@@ -1283,7 +1282,7 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
     { retcode = dyrBSPACE ;
 #     ifndef NDEBUG
       if (dy_opts->print.basis >= 2)
-      { outfmt(logchn,gtxecho,"\n    %s(%d) out of space (%s)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n    %s(%d) out of space (%s)",
 	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       (retval == 3)?"eta matrix limit":"sparse vector area") ; }
 #     endif

@@ -29,7 +29,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dylp_io.c	4.5	11/06/04" ;
@@ -385,48 +384,48 @@ void dy_logpivot (dyret_enum result, int xjndx, int indir, double cbarj,
     { resstr = "(huh?)" ;
       result = dyrINV ;
       break ; } }
-  outfmt(logchn,gtxecho,"\n%s%6d %-7s ",dy_prtlpphase(dy_lp->phase,TRUE),
+  outfmt(dy_logchn,dy_gtxecho,"\n%s%6d %-7s ",dy_prtlpphase(dy_lp->phase,TRUE),
 	 dy_lp->tot.iters+1,resstr) ;
 
   if (result == dyrINV) return ;
 
   if (validin == TRUE && xjndx > 0)
-  { outfmt(logchn,gtxecho,"In: %s (%d) %s cbarj = %g ;",
+  { outfmt(dy_logchn,dy_gtxecho,"In: %s (%d) %s cbarj = %g ;",
 	   consys_nme(dy_sys,'v',xjndx,FALSE,NULL),xjndx,
 	   (indir == 1)?"inc":"dec",cbarj) ; }
   else
-  { outfmt(logchn,gtxecho,"In: <not selected>") ; }
+  { outfmt(dy_logchn,dy_gtxecho,"In: <not selected>") ; }
   
   if (result == dyrFATAL) return ;
 
   if (result == dyrLOSTPFEAS)
-  { outfmt(logchn,gtxecho," Infeas: %s (%d) = %g, lb = %g, ub = %g",
+  { outfmt(dy_logchn,dy_gtxecho," Infeas: %s (%d) = %g, lb = %g, ub = %g",
 	   consys_nme(dy_sys,'v',xindx,FALSE,NULL),xindx,
 	   dy_xbasic[dy_var2basis[xindx]],
 	   dy_sys->vlb[xindx],dy_sys->vub[xindx]) ;
     return ; }
 
   if (validout == TRUE && xindx > 0)
-  { outfmt(logchn,gtxecho," Out: %s (%d) %s",
+  { outfmt(dy_logchn,dy_gtxecho," Out: %s (%d) %s",
 	   consys_nme(dy_sys,'v',xindx,FALSE,NULL),xindx,
 	   (outdir == 1)?"inc":"dec") ; }
   else
-  { outfmt(logchn,gtxecho," Out: <not selected>") ; }
+  { outfmt(dy_logchn,dy_gtxecho," Out: <not selected>") ; }
   
   if (validin == TRUE && validout == TRUE)
-  { outfmt(logchn,gtxecho,", abarij = %g, delta = %g",
+  { outfmt(dy_logchn,dy_gtxecho,", abarij = %g, delta = %g",
 	   abarij,(indir == 1)?delta:-delta) ; }
 
   if (dy_lp->phase == dyDUAL)
-  { outfmt(logchn,gtxecho,", yb = %g.",dy_calcdualobj()) ; }
+  { outfmt(dy_logchn,dy_gtxecho,", yb = %g.",dy_calcdualobj()) ; }
   else
   if (dy_lp->phase == dyPRIMAL1)
-  { outfmt(logchn,gtxecho,", infeas = %g.",dy_calcpinfeas()) ; }
+  { outfmt(dy_logchn,dy_gtxecho,", infeas = %g.",dy_calcpinfeas()) ; }
   else
   if (dy_lp->phase == dyPRIMAL2)
-  { outfmt(logchn,gtxecho,", cx = %g.",dy_calcobj()) ; }
+  { outfmt(dy_logchn,dy_gtxecho,", cx = %g.",dy_calcobj()) ; }
   else
-  { outchr(logchn,gtxecho,'.') ; }
+  { outchr(dy_logchn,dy_gtxecho,'.') ; }
 
   return ; }
 
@@ -564,7 +563,7 @@ bool dy_dumpcompact (ioid chn, bool echo, lpprob_struct *soln, bool nbzeros)
 	     dy_prtvstat(soln->status[vndx]),val) ; }
   
   if (nononbasic == TRUE)
-    outfmt(logchn,gtxecho,"\n\nNo nonbasic architectural variables.\n") ;
+    outfmt(dy_logchn,dy_gtxecho,"\n\nNo nonbasic architectural variables.\n") ;
   else
     outchr(chn,echo,'\n') ;
 

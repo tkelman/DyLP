@@ -66,7 +66,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_hotstart.c	4.5	11/06/04" ;
@@ -100,7 +99,7 @@ void dy_setfinalstatus (void)
 
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 2)
-    outfmt(logchn,gtxecho,"\n\testablishing final status ...") ;
+    outfmt(dy_logchn,dy_gtxecho,"\n\testablishing final status ...") ;
 # endif
 
   dy_lp->infeas = 0.0 ;
@@ -155,21 +154,21 @@ void dy_setfinalstatus (void)
 	break ; } }
 #   ifndef NDEBUG
     if (dy_opts->print.crash >= 4)
-    { outfmt(logchn,gtxecho,"\n\t  %s (%d) %s",
+    { outfmt(dy_logchn,dy_gtxecho,"\n\t  %s (%d) %s",
 	     consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,
 	     dy_prtvstat(dy_status[xkndx])) ;
       if (lbk > -dy_tols->inf)
-	outfmt(logchn,gtxecho,", lb = %g",lbk) ;
-      outfmt(logchn,gtxecho,", val = %g",xk) ;
+	outfmt(dy_logchn,dy_gtxecho,", lb = %g",lbk) ;
+      outfmt(dy_logchn,dy_gtxecho,", val = %g",xk) ;
       if (ubk < dy_tols->inf)
-	outfmt(logchn,gtxecho,", ub = %g",ubk) ;
+	outfmt(dy_logchn,dy_gtxecho,", ub = %g",ubk) ;
       if (flgon(dy_status[xkndx],vstatBLLB|vstatBUUB))
-      { outfmt(logchn,gtxecho,", infeasibility = ") ;
+      { outfmt(dy_logchn,dy_gtxecho,", infeasibility = ") ;
 	if (flgon(dy_status[xkndx],vstatBLLB))
-	  outfmt(logchn,gtxecho,"%g",lbk-xk) ;
+	  outfmt(dy_logchn,dy_gtxecho,"%g",lbk-xk) ;
 	else
-	  outfmt(logchn,gtxecho,"%g",xk-ubk) ; }
-      outchr(logchn,gtxecho,'.') ; }
+	  outfmt(dy_logchn,dy_gtxecho,"%g",xk-ubk) ; }
+      outchr(dy_logchn,dy_gtxecho,'.') ; }
 #   endif
   }
   setcleanzero(dy_lp->infeas,dy_tols->zero) ;
@@ -318,19 +317,19 @@ static bool process_inactive (lpprob_struct *orig_lp, int oxkndx)
 
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 4)
-  { outfmt(logchn,gtxecho,"\n\t  %s (%d) %s inactive with value ",
+  { outfmt(dy_logchn,dy_gtxecho,"\n\t  %s (%d) %s inactive with value ",
 	   consys_nme(orig_sys,'v',oxkndx,FALSE,NULL),oxkndx,
 	   dy_prtvstat(xkstatus)) ;
     switch (xkstatus)
     { case vstatNBFX:
       case vstatNBLB:
-      { outfmt(logchn,gtxecho,"%g.",orig_sys->vlb[oxkndx]) ;
+      { outfmt(dy_logchn,dy_gtxecho,"%g.",orig_sys->vlb[oxkndx]) ;
 	break ; }
       case vstatNBUB:
-      { outfmt(logchn,gtxecho,"%g.",orig_sys->vub[oxkndx]) ;
+      { outfmt(dy_logchn,dy_gtxecho,"%g.",orig_sys->vub[oxkndx]) ;
 	break ; }
       default:
-      { outfmt(logchn,gtxecho,"??.") ;
+      { outfmt(dy_logchn,dy_gtxecho,"??.") ;
 	break ; } } }
 # endif
 
@@ -448,13 +447,13 @@ static void process_active (lpprob_struct *orig_lp, int oxkndx)
 */
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 4)
-  { outfmt(logchn,gtxecho,"\n\t  %s (%d) %s active",
+  { outfmt(dy_logchn,dy_gtxecho,"\n\t  %s (%d) %s active",
 	   consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,
 	   dy_prtvstat(dy_status[xkndx])) ;
     if (flgon(xkstatus,vstatNONBASIC|vstatNBFR))
-      outfmt(logchn,gtxecho," with value %g.",dy_x[xkndx]) ;
+      outfmt(dy_logchn,dy_gtxecho," with value %g.",dy_x[xkndx]) ;
     else
-      outchr(logchn,gtxecho,'.') ; }
+      outchr(dy_logchn,dy_gtxecho,'.') ; }
 # endif
 
   return ; }
@@ -516,7 +515,7 @@ dyret_enum dy_hotstart (lpprob_struct *orig_lp)
   {
 #   ifndef NDEBUG
     if (dy_opts->print.crash >= 1)
-      outfmt(logchn,gtxecho,"\n  no data structure changes at hot start.") ;
+      outfmt(dy_logchn,dy_gtxecho,"\n  no data structure changes at hot start.") ;
 #   endif
     hot_updateMiscState() ;
     return (dyrOK) ; }
@@ -525,18 +524,18 @@ dyret_enum dy_hotstart (lpprob_struct *orig_lp)
 */
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 1)
-  { outfmt(logchn,gtxecho,"\n  updating data structures at hot start ...") ;
+  { outfmt(dy_logchn,dy_gtxecho,"\n  updating data structures at hot start ...") ;
     if (dy_opts->print.crash >= 2)
-    { outfmt(logchn,gtxecho,"\n    scanning changes to") ;
+    { outfmt(dy_logchn,dy_gtxecho,"\n    scanning changes to") ;
       if (flgon(orig_lp->ctlopts,lpctlRHSCHG))
-	outfmt(logchn,gtxecho," rhs") ;
+	outfmt(dy_logchn,dy_gtxecho," rhs") ;
       if (flgon(orig_lp->ctlopts,lpctlLBNDCHG))
-	outfmt(logchn,gtxecho," vlb") ;
+	outfmt(dy_logchn,dy_gtxecho," vlb") ;
       if (flgon(orig_lp->ctlopts,lpctlUBNDCHG))
-	outfmt(logchn,gtxecho," vub") ;
+	outfmt(dy_logchn,dy_gtxecho," vub") ;
       if (flgon(orig_lp->ctlopts,lpctlOBJCHG))
-	outfmt(logchn,gtxecho," obj") ;
-      outfmt(logchn,gtxecho," ...") ; } }
+	outfmt(dy_logchn,dy_gtxecho," obj") ;
+      outfmt(dy_logchn,dy_gtxecho," ...") ; } }
 #   endif
 
 /*
@@ -594,10 +593,10 @@ dyret_enum dy_hotstart (lpprob_struct *orig_lp)
     { 
 #     ifndef NDEBUG
       if (dy_opts->print.setup >= 3)
-      { outfmt(logchn,gtxecho,"\n\tForcing equal bound %g for %s (%d)",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\tForcing equal bound %g for %s (%d)",
 	       (ogvlb[oxkndx]+ogvub[oxkndx])/2,
 	       consys_nme(orig_sys,'v',oxkndx,0,0),oxkndx) ;
-	outfmt(logchn,gtxecho,
+	outfmt(dy_logchn,dy_gtxecho,
 	       "\n\t  original lb = %g, ub = %g, diff = %g, tol = %g",
 	       ogvlb[oxkndx],ogvub[oxkndx],ogvub[oxkndx]-ogvlb[oxkndx],
 	       dy_tols->pfeas) ; }

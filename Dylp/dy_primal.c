@@ -29,7 +29,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_primal.c	4.6	10/15/05" ;
@@ -258,7 +257,7 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
     print = dy_opts->print.phase2 ;
   
   if (print >= 4)
-    outfmt(logchn,gtxecho,"\n%s: validating %s at iteration (%s)%d.",
+    outfmt(dy_logchn,dy_gtxecho,"\n%s: validating %s at iteration (%s)%d.",
 	   rtnnme,dy_prtdyret(lpretval),
 	   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ;
 # endif
@@ -287,7 +286,7 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
 */
 # ifndef NDEBUG
   if (print >= 4)
-    outfmt(logchn,gtxecho,
+    outfmt(dy_logchn,dy_gtxecho,
 	   "\n\tclearing pivot rejection and antidegeneracy machinery ... ") ;
 # endif
   if (dy_clrpivrej(NULL) != TRUE) return (dyrFATAL) ;
@@ -300,7 +299,7 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
 */
 # ifndef NDEBUG
   if (print >= 4)
-    outfmt(logchn,gtxecho,"done.\n\t%schecking accuracy ... ",
+    outfmt(dy_logchn,dy_gtxecho,"done.\n\t%schecking accuracy ... ",
 	   flgon(checkflags,ladFACTOR)?"refactoring and ":"") ;
 # endif
   retval = dy_accchk(&checkflags) ;
@@ -308,7 +307,7 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
   if (!(retval == dyrOK || retval == dyrPATCHED))
   {
 #   ifndef NDEBUG
-    if (print >= 4) outfmt(logchn,gtxecho,"%sfailed.",(print >= 5)?"\n\t":" ") ;
+    if (print >= 4) outfmt(dy_logchn,dy_gtxecho,"%sfailed.",(print >= 5)?"\n\t":" ") ;
 #   endif
     return (retval) ; }
   else
@@ -316,10 +315,10 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
   {
 #   ifndef NDEBUG
     if (print >= 4)
-    { outfmt(logchn,gtxecho,"%sfailed",(print >= 5)?"\n\t":" ") ;
-      if (flgon(checkflags,ladPRIMALCHK)) outfmt(logchn,gtxecho," primal") ;
-      if (flgon(checkflags,ladDUALCHK)) outfmt(logchn,gtxecho," dual") ;
-      outfmt(logchn,gtxecho," check(s).") ; }
+    { outfmt(dy_logchn,dy_gtxecho,"%sfailed",(print >= 5)?"\n\t":" ") ;
+      if (flgon(checkflags,ladPRIMALCHK)) outfmt(dy_logchn,dy_gtxecho," primal") ;
+      if (flgon(checkflags,ladDUALCHK)) outfmt(dy_logchn,dy_gtxecho," dual") ;
+      outfmt(dy_logchn,dy_gtxecho," check(s).") ; }
 #   endif
     retval = dyrACCCHK ; }
   else
@@ -327,10 +326,10 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
   {
 #   ifndef NDEBUG
     if (print >= 4)
-    { outfmt(logchn,gtxecho,"%slost",(print >= 5)?"\n\t":" ") ;
-      if (flgon(checkflags,ladPRIMALCHK)) outfmt(logchn,gtxecho," primal") ;
-      if (flgon(checkflags,ladDUALCHK)) outfmt(logchn,gtxecho," dual") ;
-      outfmt(logchn,gtxecho," feasibility.") ; }
+    { outfmt(dy_logchn,dy_gtxecho,"%slost",(print >= 5)?"\n\t":" ") ;
+      if (flgon(checkflags,ladPRIMALCHK)) outfmt(dy_logchn,dy_gtxecho," primal") ;
+      if (flgon(checkflags,ladDUALCHK)) outfmt(dy_logchn,dy_gtxecho," dual") ;
+      outfmt(dy_logchn,dy_gtxecho," feasibility.") ; }
 #   endif
     if (flgon(checkflags,ladPRIMFEAS))
       retval = dyrLOSTPFEAS ;
@@ -339,7 +338,7 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
 # ifndef NDEBUG
   else
   { if (print >= 4)
-      outfmt(logchn,gtxecho,"%s%s.",(print >= 5)?"\n\t":" ",
+      outfmt(dy_logchn,dy_gtxecho,"%s%s.",(print >= 5)?"\n\t":" ",
 	     (retval == dyrOK)?"done":"patched") ; }
 # endif
 
@@ -493,7 +492,7 @@ bool dy_initp1obj (void)
 
 # ifndef NDEBUG
   if (dy_opts->print.phase1 >= 2)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n    initialising phase 1 objective and reduced costs.") ; }
 # endif
 
@@ -531,7 +530,7 @@ bool dy_initp1obj (void)
     { dy_sys->obj[xindx] = -1.0 ;
 #     ifndef NDEBUG
       if (dy_opts->print.phase1 >= 7)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n\t%16s (%3d) = %16.8g < lb = %16.8g, infeas = %16.8g",
 	       consys_nme(dy_sys,'v',xindx,FALSE,NULL),xindx,
 	       dy_xbasic[xipos],dy_sys->vlb[xindx],
@@ -542,7 +541,7 @@ bool dy_initp1obj (void)
     { dy_sys->obj[xindx] = 1.0 ;
 #     ifndef NDEBUG
       if (dy_opts->print.phase1 >= 7)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n\t%16s (%3d) = %16.8g > ub = %16.8g, infeas = %16.8g",
 	       consys_nme(dy_sys,'v',xindx,FALSE,NULL),xindx,
 	       dy_xbasic[xipos],dy_sys->vub[xindx],
@@ -564,7 +563,7 @@ bool dy_initp1obj (void)
 # endif
 # ifndef NDEBUG
   if (dy_opts->print.phase1 >= 3)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n      saw %d infeasible variables, tot. infeas. %g.",
 	   infcnt,dy_lp->infeas) ; }
 # endif
@@ -582,7 +581,7 @@ bool dy_initp1obj (void)
 
 # ifndef NDEBUG
   if (dy_opts->print.phase1 >= 5)
-  { outfmt(logchn,gtxecho,"\n\t  recalculated duals and reduced costs.") ; }
+  { outfmt(dy_logchn,dy_gtxecho,"\n\t  recalculated duals and reduced costs.") ; }
 # endif
 # ifdef DYLP_STATISTICS
 /*
@@ -657,7 +656,7 @@ static dyret_enum tweakp1obj (bool *reselect, int candxj)
 # ifndef NDEBUG
   infeas = 0 ;
   if (dy_opts->print.phase1 >= 5)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n\t  checking feasibility & tweaking phase 1 objective.") ; }
 # endif
 # ifdef PARANOIA
@@ -690,18 +689,18 @@ static dyret_enum tweakp1obj (bool *reselect, int candxj)
     if (dy_opts->print.phase1 >= 5 && flgon(statk,vstatBLLB|vstatBUUB))
     { xkpos = dy_var2basis[xkndx] ;
       if (dy_opts->print.phase1 >= 7)
-      { outfmt(logchn,gtxecho,"\n\t    %4s %16s (%3d) = %16.8g",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\t    %4s %16s (%3d) = %16.8g",
 	       dy_prtvstat(statk),consys_nme(dy_sys,'v',xkndx,FALSE,NULL),
 	       xkndx,dy_xbasic[xkpos]) ; }
       if (flgon(statk,vstatBLLB))
       { infeas += dy_sys->vlb[xkndx]-dy_xbasic[xkpos] ;
 	if (dy_opts->print.phase1 >= 7)
-	{ outfmt(logchn,gtxecho," < lb = %16.8g, inf = %16.8g",
+	{ outfmt(dy_logchn,dy_gtxecho," < lb = %16.8g, inf = %16.8g",
 		 dy_sys->vlb[xkndx],dy_sys->vlb[xkndx]-dy_xbasic[xkpos]) ; } }
       else
       { infeas += dy_xbasic[xkpos]-dy_sys->vub[xkndx] ;
 	if (dy_opts->print.phase1 >= 7)
-	{ outfmt(logchn,gtxecho," > ub = %16.8g, inf = %16.8g",
+	{ outfmt(dy_logchn,dy_gtxecho," > ub = %16.8g, inf = %16.8g",
 		 dy_sys->vub[xkndx],dy_xbasic[xkpos]-dy_sys->vub[xkndx]) ; } } }
 #   endif
     if (flgon(statk,vstatBLLB))
@@ -730,11 +729,11 @@ static dyret_enum tweakp1obj (bool *reselect, int candxj)
 
 # ifndef NDEBUG
   if (dy_opts->print.phase1 >= 5)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n\t  saw %d infeasible variables, down %d, tot. infeas. %g.",
 	   dy_lp->p1obj.infcnt,newfeas,infeas) ; }
   if (dy_opts->print.phase1 >= 2 && *reselect == TRUE)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n    reselect; newly feasible %s (%d) selected to enter.",
 	   consys_nme(dy_sys,'v',candxj,FALSE,NULL),candxj) ; }
 # endif
@@ -804,7 +803,7 @@ static dyret_enum tweakp1obj (bool *reselect, int candxj)
     *reselect = TRUE ;
 #   ifndef NDEBUG
     if (dy_opts->print.phase1 >= 5)
-    { outfmt(logchn,gtxecho,"\n\trecalculated duals and reduced costs.",
+    { outfmt(dy_logchn,dy_gtxecho,"\n\trecalculated duals and reduced costs.",
 	     maxndx,infeas) ; }
 #   endif
   }
@@ -895,21 +894,21 @@ static dyret_enum verifyp1obj (void)
 #       else
 	err = FALSE ;
 	if (dy_opts->print.phase1 >= 5)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n\tphase I c<%d> = %g inconsistent for %s %s (%d) = %g;",
 		 xkndx,dy_sys->obj[xkndx],dy_prtvstat(statk),
 		 consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,dy_x[xkndx]) ;
-	  outfmt(logchn,gtxecho," lb = %g, ub = %g",
+	  outfmt(dy_logchn,dy_gtxecho," lb = %g, ub = %g",
 		 dy_sys->vlb[xkndx],dy_sys->vub[xkndx]) ;
 	  if (!withinbnds(dy_sys->vlb[xkndx],dy_x[xkndx],dy_sys->vub[xkndx]))
 	  { if (flgon(statk,vstatBLLB))
-	    { outfmt(logchn,gtxecho,", infeas = %g.",
+	    { outfmt(dy_logchn,dy_gtxecho,", infeas = %g.",
 		     dy_sys->vlb[xkndx]-dy_x[xkndx]) ; }
 	    else
-	    { outfmt(logchn,gtxecho,", infeas = %g.",
+	    { outfmt(dy_logchn,dy_gtxecho,", infeas = %g.",
 		     dy_x[xkndx]-dy_sys->vub[xkndx]) ; } }
 	  else
-	  { outchr(logchn,gtxecho,'.') ; } }
+	  { outchr(dy_logchn,dy_gtxecho,'.') ; } }
 #       endif
        } } }
 /*
@@ -1102,7 +1101,7 @@ static dyret_enum primal1 (void)
 #     endif
 #     ifndef NDEBUG
       if (dy_opts->print.pricing >= 2)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    (%s)%d: %s (%d), entering %s from %s, price = %g ... ",
 	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       consys_nme(dy_sys,'v',xjndx,TRUE,NULL),xjndx,
@@ -1266,10 +1265,10 @@ static dyret_enum primal1 (void)
 	{
 #         ifndef NDEBUG
 	  if (dy_opts->print.phase1 >= 1)
-	  { outfmt(logchn,gtxecho,
+	  { outfmt(dy_logchn,dy_gtxecho,
 		   "\n\tfalse termination (%s) due to inconsistent objective",
 		   dy_prtdyret(lpretval)) ;
-	    outfmt(logchn,gtxecho," at (%s)%d; rebuilding P1 objective.",
+	    outfmt(dy_logchn,dy_gtxecho," at (%s)%d; rebuilding P1 objective.",
 		   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
 #         endif
 	  if (dy_initp1obj() == TRUE)
@@ -1382,19 +1381,19 @@ static dyret_enum primal1 (void)
 #     ifndef NDEBUG
       if (dy_opts->print.phase1 >= 2)
       { if (uxpfeas == TRUE)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n\tunexpected primal feasibility at iteration (%s)%d.",
 		  dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
         if (uxnpfeas == TRUE)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 	       "\n\tunexpected loss of primal feasibility at iteration (%s)%d.",
 		  dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
         if (uxdfeas == TRUE)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n\tunexpected dual feasibility at iteration (%s)%d.",
 		  dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
         if (uxndfeas == TRUE)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 	       "\n\tunexpected loss of dual feasibility at iteration (%s)%d.",
 		  dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; } }
 #     endif
@@ -1407,7 +1406,7 @@ static dyret_enum primal1 (void)
 #       ifndef NDEBUG
 	else
 	{ if (dy_opts->print.phase1 >= 2)
-	  { outfmt(logchn,gtxecho,
+	  { outfmt(dy_logchn,dy_gtxecho,
 		   "\n\t(%s)%d: false termination (%s); resuming pivoting.",
 		   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 		   dy_prtdyret(tmpretval)) ; } }
@@ -1442,7 +1441,7 @@ static dyret_enum primal1 (void)
 
 # ifndef NDEBUG
   if (lpretval == dyrUNBOUND && dy_opts->print.phase1 >= 2)
-  { outfmt(logchn,gtxecho,"\n    [%s] (%s)%d: system is unbounded.",
+  { outfmt(dy_logchn,dy_gtxecho,"\n    [%s] (%s)%d: system is unbounded.",
 	   dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
 # endif
 # ifdef DYLP_STATISTICS
@@ -1593,7 +1592,7 @@ static dyret_enum primal2 (void)
 #     endif
 #     ifndef NDEBUG
       if (dy_opts->print.pricing >= 2)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	     "\n    (%s)%d: %s (%d), entering %s from %s, price = %g ... ",
 	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       consys_nme(dy_sys,'v',xjndx,TRUE,NULL),xjndx,
@@ -1748,7 +1747,7 @@ static dyret_enum primal2 (void)
 	{ 
 #	  ifndef NDEBUG
 	  if (dy_opts->print.phase2 >= 1)
-	  { outfmt(logchn,gtxecho,"\n  (%s)%d: lost primal feasibility.",
+	  { outfmt(dy_logchn,dy_gtxecho,"\n  (%s)%d: lost primal feasibility.",
 		   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
 	  uxnpfeas = TRUE ;
 	  if (flgon(checks,ladDUALFEAS))
@@ -1785,15 +1784,15 @@ static dyret_enum primal2 (void)
 #     ifndef NDEBUG
       if (dy_opts->print.phase2 >= 2)
       { if (uxnpfeas == TRUE)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 	       "\n\tunexpected loss of primal feasibility at iteration (%s)%d.",
 		  dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
         if (uxdfeas == TRUE)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n\tunexpected dual feasibility at iteration (%s)%d.",
 		  dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
         if (uxndfeas == TRUE)
-	{ outfmt(logchn,gtxecho,
+	{ outfmt(dy_logchn,dy_gtxecho,
 	       "\n\tunexpected loss of dual feasibility at iteration (%s)%d.",
 		  dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; } }
 #     endif
@@ -1806,7 +1805,7 @@ static dyret_enum primal2 (void)
 #       ifndef NDEBUG
 	else
 	{ if (dy_opts->print.phase2 >= 2)
-	  { outfmt(logchn,gtxecho,
+	  { outfmt(dy_logchn,dy_gtxecho,
 		   "\n\tfalse termination (%s) at (%s)%d; resuming pivoting.",
 		   dy_prtdyret(tmpretval),dy_prtlpphase(dy_lp->phase,TRUE),
 		   dy_lp->tot.iters) ; } }
@@ -1821,11 +1820,11 @@ static dyret_enum primal2 (void)
 # ifndef NDEBUG
   if (dy_opts->print.phase2 >= 2)
   { if (lpretval == dyrUNBOUND)
-    { outfmt(logchn,gtxecho,"\n%s: system %s is unbounded.",
+    { outfmt(dy_logchn,dy_gtxecho,"\n%s: system %s is unbounded.",
 	     rtnnme,dy_sys->nme) ; }
     else
     if (lpretval == dyrSWING)
-    { outfmt(logchn,gtxecho,"\n%s: system %s is pseudo-unbounded.",
+    { outfmt(dy_logchn,dy_gtxecho,"\n%s: system %s is pseudo-unbounded.",
 	     rtnnme,dy_sys->nme) ; } }
 # endif
 # ifdef DYLP_STATISTICS
@@ -1879,12 +1878,12 @@ lpret_enum dy_primal (void)
 #     ifndef NDEBUG
       if ((dy_opts->print.phase1 >= 2) ||
 	  (dy_opts->print.phase1 >= 1 && dyret != dyrOPTIMAL))
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n  (%s)%d: primal phase I ended, %d pivots, status %s.",
 	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       dy_lp->p1.pivs,dy_prtdyret(dyret)) ; }
       if (dy_opts->print.major >= 1 && dyret == dyrOPTIMAL)
-      { outfmt(logchn,gtxecho,"\n\n%s (%s): entering phase %s, iter %d.",
+      { outfmt(dy_logchn,dy_gtxecho,"\n\n%s (%s): entering phase %s, iter %d.",
 	       "dylp",dy_sys->nme,dy_prtlpphase(dyPRIMAL2,FALSE),
 	       dy_lp->tot.iters) ; }
 #     endif
@@ -1901,11 +1900,11 @@ lpret_enum dy_primal (void)
 */
 #   ifndef NDEBUG
     if (dy_opts->print.phase2 >= 2)
-    { outfmt(logchn,gtxecho,"\n%s: entering primal phase II, z = %g",
+    { outfmt(dy_logchn,dy_gtxecho,"\n%s: entering primal phase II, z = %g",
 	     rtnnme,dy_lp->z) ;
       if (dy_opts->print.phase2 >= 4)
-      { outfmt(logchn,gtxecho,", dual active yb = %g",dy_calcdualobj()) ; }
-      outchr(logchn,gtxecho,'.') ; }
+      { outfmt(dy_logchn,dy_gtxecho,", dual active yb = %g",dy_calcdualobj()) ; }
+      outchr(dy_logchn,dy_gtxecho,'.') ; }
 #   endif
     dy_lp->phase = dyPRIMAL2 ;
     dy_lp->simplex.active = dyPRIMAL2 ;
@@ -1925,15 +1924,15 @@ lpret_enum dy_primal (void)
     {
 #     ifndef NDEBUG
       if (dy_opts->print.phase2 >= 1)
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n  (%s)%d: lost feasibility by %g after %d pivots; ",
 	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       dy_lp->infeas,dy_lp->p2.pivs) ;
 	if (lostfeascnt+1 < 10)
-	  outfmt(logchn,gtxecho,"returning to phase I for try %d.",
+	  outfmt(dy_logchn,dy_gtxecho,"returning to phase I for try %d.",
 		 lostfeascnt+2) ;
 	else
-	  outfmt(logchn,gtxecho,"aborting after %d tries.",
+	  outfmt(dy_logchn,dy_gtxecho,"aborting after %d tries.",
 		 lostfeascnt+1) ; }
 		
 #     endif
@@ -1951,7 +1950,7 @@ lpret_enum dy_primal (void)
 #     ifndef NDEBUG
       if ((dy_opts->print.phase2 >= 2) ||
 	  (dy_opts->print.phase2 >= 1 && dyret != dyrOPTIMAL))
-      { outfmt(logchn,gtxecho,
+      { outfmt(dy_logchn,dy_gtxecho,
 	       "\n  (%s)%d: primal phase II ended, %d pivots, status %s.",
 	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       dy_lp->p2.pivs,dy_prtdyret(dyret)) ; }
@@ -1972,21 +1971,21 @@ lpret_enum dy_primal (void)
   if (retval == lpOPTIMAL || retval == lpUNBOUNDED || retval == lpINFEAS)
   { if ((dy_lp->phase == dyPRIMAL1 && dy_opts->print.phase1 >= 2) ||
 	(dy_lp->phase == dyPRIMAL2 && dy_opts->print.phase2 >= 2))
-    { outfmt(logchn,gtxecho,"\n    (%s)%d: ",
+    { outfmt(dy_logchn,dy_gtxecho,"\n    (%s)%d: ",
 	     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ;
-      outfmt(logchn,gtxecho,"%s ended, %d pivots, ",
+      outfmt(dy_logchn,dy_gtxecho,"%s ended, %d pivots, ",
 	     dy_prtlpphase(dy_lp->phase,FALSE),dy_lp->tot.pivs) ;
       if (retval == lpOPTIMAL)
-	outfmt(logchn,gtxecho,"z<opt> = %g.",dy_lp->z) ;
+	outfmt(dy_logchn,dy_gtxecho,"z<opt> = %g.",dy_lp->z) ;
       else
       if (retval == lpINFEAS)
-	outfmt(logchn,gtxecho,"infeas = %g.",dy_lp->infeas) ;
+	outfmt(dy_logchn,dy_gtxecho,"infeas = %g.",dy_lp->infeas) ;
       else
-	outfmt(logchn,gtxecho,"unbounded.") ; } }
+	outfmt(dy_logchn,dy_gtxecho,"unbounded.") ; } }
   else
   if (retval == lpLOSTFEAS)
   { if (dy_opts->print.phase2 >= 1)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n  (%s)%d: primal simplex aborted; lost feasibility %d times.",
 	     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	     lostfeascnt-1) ; } }
@@ -1994,16 +1993,16 @@ lpret_enum dy_primal (void)
   if (retval == lpITERLIM)
   { if ((dy_lp->phase == dyPRIMAL1 && dy_opts->print.phase1 >= 1) ||
 	(dy_lp->phase == dyPRIMAL2 && dy_opts->print.phase2 >= 1))
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n  (%s)%d: primal simplex terminated; iteration limit (%d).",
 	     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	     dy_opts->iterlim) ; } }
   else
   { if ((dy_lp->phase == dyPRIMAL1 && dy_opts->print.phase1 >= 1) ||
 	(dy_lp->phase == dyPRIMAL2 && dy_opts->print.phase2 >= 1))
-    { outfmt(logchn,gtxecho,"\n  (%s)%d: ",
+    { outfmt(dy_logchn,dy_gtxecho,"\n  (%s)%d: ",
 	     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ;
-      outfmt(logchn,gtxecho,"%s failed, status %s after %d pivots.",
+      outfmt(dy_logchn,dy_gtxecho,"%s failed, status %s after %d pivots.",
 	     dy_prtlpphase(dy_lp->phase,FALSE),dy_prtdyret(dyret),
 	     dy_lp->tot.pivs) ; } }
 /*
@@ -2013,19 +2012,19 @@ lpret_enum dy_primal (void)
   if (dy_opts->print.phase2 >= 4 && retval == lpOPTIMAL)
   { double dualobj,primalobj ;
 
-    outfmt(logchn,gtxecho,"\n%s: comparing dual and primal objectives.",
+    outfmt(dy_logchn,dy_gtxecho,"\n%s: comparing dual and primal objectives.",
 	   rtnnme) ;
     dualobj = dy_calcdualobj() ;
-    outfmt(logchn,gtxecho,"\n\tdual objective yb = %g.",dualobj) ;
+    outfmt(dy_logchn,dy_gtxecho,"\n\tdual objective yb = %g.",dualobj) ;
     
     primalobj = dy_calcobj() ;
-    outfmt(logchn,gtxecho,"\n\tprimal objective cx = %g.",primalobj) ;
+    outfmt(dy_logchn,dy_gtxecho,"\n\tprimal objective cx = %g.",primalobj) ;
 
     if (!withintol(dualobj,primalobj,dy_tols->dchk))
-      outfmt(logchn,gtxecho,"\n\tWHOOPS! yb - cx = %g - %g = %g > %g.",
+      outfmt(dy_logchn,dy_gtxecho,"\n\tWHOOPS! yb - cx = %g - %g = %g > %g.",
 	     dualobj,primalobj,dualobj-primalobj,dy_tols->dchk) ;
     else
-      outfmt(logchn,gtxecho,"\n\tobjectives match.") ; }
+      outfmt(dy_logchn,dy_gtxecho,"\n\tobjectives match.") ; }
 # endif
 
 /*

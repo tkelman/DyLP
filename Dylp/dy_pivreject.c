@@ -39,7 +39,6 @@
 
 #define DYLP_INTERNAL
 
-#include "bonsai.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_pivreject.c	4.4	11/06/04" ;
@@ -233,7 +232,7 @@ bool dy_clrpivrej (int *entries)
 
 # ifndef NDEBUG
   if (dy_opts->print.pivreject >= 1)
-  { outfmt(logchn,gtxecho,"\n    %s pivot reject list ... ",
+  { outfmt(dy_logchn,dy_gtxecho,"\n    %s pivot reject list ... ",
 	   (entries == NULL)?"clearing":"winnowing") ; }
 # endif
 
@@ -261,7 +260,7 @@ bool dy_clrpivrej (int *entries)
 #     endif
 #     ifndef NDEBUG
       if (dy_opts->print.pivreject >= 2)
-	outfmt(logchn,gtxecho,
+	outfmt(dy_logchn,dy_gtxecho,
 	       "\n\trestoring %s (%d) as eligible for pivoting.",
 	       consys_nme(dy_sys,'v',j,TRUE,NULL),j) ;
 #     endif
@@ -303,7 +302,7 @@ bool dy_clrpivrej (int *entries)
       clrflg(dy_status[j],vstatNOPIVOT) ;
 #     ifndef NDEBUG
       if (dy_opts->print.pivreject >= 2)
-	outfmt(logchn,gtxecho,
+	outfmt(dy_logchn,dy_gtxecho,
 	       "\n\trestoring %s (%d) as eligible for pivoting.",
 	       consys_nme(dy_sys,'v',j,TRUE,NULL),j) ;
 #     endif
@@ -324,8 +323,8 @@ bool dy_clrpivrej (int *entries)
     last++ ;
 #   ifndef NDEBUG
     if (dy_opts->print.pivreject >= 1)
-    { if (dy_opts->print.pivreject >= 2) outfmt(logchn,gtxecho,"\n      ") ;
-      outfmt(logchn,gtxecho,"restored %d variables.",
+    { if (dy_opts->print.pivreject >= 2) outfmt(dy_logchn,dy_gtxecho,"\n      ") ;
+      outfmt(dy_logchn,dy_gtxecho,"restored %d variables.",
 	     pivrej_ctl.cnt-last) ; }
 #   endif
     pivrej_ctl.cnt = last ;
@@ -376,16 +375,16 @@ dyret_enum dy_addtopivrej (int j, dyret_enum why,
 */
 # ifndef NDEBUG
   if (dy_opts->print.pivreject >= 2)
-  { outfmt(logchn,gtxecho,
+  { outfmt(dy_logchn,dy_gtxecho,
 	   "\n  marking %s (%d) ineligible for pivoting ",
 	   consys_nme(dy_sys,'v',j,TRUE,NULL),j) ;
     switch (why)
     { case dyrSINGULAR:
-      { outfmt(logchn,gtxecho,"(%s).",dy_prtdyret(why)) ;
+      { outfmt(dy_logchn,dy_gtxecho,"(%s).",dy_prtdyret(why)) ;
 	break ; }
       case dyrMADPIV:
       { ratio = dy_chkpiv(abarij,maxabarij) ;
-	outfmt(logchn,gtxecho,"(%s = %g).",dy_prtdyret(why),ratio) ;
+	outfmt(dy_logchn,dy_gtxecho,"(%s = %g).",dy_prtdyret(why),ratio) ;
 	break ; }
       default:
       { errmsg(1,rtnnme,__LINE__) ;
@@ -401,7 +400,7 @@ dyret_enum dy_addtopivrej (int j, dyret_enum why,
   { newsze = minn(2*pivrej_ctl.sze,n+1) ;
 #   ifndef NDEBUG
     if (dy_opts->print.pivreject >= 3)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n%s: expanding pivot reject list from %d to %d entries.",
 	     rtnnme,pivrej_ctl.sze,newsze) ; }
 #   endif
@@ -533,7 +532,7 @@ dyret_enum dy_dealWithPunt (void)
     { retval = dyrFATAL ; }
 #   ifndef NDEBUG
     if (dy_opts->print.pivreject >= 1)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n  restored %d entries queued before iter = %d.",old[0],brk) ; }
 #   endif
   }
@@ -573,7 +572,7 @@ dyret_enum dy_dealWithPunt (void)
       { retval = dyrFATAL ; }
 #   ifndef NDEBUG
     if (dy_opts->print.pivreject >= 1)
-    { outfmt(logchn,gtxecho,
+    { outfmt(dy_logchn,dy_gtxecho,
 	     "\n  restored %d entries queued at iter = %d at piv. tol = %g",
 	     current[0],brk,dy_tols->pivot) ; }
 #   endif
@@ -597,9 +596,9 @@ dyret_enum dy_dealWithPunt (void)
 
 # ifndef NDEBUG
   if (retval == dyrPUNT)
-  { outfmt(logchn,gtxecho,"\n  PUNT! pivrej = %d, singular = %d",
+  { outfmt(dy_logchn,dy_gtxecho,"\n  PUNT! pivrej = %d, singular = %d",
 	   pivrej_ctl.cnt,pivrej_ctl.sing) ;
-    outfmt(logchn,gtxecho,"\n  prev_pivok = %d, iterbrk = %d",
+    outfmt(dy_logchn,dy_gtxecho,"\n  prev_pivok = %d, iterbrk = %d",
 	   dy_lp->prev_pivok,dy_lp->iterbrk) ; }
 # endif
 # ifdef DYLP_STATISTICS

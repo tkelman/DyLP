@@ -2,7 +2,7 @@
 # Secondary makefile for dylp.
 
 LIBSRC :=
-LIBSRC += cmdint.c
+LIBSRC += dy_cmdint.c
 LIBSRC += consys_io.c
 LIBSRC += consys_mathutils.c
 LIBSRC += consys_scaling.c
@@ -36,20 +36,8 @@ LIBSRC += glplib2.c
 LIBSRC += glplib3.c
 LIBSRC += glplib4.c
 LIBSRC += glpluf.c
-#LIBSRC += mpsio.c
-LIBSRC += options.c
+LIBSRC += dy_options.c
 LIBSRC += vector_utils.c
-
-#TSTSRC += osi_dylp.c
-
-#bonsai.h
-#bonsaierrs.txt
-#consys.h
-#dylp.h
-#glpinv.h
-#glplib.h
-#glpluf.h
-#vector.h
 
 ###############################################################################
 

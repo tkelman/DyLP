@@ -30,10 +30,10 @@
 
 #define DYLP_INTERNAL
 
-#include "strrtns.h"
-#include "bonsai.h"
-#include "bnfrdr.h"
-#include "keytab.h"
+#include "dylib_strrtns.h"
+#include "dy_cmdint.h"
+#include "dylib_bnfrdr.h"
+#include "dylib_keytab.h"
 #include "dylp.h"
 #include <float.h>
 #include <limits.h>
@@ -486,9 +486,9 @@ void dy_checkdefaults (consys_struct *sys,
   There's no good way to control this print statement, given the timing and
   purpose of this call. But it's occasionally handy for debugging.
 
-  outfmt(logchn,TRUE,"\nPTOLS: pzero = %g, pscale = %g, pchk = %g",
+  outfmt(dy_logchn,TRUE,"\nPTOLS: pzero = %g, pscale = %g, pchk = %g",
 	 tols->zero,tols->pfeas_scale,tols->pchk) ;
-  outfmt(logchn,TRUE,"\nDTOLS: dzero = %g, dscale = %g, dchk = %g",
+  outfmt(dy_logchn,TRUE,"\nDTOLS: dzero = %g, dscale = %g, dchk = %g",
 	 tols->cost,tols->dfeas_scale,tols->dchk) ;
 */
 
@@ -876,7 +876,7 @@ static bool lpctl_active (void)
   check for errors.
 */
   rdrinit() ;
-  if (parse(cmdchn,&zactfracs,&result) == FALSE)
+  if (parse(dy_cmdchn,&zactfracs,&result) == FALSE)
   { rdrclear() ;
     errmsg(240,rtnnme,"zactfracs") ;
     return (FALSE) ; }
@@ -886,9 +886,9 @@ static bool lpctl_active (void)
   Process the results.
 */
   if (actfrac->var_seen == TRUE)
-  { outfmt(logchn,gtxecho," variables %.2f",actfrac->varfrac) ;
+  { outfmt(dy_logchn,dy_gtxecho," variables %.2f",actfrac->varfrac) ;
     if (actfrac->con_seen == TRUE)
-      outchr(logchn,gtxecho,',') ;
+      outchr(dy_logchn,dy_gtxecho,',') ;
     if (actfrac->varfrac >= 0)
     { if (actfrac->varfrac > dyopts_ub.active.vars)
       { warn(244,rtnnme,dyopts_lb.active.vars,"variables",
@@ -900,7 +900,7 @@ static bool lpctl_active (void)
     { warn(245,rtnnme,"variables",dyopts_dflt.active.vars) ; } }
 
   if (actfrac->con_seen == TRUE)
-  { outfmt(logchn,gtxecho," constraints %.2f",actfrac->confrac) ;
+  { outfmt(dy_logchn,dy_gtxecho," constraints %.2f",actfrac->confrac) ;
     if (actfrac->confrac >= 0)
     { if (actfrac->confrac > dyopts_ub.active.cons)
       { warn(244,rtnnme,dyopts_lb.active.cons,"constraints",
@@ -1006,7 +1006,7 @@ static bool lpctl_finpurge (void)
   check for errors.
 */
   rdrinit() ;
-  if (parse(cmdchn,&zfinpurge,&result) == FALSE)
+  if (parse(dy_cmdchn,&zfinpurge,&result) == FALSE)
   { rdrclear() ;
     errmsg(240,rtnnme,"zfinspec") ;
     return (FALSE) ; }
@@ -1027,12 +1027,12 @@ static bool lpctl_finpurge (void)
 */
   if (optvals->vars >= 0)
   { main_lpopts->finpurge.vars = (bool) optvals->vars ;
-    outfmt(logchn,gtxecho,"variables %s",
+    outfmt(dy_logchn,dy_gtxecho,"variables %s",
 	   (main_lpopts->finpurge.vars == TRUE)?"true":"false") ; }
   if (optvals->cons >= 0)
   { main_lpopts->finpurge.cons = (bool) optvals->cons ;
-    if (optvals->vars >= 0) outfmt(logchn,gtxecho,", ") ;
-    outfmt(logchn,gtxecho,"constraints %s",
+    if (optvals->vars >= 0) outfmt(dy_logchn,dy_gtxecho,", ") ;
+    outfmt(dy_logchn,dy_gtxecho,"constraints %s",
 	   (main_lpopts->finpurge.cons == TRUE)?"true":"false") ; }
 
   FREE(optvals) ;
@@ -1164,7 +1164,7 @@ static bool lpctl_load  (void)
   check for errors.
 */
   rdrinit() ;
-  if (parse(cmdchn,&zload,&result) == FALSE)
+  if (parse(dy_cmdchn,&zload,&result) == FALSE)
   { rdrclear() ;
     errmsg(240,rtnnme,"zload") ;
     return (FALSE) ; }
@@ -1210,7 +1210,7 @@ static bool lpctl_load  (void)
   The load fraction first.
 */
   if (loadspec->frac_valid == TRUE)
-  { outfmt(logchn,gtxecho," %.2f",loadspec->frac) ;
+  { outfmt(dy_logchn,dy_gtxecho," %.2f",loadspec->frac) ;
     if (loadspec->frac < dyopts_lb.initcons.frac ||
 	loadspec->frac > dyopts_ub.initcons.frac)
     { warn(244,rtnnme,dyopts_lb.initcons.frac,"initial load fraction",
@@ -1226,7 +1226,7 @@ static bool lpctl_load  (void)
   FREE(loadspec) ;
   if (intv == NULL) return (TRUE) ;
 
-  outfmt(logchn,gtxecho," %c %.5f %.5f %c",
+  outfmt(dy_logchn,dy_gtxecho," %c %.5f %.5f %c",
 	 intv->ldelim,intv->ub,intv->lb,intv->rdelim) ;
   if (intv->ldelim == '(')
     main_lpopts->initcons.i1uopen = TRUE ;
@@ -1259,7 +1259,7 @@ static bool lpctl_load  (void)
     return (TRUE) ; }
 
   intv = temp ;
-  outfmt(logchn,gtxecho,", %c %.5f %.5f %c",
+  outfmt(dy_logchn,dy_gtxecho,", %c %.5f %.5f %c",
 	 intv->ldelim,intv->ub,intv->lb,intv->rdelim) ;
   if (intv->ldelim == '(')
     main_lpopts->initcons.i2uopen = TRUE ;
@@ -1359,7 +1359,7 @@ static bool lpctl_infinity (void)
   check for errors.
 */
   rdrinit() ;
-  if (parse(cmdchn,&zinfinity,&result) == FALSE)
+  if (parse(dy_cmdchn,&zinfinity,&result) == FALSE)
   { rdrclear() ;
     errmsg(240,rtnnme,"zinfinity") ;
     return (FALSE) ; }
@@ -1372,17 +1372,17 @@ static bool lpctl_infinity (void)
 */
   switch (infinityspec->code)
   { case 1:
-    { outfmt(logchn,gtxecho," IEEE (%g)",HUGE_VAL) ;
+    { outfmt(dy_logchn,dy_gtxecho," IEEE (%g)",HUGE_VAL) ;
       infinity = HUGE_VAL ;
       if (finite(infinity))
       { warn(314,rtnnme,infinity) ; }
       break ; }
     case 2:
-    { outfmt(logchn,gtxecho," DBL_MAX (%g)",DBL_MAX) ;
+    { outfmt(dy_logchn,dy_gtxecho," DBL_MAX (%g)",DBL_MAX) ;
       infinity = DBL_MAX ;
       break ; }
     case 3:
-    { outfmt(logchn,gtxecho," %g",infinityspec->val) ;
+    { outfmt(dy_logchn,dy_gtxecho," %g",infinityspec->val) ;
       infinity = infinityspec->val ;
       if (infinity == 0)
       { infinity = main_lptols->inf ;

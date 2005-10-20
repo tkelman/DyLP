@@ -40,10 +40,9 @@
 #include <ctype.h>
 
 /*
-  A bunch of standard definitions. Hokey name, I know, but hey, for years it
-  was just me.
+  A bunch of standard definitions.
 */
-#include "loustd.h"
+#include "dylib_std.h"
 
 /*
   In a few rare instances, the declarations here will be unused, but for dylp
