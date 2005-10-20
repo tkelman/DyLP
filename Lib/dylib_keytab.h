@@ -1,8 +1,8 @@
-#ifndef _ERRS_H
-#define _ERRS_H
+#ifndef _DYLIB_KEYTAB_H
+#define _DYLIB_KEYTAB_H
 
 /*
-  This file is part of the errmsg package.
+  This file is part of a package of keyword recognition routines.
 
         Copyright (C) 1999 Lou Hafer
 
@@ -27,23 +27,30 @@
 */
 
 /*
-  @(#)errs.h	2.3	03/18/04
+  Data structure for keyword tables searched by find and ambig
+  
+  @(#)keytab.h	1.2	08/31/99
 */
 
-#include "loustd.h"
-#ifdef FORTRAN
-#include "fortran.h"
-#endif
+/*
+  Field		Contents
+  -----		--------
+  keyword	Character string for the keyword.
+  min		Minimum number of characters which must be matched before
+		cimstrcmp will report a match.
+  token		Value returned when the keyword is matched.
+*/
 
-void errinit(const char *emsgpath, const char *elogpath, bool errecho),
-     errterm(void) ;
+typedef struct keytab_entry_internal { char *keyword ;
+				       int min ;
+				       int token ; } keytab_entry ;
 
-void errmsg(int errid, ... ),
-       warn(int errid, ... ) ;
 
-#ifdef FORTRAN
-void errmsg_(integer *errid, char *ident, ... ) ;
-void warn_(integer *errid, char *ident, ... ) ;
-#endif
+/*
+  binsrch.c
+*/
 
-#endif /* _ERRS_H */
+extern int find(char *word, keytab_entry keytab[], int numkeys),
+	   ambig(char *word, keytab_entry keytab[], int numkeys) ;
+
+#endif /* _DYLIB_KEYTAB_H */

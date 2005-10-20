@@ -1,5 +1,5 @@
-#ifndef _IO_H
-#define _IO_H
+#ifndef _DYLIB_IO_H
+#define _DYLIB_IO_H
 
 /*
   This file is part of the io package.
@@ -30,9 +30,9 @@
   @(#)io.h	2.4	03/18/04
 */
 
-#include "loustd.h"
-#ifdef FORTRAN
-#include "fortran.h"
+#include "dylib_std.h"
+#ifdef _DYLIB_FORTRAN
+#include "dylib_fortran.h"
 #endif
 
 
@@ -112,8 +112,8 @@ extern void flushio(ioid id, bool echo),
 extern int outfxd(char *buffer, int fldsze, char lcr,
 		  const char *pattern, ... ) ;
 
-#ifdef FORTRAN
+#ifdef _DYLIB_FORTRAN
 extern void outfmt_(integer *ftnid, logical *ftnecho, char *pattern, ... ) ;
 #endif
 
-#endif /* _IO_H */
+#endif /* _DYLIB_IO_H */

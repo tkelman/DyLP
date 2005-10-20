@@ -1,0 +1,100 @@
+# Secondary makefile for dylp's standard support library.
+
+LIBSRC :=
+
+LIBSRC += dylib_binsrch.c
+LIBSRC += dylib_bnfrdr.c
+LIBSRC += dylib_bnfrdrio.c
+LIBSRC += dylib_errs.c
+LIBSRC += dylib_hash.c
+LIBSRC += dylib_io.c
+LIBSRC += dylib_littab.c
+LIBSRC += dylib_strrtns.c
+
+###############################################################################
+
+# Different C++ implementations can choose different sizes for the bool data
+# type. To make sure the C code will interoperate, we need to form a correct
+# typedef for the fake bool type defined in loustd.h. If this isn't already
+# defined, try to find the booltype program. Failing that, bail and let the
+# client sort it out.
+
+DylpToolDir ?= ../Utils
+
+ifndef BOOLTYPE
+  ifndef BOOLTYPEPROG
+    pathsearch = $(firstword $(wildcard $(addsuffix /$(1), \
+		 $(subst :, ,$(DylpToolDir):$(PATH)))))
+    BOOLTYPEPROG := $(call pathsearch,booltype)
+  endif
+  ifneq ($(BOOLTYPEPROG),)
+    BOOLTYPE := $(shell $(BOOLTYPEPROG))
+  else
+    $(warning Cannot find booltype program)
+  endif
+  ifeq ($(BOOLTYPE),)
+    $(error Cannot determine proper C type for "typedef <type> bool")
+  endif
+endif
+
+# By default, the COIN boilerplate puts -I- in CXXFLAGS. Hence the current
+# directory must be explicitly added to the search list for include files.
+
+CXXFLAGS += -I. -DBOOL=$(BOOLTYPE)
+
+DEPDIR := Dep
+export DEPDIR
+
+# Makefile.lib is expecting C++ source. We need to preempt it here.
+
+LIBOBJ := $(addprefix $(TARGETDIR)/, $(LIBSRC:.c=.o))
+LIBDEP := $(addprefix $(DEPDIR)/, $(LIBSRC:.c=.d))
+
+export LIBSRC
+export LIBOBJ
+export LIBDEP
+
+# Would be nice if Makefile.lib exported these.
+
+LIBNAMEOPT := lib$(LIBNAME)$(OptLevel)$(LIBEXT)
+LIBNAMENOOPT := lib$(LIBNAME)$(LIBEXT)
+
+# Directory to record what we've built.
+
+BUILDS = .Built
+
+###############################################################################
+
+.DELETE_ON_ERROR:
+
+.PHONY: default install library clean distclean libdepend
+
+default: library
+
+library: $(TARGETDIR)/$(LIBNAMEOPT)
+
+$(TARGETDIR)/$(LIBNAMEOPT):
+	$(MAKE) -f ${MakefileDir}/Makefile.lib library
+	@ mkdir -p $(BUILDS)
+	@ touch $(BUILDS)/$(TARGETDIR)
+
+install: library
+	@ rm -f $(LIBNAMENOOPT)
+	@ ${LN} $(TARGETDIR)/$(LIBNAMEOPT) $(LIBNAMENOOPT)
+
+clean:
+	@ rm -f $(LIBNAMENOOPT)
+	@ rm -rf $(TARGETDIR)
+	@ rm -rf Junk Dep
+	@ rm -f $(BUILDS)/$(TARGETDIR)
+
+distclean:
+	@ rm -f $(LIBNAMENOOPT)
+	@ if [ -d $(BUILDS) ] ; then \
+	    for dir in `ls $(BUILDS)` ; do \
+	      if [ -d $$dir ] ; then \
+		rm -rf $$dir ; \
+	      fi ; \
+	    done ; \
+	  fi
+	@ rm -rf $(BUILDS) Junk Dep

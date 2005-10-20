@@ -48,7 +48,7 @@
   MILP code.
 */
 
-#include "loustd.h"
+#include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)errs.c	3.13	11/11/04" ;
 

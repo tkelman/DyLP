@@ -1,5 +1,5 @@
-#ifndef _HASH_H
-#define _HASH_H
+#ifndef _DYLIB_HASH_H
+#define _DYLIB_HASH_H
 /*
   This file is part of a package of string routines.
 
@@ -56,4 +56,4 @@ extern void *lookup(const char *key, hel *hashtab[], int size),
 	    *enter(const char *key, hel *hashtab[], int size, void *entry),
 	    *erase(const char *key, hel *hashtab[], int size) ;
 
-#endif /* _HASH_H */
+#endif /* _DYLIB_HASH_H */

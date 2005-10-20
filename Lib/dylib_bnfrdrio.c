@@ -28,12 +28,12 @@
   structure in a (more-or-less) human readable format.
 */
 
-#include "loustd.h"
+#include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)bnfrdrio.c	2.3	09/25/04" ;
 
-#include "io.h"
-#include "bnfrdr.h"
+#include "dylib_io.h"
+#include "dylib_bnfrdr.h"
 
 
 

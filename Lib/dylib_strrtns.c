@@ -27,7 +27,7 @@
   This file contains general purpose string manipulation routines.
 */
 
-#include "loustd.h"
+#include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)strrtns.c	1.5	09/25/04" ;
 

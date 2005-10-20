@@ -1,5 +1,5 @@
-#ifndef _FORTRAN_H
-#define _FORTRAN_H
+#ifndef _DYLIB_FORTRAN_H
+#define _DYLIB_FORTRAN_H
 /*
   Common typedefs, definitions, macros, etc., which are handy when constructing
   C code that must talk to Fortran code.
@@ -99,4 +99,4 @@ extern struct { integer integer_code ;
 		integer conname_code ;
 		integer end_code ; } argcod_ ;
 
-#endif /* _FORTRAN_H */
+#endif /* _DYLIB_FORTRAN_H */

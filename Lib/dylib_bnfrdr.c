@@ -35,14 +35,14 @@
   problem for me to expend the effort to fix them.
 */
 
-#include "loustd.h"
+#include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)bnfrdr.c	3.9	09/25/04" ;
 
-#include "io.h"
-#include "errs.h"
-#include "strrtns.h"
-#include "bnfrdr.h"
+#include "dylib_io.h"
+#include "dylib_errs.h"
+#include "dylib_strrtns.h"
+#include "dylib_bnfrdr.h"
 
 /*
   curnde is always the node created by the currently active generator

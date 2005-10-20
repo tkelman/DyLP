@@ -37,15 +37,15 @@
   errs.c.
 */
 
-#include "loustd.h"
+#include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)io.c	3.14	11/11/04" ;
 
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include "io.h"
-#include "errs.h"
+#include "dylib_io.h"
+#include "dylib_errs.h"
 
 
 /*
@@ -55,10 +55,7 @@ static char sccsid[] UNUSED = "@(#)io.c	3.14	11/11/04" ;
 */
 
 #ifdef FORTRAN
-#  include "fortran.h"
-#  ifdef YLP_FORTRAN
-#    include "xmp.h"
-#  endif
+#  include "dylib_fortran.h"
 #endif
 
 #ifndef MALLOC
@@ -1988,16 +1985,6 @@ void outfmt_ (integer *ftnid, logical *ftnecho, char *pattern, ... )
 	{ errmsg(1,rtnnme,__LINE__) ;
 	  return ; }
 	break ; }
-#     ifdef YLP_FORTRAN
-      case ftnargVARNAME:
-      { va_arg(varargp,char *) = f_arr1(varname,
-					(int) *va_arg(fargs,integer *)) ;
-	break ; }
-      case ftnargCONNAME:
-      { va_arg(varargp,char *) = f_arr1(conname,
-					(int) *va_arg(fargs,integer *)) ;
-	break ; }
-#     endif
       default:
       { errmsg(7,rtnnme,__LINE__,"Fortran argument type code",type) ;
 	return ; } }

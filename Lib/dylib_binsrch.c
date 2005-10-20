@@ -23,12 +23,12 @@
   Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include "loustd.h"
+#include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)binsrch.c	1.4	09/25/04" ;
 
-#include "strrtns.h"
-#include "keytab.h"
+#include "dylib_strrtns.h"
+#include "dylib_keytab.h"
 
 
 

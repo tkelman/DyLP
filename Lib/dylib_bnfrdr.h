@@ -1,5 +1,5 @@
-#ifndef _BNFRDR_H
-#define _BNFRDR_H
+#ifndef _DYLIB_BNFRDR_H
+#define _DYLIB_BNFRDR_H
 
 /*
   This file is part of the bnfrdr input package.
@@ -26,7 +26,7 @@
   Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include "io.h"
+#include "dylib_io.h"
 
 /*
   @(#)bnfrdr.h	3.5	09/01/99
@@ -730,4 +730,4 @@ extern void bnfdbgctl(ioid dbgchn, bool dbgecho, bool warnzlbl, bool numlvl,
 extern void prtbnfref(ioid chn, bool echo, bnfref_struct *ref),
 	    prtbnfdef(ioid chn, bool echo, bnfdef_struct *def) ;
 
-#endif /* _BNFRDR_H */
+#endif /* _DYLIB_BNFRDR_H */

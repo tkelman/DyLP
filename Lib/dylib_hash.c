@@ -33,12 +33,12 @@
   in which case the io library is needed.
 */
 
-#include "loustd.h"
+#include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)hash.c	1.4	09/25/04" ;
 
 #include <stdio.h>
-#include "hash.h"
+#include "dylib_hash.h"
 
 
 

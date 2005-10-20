@@ -1,5 +1,5 @@
-#ifndef _LOUSTD_H
-#define _LOUSTD_H
+#ifndef _DYLIB_STD_H
+#define _DYLIB_STD_H
 
 /*
   This file contains common definitions. Yeah, the name is egotistical, but
@@ -151,7 +151,7 @@ typedef struct lnk_struct_tag
 
 #if (MALLOC_DEBUG == 2)
 
-#include "io.h"
+#include "dylib_io.h"
 
 void *zz_ptr_zz ;
 ioid  zz_chn_zz ;
@@ -224,4 +224,4 @@ void *zz_ptr_zz ;
 #endif
 
 
-#endif /* _LOUSTD_H */
+#endif /* _DYLIB_STD_H */

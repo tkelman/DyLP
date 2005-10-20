@@ -1,5 +1,5 @@
-#ifndef _STRRTNS_H
-#define _STRRTNS_H
+#ifndef _DYLIB_STRRTNS_H
+#define _DYLIB_STRRTNS_H
 
 /*
   This file is part of a package of string routines.
@@ -26,7 +26,7 @@
   Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include "loustd.h"
+#include "dylib_std.h"
 
 /*
   This file contains external definitions for the routines in the string
@@ -53,7 +53,7 @@ extern bool strfree(const char *string) ;
 
 #if (MALLOC_DEBUG == 2)
 
-#include "io.h"
+#include "dylib_io.h"
 
 void *zz_ptr_zz ;
 ioid  zz_chn_zz ;
@@ -78,4 +78,4 @@ ioid  zz_chn_zz ;
 #endif
 
 
-#endif /* _STRRTNS_H */
+#endif /* _DYLIB_STRRTNS_H */
