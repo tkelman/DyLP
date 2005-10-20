@@ -1,0 +1,179 @@
+
+# Secondary makefile for dylp.
+
+LIBSRC :=
+LIBSRC += cmdint.c
+LIBSRC += consys_io.c
+LIBSRC += consys_mathutils.c
+LIBSRC += consys_scaling.c
+LIBSRC += consys_utils.c
+LIBSRC += dy_basis.c
+LIBSRC += dy_bound.c
+LIBSRC += dy_coldstart.c
+LIBSRC += dy_conmgmt.c
+LIBSRC += dy_dual.c
+LIBSRC += dy_dualmultipivot.c
+LIBSRC += dy_dualpivot.c
+LIBSRC += dy_duenna.c
+LIBSRC += dy_force.c
+LIBSRC += dy_hotstart.c
+LIBSRC += dy_penalty.c
+LIBSRC += dy_pivreject.c
+LIBSRC += dy_primal.c
+LIBSRC += dy_primalmultipivot.c
+LIBSRC += dy_primalpivot.c
+LIBSRC += dy_scaling.c
+LIBSRC += dy_setup.c
+LIBSRC += dy_statistics.c
+LIBSRC += dy_varmgmt.c
+LIBSRC += dy_warmstart.c
+LIBSRC += dylp.c
+LIBSRC += dylp_io.c
+LIBSRC += dylp_utils.c
+LIBSRC += glpinv.c
+LIBSRC += glplib1.c
+LIBSRC += glplib2.c
+LIBSRC += glplib3.c
+LIBSRC += glplib4.c
+LIBSRC += glpluf.c
+#LIBSRC += mpsio.c
+LIBSRC += options.c
+LIBSRC += vector_utils.c
+
+#TSTSRC += osi_dylp.c
+
+#bonsai.h
+#bonsaierrs.txt
+#consys.h
+#dylp.h
+#glpinv.h
+#glplib.h
+#glpluf.h
+#vector.h
+
+###############################################################################
+
+# Different C++ implementations can choose different sizes for the bool data
+# type. To make sure the C code will interoperate, we need to form a correct
+# typedef for the fake bool type defined in loustd.h. If this isn't already
+# defined, try to find the booltype program. Failing that, bail and let the
+# client sort it out.
+
+DylpToolDir ?= ../Utils
+
+ifndef BOOLTYPE
+  ifndef BOOLTYPEPROG
+    pathsearch = $(firstword $(wildcard $(addsuffix /$(1), \
+		 $(subst :, ,$(DylpToolDir):$(PATH)))))
+    BOOLTYPEPROG := $(call pathsearch,booltype)
+  endif
+  ifneq ($(BOOLTYPEPROG),)
+    BOOLTYPE := $(shell $(BOOLTYPEPROG))
+  else
+    $(warning Cannot find booltype program)
+  endif
+  ifeq ($(BOOLTYPE),)
+    $(error Cannot determine proper C type for "typedef <type> bool")
+  endif
+endif
+
+# Programming environments and hardware differ in their support for floating
+# point computation. fpchecks attempts to sort it out and spit out the
+# correct compile-time symbol definitions.
+
+ifndef FPCONFIGFLAGS
+  ifndef FPCONFIGPROG
+    pathsearch = $(firstword $(wildcard $(addsuffix /$(1), \
+		 $(subst :, ,$(DylpToolDir):$(PATH)))))
+    FPCONFIGPROG := $(call pathsearch,fpchecks)
+  endif
+  ifneq ($(FPCONFIGPROG),)
+    FPCONFIGFLAGS := $(shell $(FPCONFIGPROG))
+  else
+    $(warning Cannot find fpchecks program)
+  endif
+  ifeq ($(FPCONFIGFLAGS),)
+    $(error Cannot determine proper floating point configuration flags. \
+    	    Bailing out. Check vector.h and take it from there)
+  endif
+endif
+
+# By default, the COIN boilerplate puts -I- in CXXFLAGS. Hence the current
+# directory must be explicitly added to the search list for include files.
+
+CXXFLAGS += -I. -I ../Lib -DBOOL=$(BOOLTYPE) -DCOIN_USE_DYLP $(FPCONFIGFLAGS)
+
+# COIN installation directory
+
+InstallDir ?= $(CoinDir)
+
+# Directory to hold dependency information.
+
+DEPDIR := Dep
+export DEPDIR
+
+# Makefile.lib is expecting C++ source. We need to preempt it here.
+
+LIBOBJ := $(addprefix $(TARGETDIR)/, $(LIBSRC:.c=.o))
+LIBOBJ += -L../Lib -lDylpStdLib
+ifeq ($(SunOS_PROGENV),SUNWspro)
+  LIBOBJ += -lsunmath
+endif
+LIBDEP := $(addprefix $(DEPDIR)/, $(LIBSRC:.c=.d))
+
+export LIBSRC
+export LIBOBJ
+export LIBDEP
+
+# Would be nice if Makefile.lib exported these.
+
+LIBNAMEOPT := lib$(LIBNAME)$(OptLevel)$(LIBEXT)
+LIBNAMENOOPT := lib$(LIBNAME)$(LIBEXT)
+
+# Directory to record what we've built.
+
+BUILDS = .Built
+
+###############################################################################
+
+.DELETE_ON_ERROR:
+
+.PHONY: default install library clean distclean libdepend
+
+default: library
+
+library: $(TARGETDIR)/$(LIBNAMEOPT)
+
+$(TARGETDIR)/$(LIBNAMEOPT):
+	$(MAKE) -f ${MakefileDir}/Makefile.lib library
+	@ mkdir -p $(BUILDS)
+	@ touch $(BUILDS)/$(TARGETDIR)
+
+install: library
+	@ rm -f $(LIBNAMENOOPT)
+	@ ${LN} $(TARGETDIR)/$(LIBNAMEOPT) $(LIBNAMENOOPT)
+	@ echo "Installing libraries ..."
+	@ mkdir -p $(InstallDir)/lib
+	@ ${CP} $(TARGETDIR)/$(LIBNAMEOPT) ${InstallDir}/lib
+	@ cd ${InstallDir}/lib ; \
+	  rm -f $(LIBNAMENOOPT) ; \
+	  ${LN} $(LIBNAMEOPT) $(LIBNAMENOOPT)
+
+clean:
+	@ cd ${InstallDir}/lib ; rm -rf lib$(LIBNAME)*
+	@ rm -f $(LIBNAMENOOPT)
+	@ rm -rf $(TARGETDIR)
+	@ rm -rf Junk Dep
+	@ rm -f $(BUILDS)/$(TARGETDIR)
+
+distclean:
+	@ cd ${InstallDir}/lib ; rm -rf lib$(LIBNAME)*
+	@ rm -f $(LIBNAMENOOPT)
+	@ if [ -d $(BUILDS) ] ; then \
+	    for dir in `ls $(BUILDS)` ; do \
+	      if [ -d $$dir ] ; then \
+		rm -rf $$dir ; \
+	      fi ; \
+	    done ; \
+	  fi
+	@ rm -rf $(BUILDS) Junk Dep
