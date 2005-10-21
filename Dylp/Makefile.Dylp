@@ -103,8 +103,12 @@ export DEPDIR
 # Makefile.lib is expecting C++ source. We need to preempt it here.
 
 LIBOBJ := $(addprefix $(TARGETDIR)/, $(LIBSRC:.c=.o))
-LIBOBJ += -L../Lib -lDylpStdLib
+LIBOBJ += -lDylpStdLib
+LIBLDFLAGS += -L../Lib
+VPATH += :../Lib
 ifeq ($(SunOS_PROGENV),SUNWspro)
+  PathToSunmath := $(subst bin/workshop,lib,$(call pathsearch,workshop))
+  VPATH += :$(PathToSunmath)
   LIBOBJ += -lsunmath
 endif
 LIBDEP := $(addprefix $(DEPDIR)/, $(LIBSRC:.c=.d))
@@ -132,7 +136,7 @@ default: library
 
 library: $(TARGETDIR)/$(LIBNAMEOPT)
 
-$(TARGETDIR)/$(LIBNAMEOPT):
+$(TARGETDIR)/$(LIBNAMEOPT): $(LIBSRC) -lDylpStdLib
 	$(MAKE) -f ${MakefileDir}/Makefile.lib library
 	@ mkdir -p $(BUILDS)
 	@ touch $(BUILDS)/$(TARGETDIR)
