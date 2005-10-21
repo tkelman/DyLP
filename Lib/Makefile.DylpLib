@@ -73,7 +73,7 @@ default: library
 
 library: $(TARGETDIR)/$(LIBNAMEOPT)
 
-$(TARGETDIR)/$(LIBNAMEOPT):
+$(TARGETDIR)/$(LIBNAMEOPT): $(LIBSRC)
 	$(MAKE) -f ${MakefileDir}/Makefile.lib library
 	@ mkdir -p $(BUILDS)
 	@ touch $(BUILDS)/$(TARGETDIR)
