@@ -33,6 +33,7 @@
   is maintained is the association between a key and some generic object.
 
   @(#)hash.h	1.3 06/22/04
+  svn/cvs: $Id$
 */
 
 /* 

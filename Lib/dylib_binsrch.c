@@ -26,6 +26,7 @@
 #include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)binsrch.c	1.4	09/25/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 #include "dylib_strrtns.h"
 #include "dylib_keytab.h"

@@ -33,6 +33,7 @@
   package.
 
   @(#)strrtns.h	1.3	06/22/04
+  svn/cvs: $Id$
 */
 
 extern int cistrcmp(const char *str1, const char *str2),	/* strrtns.c */

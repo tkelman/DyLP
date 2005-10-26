@@ -40,6 +40,7 @@
 #include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)io.c	3.14	11/11/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -54,7 +55,7 @@ static char sccsid[] UNUSED = "@(#)io.c	3.14	11/11/04" ;
   some ancient LP software, you likely don't want to know about xmp.h.
 */
 
-#ifdef FORTRAN
+#ifdef _DYLIB_FORTRAN
 #  include "dylib_fortran.h"
 #endif
 
@@ -1880,7 +1881,7 @@ int outfxd (char *buffer, int fldsze, char lcr, const char *pattern, ... )
 
 
 
-#ifdef FORTRAN
+#ifdef _DYLIB_FORTRAN
 
 void outfmt_ (integer *ftnid, logical *ftnecho, char *pattern, ... )
 
@@ -2000,4 +2001,4 @@ void outfmt_ (integer *ftnid, logical *ftnecho, char *pattern, ... )
 
   return ; }
 
-#endif /* FORTRAN */
+#endif /* _DYLIB_FORTRAN */

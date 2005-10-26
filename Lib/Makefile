@@ -1,38 +1,36 @@
 # Makefile for dylp's standard support library, libDylpStdLib. 
 
-# Uncomment one line only to build a static or shared library. The preferred
-# choice here is static, so that it will be incorporated into the main dylp
-# shared library.
+# svn/cvs: $Id$
 
-#LibType := SHARED
-LibType := STATIC
+# OptLevel and DYLP_OPTIONS are normally set in the top level makefile. (Which
+# see for explanations of what they do.) You can override the general setting
+# here, if you want. Each variable is conditionally set with `?='. This means
+# the setting here will have an effect only if the variable is undefined (as,
+# for example, if you run make in this directory, rather than from the top
+# level). To override the top level setting, change `?=' to `:='.
 
-# Select optimization (-O or -g).
+export OptLevel ?= -O
+export DYLP_OPTIONS ?=
 
-# Uncomment one line only to create a debugging (-g) or optimised (-O) build.
-# -O will be automatically bumped up to the highest level of optimization the
-# compiler supports. If want something in between then specify the exact level
-# you want, e.g., -O1, -O2, etc.
+# LibType really needs to be static for libDylpStdLib, so the support routines
+# will be sucked into libDylp when it's linked.
 
-OptLevel := -g
-#OptLevel := -O
+export LibType := STATIC
 
-LIBNAME := DylpStdLib
-export LIBNAME
+# And the support library name really shouldn't be changed either.
+
+export LIBNAME := DylpStdLib
 
 ###############################################################################
 
-# Use the COIN boilerplate to establish the build environment.
+# Use the COIN boilerplate to establish the build environment. As explained
+# above, CoinDir and MakefileDir will normally be set in the top level
+# makefile.
 
-export CoinDir := $(shell cd ../.. ; pwd)
-export MakefileDir := $(CoinDir)/Makefiles
+export CoinDir ?= $(shell cd ../.. ; pwd)
+export MakefileDir ?= $(CoinDir)/Makefiles
 
 include ${MakefileDir}/Makefile.coin
-include ${MakefileDir}/Makefile.location
-
-TARGETDIR := $(UNAME)$(OptLevel)
-export TARGETDIR
-export OptLevel
 
 ###############################################################################
 
@@ -48,14 +46,17 @@ default: install
 
 ###############################################################################
 
+# We need the configuration utilities in order to build DylpStdLib
+
 libdepend:
 	cd ../Utils ; $(MAKE) -f Makefile tools
 
 library install: libdepend
 	${MAKE} -f Makefile.DylpLib $@
 
-# We need to set BOOLTYPE in order to suppress any attempt by Makefile.DylpLib
-# to run booltype, which may not exist when we're just doing a clean.
+# We need to set BOOLTYPE nd FPCONFIGFLAGS in order to suppress execution of
+# the configuration programs, which may not exist when we're just doing a
+# clean.
 
 clean distclean: 
-	${MAKE} -f Makefile.DylpLib BOOLTYPE=bogus $@
+	${MAKE} -f Makefile.DylpLib BOOLTYPE=bogus FPCONFIGFLAGS=bogus $@

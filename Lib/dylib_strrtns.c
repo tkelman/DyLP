@@ -30,6 +30,7 @@
 #include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)strrtns.c	1.5	09/25/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 
 

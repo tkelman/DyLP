@@ -1,5 +1,7 @@
 # Secondary makefile for dylp's standard support library.
 
+# svn/cvs: $Id$
+
 LIBSRC :=
 
 LIBSRC += dylib_binsrch.c
@@ -13,37 +15,16 @@ LIBSRC += dylib_strrtns.c
 
 ###############################################################################
 
-# Different C++ implementations can choose different sizes for the bool data
-# type. To make sure the C code will interoperate, we need to form a correct
-# typedef for the fake bool type defined in loustd.h. If this isn't already
-# defined, try to find the booltype program. Failing that, bail and let the
-# client sort it out.
+# Invoke the configuration utilities to set DYLP_COMPILE_DEFS
 
-DylpToolDir ?= ../Utils
-
-ifndef BOOLTYPE
-  ifndef BOOLTYPEPROG
-    pathsearch = $(firstword $(wildcard $(addsuffix /$(1), \
-		 $(subst :, ,$(DylpToolDir):$(PATH)))))
-    BOOLTYPEPROG := $(call pathsearch,booltype)
-  endif
-  ifneq ($(BOOLTYPEPROG),)
-    BOOLTYPE := $(shell $(BOOLTYPEPROG))
-  else
-    $(warning Cannot find booltype program)
-  endif
-  ifeq ($(BOOLTYPE),)
-    $(error Cannot determine proper C type for "typedef <type> bool")
-  endif
-endif
+include ../Utils/Makefile.Config
 
 # By default, the COIN boilerplate puts -I- in CXXFLAGS. Hence the current
 # directory must be explicitly added to the search list for include files.
 
-CXXFLAGS += -I. -DBOOL=$(BOOLTYPE)
+CXXFLAGS += -I. $(DYLP_COMPILE_DEFS)
 
-DEPDIR := Dep
-export DEPDIR
+export DEPDIR := Dep
 
 # Makefile.lib is expecting C++ source. We need to preempt it here.
 
@@ -54,9 +35,10 @@ export LIBSRC
 export LIBOBJ
 export LIBDEP
 
-# Would be nice if Makefile.lib exported these.
+# Would be nice if these were defined outside of Makefile.lib. Definitions must
+# match.
 
-LIBNAMEOPT := lib$(LIBNAME)$(OptLevel)$(LIBEXT)
+LIBNAMEOPT := lib$(LIBNAME)$(OptVersion)$(LIBEXT)
 LIBNAMENOOPT := lib$(LIBNAME)$(LIBEXT)
 
 # Directory to record what we've built.
@@ -71,12 +53,17 @@ BUILDS = .Built
 
 default: library
 
+# The library target will remake the desired binary, leaving it in TARGETDIR.
+
 library: $(TARGETDIR)/$(LIBNAMEOPT)
 
 $(TARGETDIR)/$(LIBNAMEOPT): $(LIBSRC)
 	$(MAKE) -f ${MakefileDir}/Makefile.lib library
 	@ mkdir -p $(BUILDS)
 	@ touch $(BUILDS)/$(TARGETDIR)
+
+# Install is a separate, phony, target so that we always reset the generic
+# link to point to the correct specific binary.
 
 install: library
 	@ rm -f $(LIBNAMENOOPT)

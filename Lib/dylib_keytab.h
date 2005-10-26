@@ -30,6 +30,7 @@
   Data structure for keyword tables searched by find and ambig
   
   @(#)keytab.h	1.2	08/31/99
+  svn/cvs: $Id$
 */
 
 /*

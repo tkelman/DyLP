@@ -37,6 +37,7 @@
 #include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)littab.c	1.4	09/25/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 #include <stdio.h>
 #include "dylib_hash.h"

@@ -41,16 +41,15 @@
   provision for optionally logging error messages into a separate file,
   specified by elogchn.
 
-  The conditional compilation variable YLP_FORTRAN, when defined, will trigger
-  the inclusion of code which provides an errmsg subroutine and interface
-  usable from Fortran code. It can be used in any application, but includes
-  a few special hooks for use by the LP package YLP embedded in the bonsai
-  MILP code.
+  The conditional compilation variable _DYLIB_FORTRAN, when defined, will
+  trigger the inclusion of code which provides an errmsg subroutine and
+  interface usable from Fortran code.
 */
 
 #include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)errs.c	3.13	11/11/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -91,11 +90,8 @@ static char warntxt[MAXERRTXT+WARNPFXLEN] = "\n%s (warning): " ;
   with Fortran ylp and la05 libraries.
 */
 
-#ifdef FORTRAN
+#ifdef _DYLIB_FORTRAN
 #  include "fortran.h"
-#  ifdef YLP_FORTRAN
-#    include "xmp.h"
-#  endif
 #endif
 
 
@@ -151,7 +147,7 @@ void errinit (char *emsgpath, char *elogpath, bool echo)
   
   errecho = echo ;
 
-#ifdef FORTRAN
+#ifdef _DYLIB_FORTRAN
 /*
   Initialise a common block with the type codes used by Fortran when it calls
   errmsg_.
@@ -502,7 +498,7 @@ void warn (int errid, ... )
 
 #endif /* NDEBUG */
 
-#ifdef FORTRAN
+#ifdef _DYLIB_FORTRAN
 
 
 
@@ -511,8 +507,7 @@ void warn (int errid, ... )
   called from Fortran code. (The is also a companion routine, io.c:outfmt_.)
   This interface was created because early versions of the bonsai MILP
   code, written in C, used Fortran versions of the ylp and la05 subroutine
-  libraries.  Nowadays only la05 survives --- dylp has replaced ylp ---
-  and code surrounded by YLP_FORTRAN is vestigial.
+  libraries.
 
   The problem is that the things that Fortran will hand over cannot be passed
   directly to vfprintf - it passes pointers, vfprintf wants values for some
@@ -527,8 +522,9 @@ void warn (int errid, ... )
 
   This hack has worked for some 10 years now, surviving ports to various
   architectures and the transition to ANSI C (varargs.h -> stdarg.h), but I'm
-  starting to feel I'm pushing my luck.  Shortly, la05 will join ylp in the
-  dustbin of history, this code can disappear, and I'll be a happier person.
+  starting to feel I'm pushing my luck. Fortunately, la05 has joined ylp in
+  the dustbin, replaced by C basis maintenance code from glpk. At present
+  (2005), this code is historical. Eventually it will disappear.
 
   The routines deal with a limited set of argument types: the Fortran types
   integer, double_precision, and character, and the special categories of
@@ -627,16 +623,6 @@ void errmsg_ (integer *errid, char *ident, ... )
 	{ errmsg(1,rtnnme,__LINE__) ;
 	  return ; }
 	break ; }
-#     ifdef YLP_FORTRAN
-      case ftnargVARNAME:
-      { va_arg(varargp,char *) = f_arr1(varname,
-					(int) *va_arg(fargs,integer *)) ;
-	break ; }
-      case ftnargCONNAME:
-      { va_arg(varargp,char *) = f_arr1(conname,
-					(int) *va_arg(fargs,integer *)) ;
-	break ; }
-#     endif
       default:
       { if (errecho == TRUE)
 	  fprintf(stderr,
@@ -764,16 +750,6 @@ void warn_ (integer *errid, char *ident, ... )
 	{ errmsg(1,rtnnme,__LINE__) ;
 	  return ; }
 	break ; }
-#     ifdef YLP_FORTRAN
-      case ftnargVARNAME:
-      { va_arg(varargp,char *) = f_arr1(varname,
-					(int) *va_arg(fargs,integer *)) ;
-	break ; }
-      case ftnargCONNAME:
-      { va_arg(varargp,char *) = f_arr1(conname,
-					(int) *va_arg(fargs,integer *)) ;
-	break ; }
-#     endif
       default:
       { if (errecho == TRUE)
 	  fprintf(stderr,
@@ -814,4 +790,4 @@ void warn_ (integer *errid, char *ident, ... )
 
 #endif /* NDEBUG */
 
-#endif /* FORTRAN */
+#endif /* _DYLIB_FORTRAN */

@@ -27,7 +27,8 @@
 */
 
 /*
-  @(#)errs.h	2.3	03/18/04
+  sccs: @(#)errs.h	2.3	03/18/04
+  svn/cvs: $Id$
 */
 
 #include "dylib_std.h"

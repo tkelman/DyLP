@@ -29,7 +29,8 @@
 #include "dylib_io.h"
 
 /*
-  @(#)bnfrdr.h	3.5	09/01/99
+  sccs: @(#)bnfrdr.h	3.5	09/01/99
+  svn/cvs: "$Id$" ;
 
   This file contains the structure definitions required to use the bnf reader
   package. The bnf reader depends heavily on the following two assumptions:

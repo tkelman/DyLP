@@ -38,6 +38,7 @@
 #include "dylib_std.h"
 
 static char sccsid[] UNUSED = "@(#)bnfrdr.c	3.9	09/25/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 #include "dylib_io.h"
 #include "dylib_errs.h"
