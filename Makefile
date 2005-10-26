@@ -1,45 +1,61 @@
 
 # Top level makefile for dylp. Edit as needed below to set the type of library
-# and optimisation level.
+# optimisation level, and code options.
+
+# svn/cvs: $Id$
 
 # Available targets:
 #  * library - builds the dylp library but does not install
-#  * install - builds and installs the dylp library
+#  * install - library, plus installs the dylp library in COIN/lib
+#  * samples - install, plus builds a sample main program in Samples
 #  * clean - removes binaries for current build settings (e.g., SunOS-g)
 #  * distclean - removes all binaries
 
-# Uncomment one line only to build a static or shared library. Shared is the
-# preferred choice unless you have some reason to want a static library.
+# Specify a shared (SHARED) or static (STATIC) library. Shared is the preferred
+# choice unless you have some reason to want a static library.
 
-LibType := SHARED
-#LibType := STATIC
+export LibType := SHARED
 
-export LibType
+# Select optimisation.
 
-# Select optimization (-O or -g).
+# Ask the compiler to include debugging information (-g) and/or optimisation
+# (-O). These are not mutually exclusive, but be sure you understand what
+# you're asking for if you ask for both. -O will be automatically bumped up to
+# the highest level of optimisation the compiler supports. If want something in
+# between then specify the exact level you want, e.g., -O1, -O2, etc.
 
-# Uncomment one line only to create a debugging (-g) or optimised (-O) build.
-# -O will be automatically bumped up to the highest level of optimization the
-# compiler supports. If want something in between then specify the exact level
-# you want, e.g., -O1, -O2, etc.
+export OptLevel := -O
 
-OptLevel := -g
-#OptLevel := -O
+# Additional dylp compile-time options.
 
-export OptLevel
+# You can request statistics (stats), paranoia (paranoia), and informational
+# printing (info).  See the print documentation for an explanation of what each
+# of these entails. NOTE that just changing DYLP_OPTIONS won't trigger a
+# rebuild.  You'll need to do a `make clean' or `make distclean' to remove old
+# binaries, then rebuild.
 
-# NOTE: Assignments to LibType and OptLevel in subsidiary makefiles are
-# conditional (`?='). If you want finer control, do not assign values here
-# and edit the subsidiary makefiles.
+# To enable all three, you would say
+#   DYLP_OPTIONS := stats paranoia info
+# A build which is optimised for speed disables all three.  Subsidiary
+# makefiles test for the relevant strings and use them to set compilation
+# flags. Informational printing and statistics are relatively cheap,
+# computationally. Paranoia is expensive, particularly for large constraint
+# systems. Informational printing is relatively inexpensive, but will produce
+# annoying warnings about numerical problems for some lps.
 
-LIBNAME := Dylp
+export DYLP_OPTIONS := info
 
-export LIBNAME
+# NOTE: Assignments to LibType, OptLevel, and DYLP_OPTIONS in subsidiary
+# makefiles are conditional (`?='), so that any definition here (including an
+# empty definition) will dominate. If you want finer control, edit the
+# subsidiary makefiles.
+
+export LIBNAME := Dylp
 
 ###############################################################################
 
-# CoinDir should be the COIN installation directory. It's assumed that Dylp
-# is at $(CoinDir)/Dylp.
+# CoinDir should be the COIN installation directory, and MakefileDir the
+# location of the COIN boilerplate makefiles.
 
 export CoinDir := $(shell cd .. ; pwd)
 export MakefileDir := $(CoinDir)/Makefiles
@@ -57,8 +73,12 @@ default: install
 library install:
 	cd Dylp ; ${MAKE} -f Makefile $@
 
+samples:
+	cd Samples ; ${MAKE} -f Makefile
+
 clean distclean:
 	cd Dylp ; ${MAKE} -f Makefile $@
 	cd Lib ; ${MAKE} -f Makefile $@
 	cd Utils ; ${MAKE} -f Makefile $@
+	cd Samples ; ${MAKE} -f Makefile $@
 
