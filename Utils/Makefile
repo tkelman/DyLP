@@ -2,10 +2,16 @@
 # Makefile for Dylp configuration utilities. You should not need to edit the
 # makefiles in this directory.
 
+# svn/cvs: $Id$
+
 ###############################################################################
 
-export CoinDir := $(shell cd ../.. ; pwd)
-export MakefileDir := $(CoinDir)/Makefiles
+# Conditional assignments here because this file will normally be triggered as
+# part of the larger dylp build. If these are different at a higher level, we
+# don't want to override them.
+
+export CoinDir ?= $(shell cd ../.. ; pwd)
+export MakefileDir ?= $(CoinDir)/Makefiles
 
 # Use COIN boilerplate to determine build environment
 
@@ -24,5 +30,5 @@ default: tools
 
 ###############################################################################
 
-tools clean distclean doc:
+tools clean distclean:
 	${MAKE} -f Makefile.Utils $@

@@ -1,5 +1,7 @@
 # Secondary makefile for dylp's configuration utilities.
 
+# svn/cvs: $Id$
+
 # The two programs built by this makefile are used to determine configuration
 # settings for dylp. Don't do anything fancy: a vanilla compile & link is the
 # right choice.
@@ -13,7 +15,7 @@
 # This is required so that we always bring the proper binary up from the
 # OS-specific directories that hold the binaries.
 
-.PHONY: fpchecks booltype
+.PHONY: fpchecks booltype clean distclean
 
 # Take advantage of COIN boilerplate in Makefile.rules.
 

@@ -2,8 +2,14 @@
 /*
   Simple C++ program to determine the size of a bool.
 */
+/*
+  Rather than go through the bother required to get this string into the
+  binary, we'll settle for a comment.
 
-static char sccsid[] = "@(#)booltype.cpp	1.2	09/25/04" ;
+  sccsid[] = "@(#)booltype.cpp	1.2	09/25/04" ;
+  svnid[] = "$Id" ;
+*/
+
 
 #include <iostream>
 #include <string>

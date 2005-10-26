@@ -1,5 +1,11 @@
 
-static char sccsid[] = "@(#)boolequiv.c	1.1	10/18/02" ;
+/*
+  Rather than go through the bother required to get this string into the
+  binary, we'll settle for a comment.
+
+  sccsid[] = "@(#)boolequiv.c	1.1	10/18/02" ;
+  svnid[] = "$Id" ;
+*/
 
 /*
   This routine accepts a single numeric parameter and matches it to the
