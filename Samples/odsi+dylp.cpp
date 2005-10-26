@@ -34,12 +34,14 @@
 
 #include <iostream>
 #include <assert.h>
+#include "dylib_std.h"
 #include "OsiDylpSolverInterface.hpp"
 #include "CoinTime.hpp"
 #include "CoinError.hpp"
 
 namespace {
   char sccsid[] UNUSED = "@(#)odsi+dylp.cpp	1.5	11/06/04" ;
+  char svnid[] UNUSED = "$Id$" ;
 }
 
 using std::string ;

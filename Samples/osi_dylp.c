@@ -48,7 +48,7 @@
 			  giving the result of the LP.
   -p <num>		Set overall print level to <num>, [0..5].
   -e <errmsg-file>	Source text for error messages (defaults to
-			  bonsaierrs.txt).
+			  dy_errmsgs.txt).
   -E <errlog-file>	A logging file for error messages (default is to
 			  direct error messages to stderr and the log file).
   -o <option-file>	Control ('.spc') options for dylp. Defaults to stdin,
@@ -74,13 +74,26 @@
 #include <string.h>
 #include <time.h>
 #include <sys/resource.h>
-#include "bonsai.h"
+#include "dy_cmdint.h"
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)osi_dylp.c	1.10	09/25/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 char *osidylp_version = "1.10" ;			/* sccs! */
 char *osidylp_time ;
+
+/*
+  Macro cleverness to specify a default error message file. Depends on ANSI
+  C merge of consecutive string constants. DYLP_ERRMSGDIR should have the
+  form "path/to/distribution/Dylp/Dylp", including the quotes.
+*/
+
+#ifdef DYLP_ERRMSGDIR
+# define DYLP_ERRMSGPATH DYLP_ERRMSGDIR "/dy_errmsgs.txt"
+#else
+# define DYLP_ERRMSGPATH "dy_errmsgs.txt"
+#endif
 
 /*
   Variables which control i/o operations.
@@ -165,7 +178,7 @@ void print_help (ioid chn, bool echo)
 
   outfmt(chn,echo,"\n  %s\t%s","-e <errmsg-file>",
 	 "Source text for error messages (defaults to") ;
-  outfmt(chn,echo,"\n\t\t\t%s","bonsaierrs.txt).") ;
+  outfmt(chn,echo,"\n\t\t\t%s","dy_errmsgs.txt).") ;
 
   outfmt(chn,echo,"\n  %s\t%s","-E <errlog-file>",
 	  "A logging file for error messages (default is to") ;
@@ -545,7 +558,7 @@ int main (int argc, char *argv[])
   Set up some defaults, then process the command line options. This is all very
   specific to Unix and SunOS.
 */
-  errmsgpath = "bonsaierrs.txt" ;
+  errmsgpath = DYLP_ERRMSGPATH ;
   errlogpath = NULL ;
   optpath = NULL ;
   mpspath = NULL ;
@@ -774,8 +787,7 @@ int main (int argc, char *argv[])
 */
   dy_initbasis(2*main_sys->concnt,main_lpopts->factor+5,0) ;
 /*
-  Run the lp. (Call a stub of the equivalent routine in the MIP solver
-  bonsaiG.)
+  Run the lp.
 */
   if (do_lp_all(&lptime) == FALSE)
   { errmsg(202,rtnnme,main_sys->nme) ; }

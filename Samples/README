@@ -1,0 +1,34 @@
+
+  svn/cvs: $Id$
+
+  The shell script plain can be used to test the installation. You should
+  have a simple wrapper program, osi_dylp, in the OsiDylp directory. `plain
+  <problem>' will run osi_dylp on the specified <problem>. E.g., `plain
+  adlittle' will use osi_dylp to solve adlittle. plain expects to find the
+  MPS problem specification in the directory where it is running, or in
+  ~/COIN/Mps/Netlib. Compressed files from ~/COIN/Mps/Netlib will be
+  uncompressed into this directory (Note 1)
+
+  Expected results, for the optimised build:
+
+  Problem	Objective	Run time (roughly)
+
+  adlittle	 225494.963	  .1 sec.
+  greenbeb     -4302260.26	60   sec.
+
+  adlittle is included here because it's tiny and fast. greenbeb is included
+  because it's a bit longer and more difficult.
+
+  The run times given above are for a Sun UltraSPARC-5, 333 MHz. CPU, 2MB
+  cache, 256 MB memory. Times for an Intel i686, 500 MHz. CPU,  255 MB
+  memory, and a SunBlade-100, 550 MHz. CPU, 640 MB memory, are in the same
+  ballpark. Your mileage will assuredly vary, but at least you have an idea
+  of roughly how long to wait.
+
+  Note 1: There's no good reason to upgrade dylp's private MPS reader to
+	  support compressed input files. Nor does it support files that take
+	  full advantage of MPS fixed format and use spaces in the row and
+	  column names. The OsiDylp interface layer makes use of the COIN MPS
+	  i/o facilities, which support the full MPS specification and
+	  compressed files.  Dylp's MPS reader, on the other hand, supports
+	  some extensions that may be useful in other contexts.

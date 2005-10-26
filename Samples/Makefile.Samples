@@ -1,0 +1,103 @@
+# Secondary makefile for sample main programs.
+
+# svn/cvs: $Id$
+
+##############################################################################
+# You should not need to edit below this line.
+##############################################################################
+
+# Invoke the configuration utilities to set DYLP_COMPILE_DEFS
+
+ifdef DylpHome
+  include $(DylpHome)/Utils/Makefile.Config
+else
+  include ../Utils/Makefile.Config
+endif
+
+##############################################################################
+
+# Used by the COIN boilerplate in Makefile.rules
+
+export DEPDIR := Dep
+
+# A directory to track what we've built.
+
+BUILDS = .Built
+
+# Tell the compiler where to find include files. Add the defines that dylp
+# needs. OPTFLAG is established by the Coin boilerplate, but is only added
+# to CXXFLAGS in Makefile.lib. We have to do it by hand here.
+
+CXXFLAGS += $(OPTFLAG)
+CXXFLAGS += -I. $(patsubst %, -I%, $(DylpIncDir))
+CXXFLAGS += $(patsubst %, -D%, $(DylpDefine))
+CXXFLAGS += $(DYLP_COMPILE_DEFS)
+
+odsi+dylp: CXXFLAGS += -I$(OsiDylpIncDir) $(patsubst %, -D%, $(OsiDylpDefine))
+
+# Add Dylp library location to VPATH.
+
+VPATH += $(DylpLibDir)
+
+odsi+dylp: VPATH += $(OsiDylpLibDir)
+
+##############################################################################
+
+include $(MakefileDir)/Makefile.rules
+
+.DELETE_ON_ERROR:
+
+# This is required so that we always bring the proper binary up from the
+# OS-specific directories that hold the binaries.
+
+.PHONY: osi_dylp osi+dylp odsi+dylp clean distclean
+
+
+osi_dylp osi+dylp odsi+dylp: % : $(TARGETDIR)/%
+	@ echo "Copying $< to $@."
+	@ cp $< $@
+	@ mkdir -p $(BUILDS)
+	@ touch $(BUILDS)/$(TARGETDIR)
+
+$(TARGETDIR)/osi_dylp: $(TARGETDIR)/osi_dylp.o \
+		       $(TARGETDIR)/mpsio.o $(DylpLibName)
+	@ echo -n "Building $@ ..."
+	@ $(LINK.c) -L$(CoinDir)/lib -o $@ $^ -lm
+	@ echo " done."
+
+$(TARGETDIR)/osi+dylp: $(TARGETDIR)/osi+dylp.o \
+		       $(TARGETDIR)/mpsio.o $(DylpLibName)
+	@ echo -n "Building $@ ..."
+	  $(LINK.cc) -L$(CoinDir)/lib -o $@ $^ -lm
+	@ echo " done."
+
+$(TARGETDIR)/odsi+dylp: $(TARGETDIR)/odsi+dylp.o \
+		       $(OsiDylpLibName) $(DylpLibName) \
+		       $(OsiLibName) $(CoinLibName) -lz
+	@ echo -n "Building $@ ..."
+	  $(LINK.cc) -L$(CoinDir)/lib -o $@ $^ -lm
+	@ echo " done."
+
+clean:
+	@ rm -rf $(TARGETDIR)
+	@ rm -rf Dep
+	@ rm -f $(filter-out osi_dylp.c, $(wildcard osi_dylp*))
+	@ rm -f $(filter-out osi+dylp.cpp, $(wildcard osi+dylp*))
+	@ rm -f $(filter-out odsi+dylp.cpp, $(wildcard odsi+dylp*))
+	@ rm -f *.log *.out
+	@ rm -f $(BUILDS)/$(TARGETDIR)
+
+distclean:
+	@ if [ -d $(BUILDS) ] ; then \
+	    for dir in `ls $(BUILDS)` ; do \
+	      if [ -d $$dir ] ; then \
+		rm -rf $$dir ; \
+	      fi ; \
+	    done ; \
+	  fi
+	@ rm -rf $(BUILDS)
+	@ rm -f $(filter-out osi_dylp.c, $(wildcard osi_dylp*))
+	@ rm -f $(filter-out osi+dylp.cpp, $(wildcard osi+dylp*))
+	@ rm -f $(filter-out odsi+dylp.cpp, $(wildcard odsi+dylp*))
+	@ rm -f *.log *.out
+	@ rm -rf Junk Dep

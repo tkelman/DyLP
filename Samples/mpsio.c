@@ -24,10 +24,18 @@
 */
 
 /*
-  This file contains C subroutines mpsin and mpsout for MPS style input and
-  output. The formats are compatible with the 'Free Format' MPS format as
-  described in the on-line OSL Guide and Reference:
-    http://www.watson.ibm.com/osl/ekkgmst.html).
+  There are two conditional compilation symbols in this file, BONSAIG and
+  COIN_USE_DYLP. BONSAIG should be defined only if you're building BonsaiG.
+  COIN_USE_DYLP should be defined only if you're trying to use this MPS
+  reader instead of the COIN MPS i/o routines. In general, you don't want to
+  define either one.
+*/
+
+/*
+  This file contains C subroutines to parse MPS format problem files. The
+  capabilities are compatible with the 'Free Format' MPS format.  But ...
+  this parser won't handle some of the strange things that are legal in MPS
+  `fixed' format (column names with spaces in them, for instance).
 
   The general format of an MPS file is
 
@@ -120,14 +128,14 @@
 
 
 
-#include "bonsai.h"
+#include "dy_cmdint.h"
 #include "dylp.h"
-#include "hash.h"
-#include "strrtns.h"
+#include "dylib_hash.h"
+#include "dylib_strrtns.h"
 #include <string.h>
 #include <errno.h>
 
-#ifdef COIN_USE_DYLP
+#ifndef BONSAIG
 
 /*
   We need to provide a definition for mipopts_struct in the OsiDylp
@@ -144,6 +152,7 @@ typedef struct { int minmax ;
 
 
 static char sccsid[] UNUSED = "@(#)mpsio.c	4.4	11/06/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   A bunch of definitions and declarations for mpsin and its slave routines.
@@ -294,7 +303,7 @@ static mpsinstate_enum mpsin_name (ioid mpschn, consys_struct **consys,
   { errmsg(152,rtnnme,tok) ;
     return (mpsinINV) ; }
 # ifndef NDEBUG
-  outfmt(logchn,gtxecho,"\n\treading model %s.\n",(*consys)->nme) ;
+  outfmt(dy_logchn,dy_gtxecho,"\n\treading model %s.\n",(*consys)->nme) ;
 # endif
 /*
   Check for the keyword "free", which should follow the name, and issue a
@@ -466,7 +475,7 @@ static mpsinstate_enum mpsin_rows (ioid mpschn, consys_struct *consys)
   pkrow->nme = NULL ;
   pkvec_free(pkrow) ;
 # ifndef NDEBUG
-  outfmt(logchn,gtxecho,"\n\t(%s) read %d constraints from the MPS file.",
+  outfmt(dy_logchn,dy_gtxecho,"\n\t(%s) read %d constraints from the MPS file.",
 	 rtnnme,consys->archccnt) ;
 # endif
   if (seen_cols == FALSE)
@@ -1288,7 +1297,7 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
 
   char *rtnnme = "mpsin_enddata" ;
 
-#ifndef COIN_USE_DYLP
+#ifdef BONSAIG
 
   /* bonsaiG uses this; it's not present in the OsiDylp configuration. */
 
@@ -1346,7 +1355,7 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
   to fill a hole.
 */
   if (mipopts->objcon == FALSE)
-#if defined(COIN_USE_DYLP)
+#ifdef COIN_USE_DYLP
   { if (consys_delrow_stable(consys,consys->objndx) == FALSE)
 #else
   { if (consys_delrow(consys,consys->objndx) == FALSE)
@@ -1416,6 +1425,8 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
       { errmsg(112,rtnnme,consys->nme,"scalar multiply","row",
 	       consys_nme(consys,'c',ndx,FALSE,NULL),ndx) ;
 	return (mpsinINV) ; } } }
+#endif /* !COIN_USE_DYLP */
+#ifdef BONSAIG
 /*
   Convert the temporary data structure from the parse of tour class
   specifications into the permanent run-time structure.
@@ -1423,8 +1434,7 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
   if (tourclass_init(consys,varhash,varhashsze) == FALSE)
   { errmsg(761,rtnnme) ;
     return (mpsinINV) ; }
-#endif /* !COIN_USE_DYLP */
-
+#endif
 /*
   Free the hash tables!
 */
@@ -1450,18 +1460,21 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
   
 
 # ifndef NDEBUG
-  outfmt(logchn,gtxecho,"\n\t(%s) read %d variables",rtnnme,consys->archvcnt) ;
+  outfmt(dy_logchn,dy_gtxecho,"\n\t(%s) read %d variables",
+	 rtnnme,consys->archvcnt) ;
   if (consys->intvcnt > 0 || consys->binvcnt > 0)
-    outfmt(logchn,gtxecho," (%d continuous, %d integer, %d binary)",
+    outfmt(dy_logchn,dy_gtxecho," (%d continuous, %d integer, %d binary)",
 	   consys->archvcnt-(consys->intvcnt+consys->binvcnt),
 	   consys->intvcnt,consys->binvcnt) ;
-  outfmt(logchn,gtxecho,
+  outfmt(dy_logchn,dy_gtxecho,
 	 ".\n\t\tread %d non-zero coefficients from the MPS file.",
 	 consys->mtx.coeffcnt) ;
-  outfmt(logchn,gtxecho,"\n\t\tthe longest column is %s, with %d entries.",
+  outfmt(dy_logchn,dy_gtxecho,
+	 "\n\t\tthe longest column is %s, with %d entries.",
 	 consys_nme(consys,'v',consys->maxcolndx,FALSE,NULL),
 	 consys->maxcollen) ;
-  outfmt(logchn,gtxecho,"\n\t\tthe longest row is %s, with %d entries.\n",
+  outfmt(dy_logchn,dy_gtxecho,
+	 "\n\t\tthe longest row is %s, with %d entries.\n",
 	 consys_nme(consys,'c',consys->maxrowndx,FALSE,NULL),
 	 consys->maxrowlen) ;
 # endif
@@ -1635,7 +1648,7 @@ bool mpsin (char *mpspath, consys_struct **consys,
   errmsg(170,rtnnme,mpspath) ;
   return (FALSE) ; }
 
-#ifdef COIN_USE_DYLP
+#ifndef BONSAIG
 
 bool dy_mpsin (char *mpspath, consys_struct **consys, double infinity)
 /*
