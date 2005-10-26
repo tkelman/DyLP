@@ -160,6 +160,7 @@
 #include "consys.h"
 
 static char sccsid[] UNUSED = "@(#)consys_utils.c	4.7	10/15/05" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   Default constraint system constants

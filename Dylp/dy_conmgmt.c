@@ -29,6 +29,7 @@
 #include <limits.h>
 
 static char sccsid[] UNUSED = "@(#)dy_conmgmt.c	4.6	10/15/05" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   This file contains routines for primal constraint management. It provides

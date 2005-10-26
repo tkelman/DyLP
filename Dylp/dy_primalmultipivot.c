@@ -50,6 +50,7 @@
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_primalmultipivot.c	1.4	11/06/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   The structure to hold pivot candidates
@@ -304,7 +305,7 @@ static dyret_enum scanForPrimOutCands (primcand_struct *outcands,
   char *rtnnme = "scanForPrimOutCands" ;
 # endif
 
-# ifndef NDEBUG
+# if !defined(NDEBUG) || defined(PARANOIA)
   int print ;
 
   print = dy_opts->print.pivoting ;	/* suppress print in dy_chkpiv */

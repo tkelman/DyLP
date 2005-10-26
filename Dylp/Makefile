@@ -1,37 +1,31 @@
 # Makefile for the dylp library, libDylp.
 
-# Uncomment one line only to build a static or shared library. Shared is the
-# preferred choice unless you have some reason to want a static library.
+# svn/cvs: $Id$
 
-LibType := SHARED
-#LibType := STATIC
+# LibType, OptLevel, DYLP_OPTIONS, and LIBNAME are normally set in the top
+# level makefile. (Which see for explanations of what they do.) You can
+# override the general setting here, if you want. Each variable is
+# conditionally set with `?='. This means the setting here will have an effect
+# only if the variable is undefined (as, for example, if you run make in this
+# directory, rather than from the top level). To override the top level
+# setting, change `?=' to `:='.
 
-# Select optimization (-O or -g).
+export LibType ?= SHARED
+export OptLevel ?= -O
+export DYLP_OPTIONS ?=
 
-# Uncomment one line only to create a debugging (-g) or optimised (-O) build.
-# -O will be automatically bumped up to the highest level of optimization the
-# compiler supports. If want something in between then specify the exact level
-# you want, e.g., -O1, -O2, etc.
-
-OptLevel := -g
-#OptLevel := -O
-
-LIBNAME := Dylp
-export LIBNAME
+export LIBNAME ?= Dylp
 
 ###############################################################################
 
-# Use the COIN boilerplate to establish the build environment.
+# Use the COIN boilerplate to establish the build environment. As explained
+# above, CoinDir and MakefileDir will normally be set in the top level
+# makefile.
 
-export CoinDir := $(shell cd ../.. ; pwd)
-export MakefileDir := $(CoinDir)/Makefiles
+export CoinDir ?= $(shell cd ../.. ; pwd)
+export MakefileDir ?= $(CoinDir)/Makefiles
 
 include ${MakefileDir}/Makefile.coin
-include ${MakefileDir}/Makefile.location
-
-TARGETDIR := $(UNAME)$(OptLevel)
-export TARGETDIR
-export OptLevel
 
 ###############################################################################
 
@@ -39,23 +33,32 @@ export OptLevel
 
 .PHONY: default install clean distclean libdepend
 
-# `make library' will build TARGETDIR/library.
-# 'make install' will install a symbolic link in the current directory,
-# pointing to TARGETDIR/library.
+# Available targets:
+#  * library - builds the library in TARGETDIR
+#  * install - build, plus installs a symbolic link in the current directory
+#	       pointing to TARGETDIR/library, copies TARGETDIR/library to the
+#	       main COIN library directory, and installs a symbolic link there.
+#  * clean - removes libDylp* from this directory and from the COIN library
+#	     directory, and deletes TARGETDIR.
+#  * distclean - as for clean, and deletes *all* TARGETDIRs
 
 default: install
 
 ###############################################################################
 
+# We need the dylp support library to build the dylp library.
+
 libdepend:
 	cd ../Lib ; $(MAKE) -f Makefile install
+
+# Build/install the dylp library
 
 library install: libdepend
 	${MAKE} -f Makefile.Dylp $@
 
-# We need to set BOOLTYPE in order to suppress any attempt by Makefile.Dylp
-# to run booltype, which may not exist when we're just doing a clean. The
-# same for FPCONFIGFLAGS and fpchecks.
+# We need to set BOOLTYPE nd FPCONFIGFLAGS in order to suppress execution of
+# the configuration programs, which may not exist when we're just doing a
+# clean.
 
 clean distclean: 
 	${MAKE} -f Makefile.Dylp BOOLTYPE=bogus FPCONFIGFLAGS=bogus $@

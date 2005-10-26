@@ -97,6 +97,7 @@
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dylp.c	4.7	10/15/05" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   To avoid passing an excessive number of parameters around inside the dylp

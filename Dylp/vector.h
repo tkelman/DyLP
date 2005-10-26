@@ -28,6 +28,7 @@
 
 /*
   @(#)vector.h	4.5	11/06/04
+  svn/cvs: $Id$
 */
 
 /*
@@ -69,9 +70,9 @@
   Workshop programming environment. Sun without Workshop has only the
   require file nan.h, which is inadequate.
 
-  For a long while, GNU C didn't distinguish QNaN and SNaN. More recently, it
-  support for IEEE 754 seems to have improved, but it's not clear that we can
-  count on everyone having a recent GCC environment just yet. Here, too,
+  For a long while, GNU C didn't distinguish QNaN and SNaN. More recently,
+  its support for IEEE 754 seems to have improved, but it's not clear that we
+  can count on everyone having a recent GCC environment just yet. Here, too,
   nan.h is inadequate.  The easy way out is to simply #define them as macros
   that return the proper bit pattern. Arguably this would make more sense in
   general than Sun's implementation as functions.

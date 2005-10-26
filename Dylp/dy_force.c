@@ -28,6 +28,7 @@
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_force.c	4.6	10/15/05" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   This file contains a pair of routines that attempt to force a transition

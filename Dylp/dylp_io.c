@@ -32,6 +32,7 @@
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dylp_io.c	4.5	11/06/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 
 

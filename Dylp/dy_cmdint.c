@@ -24,27 +24,31 @@
 */
 
 /*
-  This file contains the command interpreter. It will be used in several places
-  in bonsai. Don't worry about the fancy capabilities -- they're overkill for
-  processing the options file, but this is standard boilerplate code.
+  This file contains a medium strength command interpreter. It's a generic
+  piece of code, also used in the bonsaiG MIP code. For bare dylp, or dylp
+  embedded in a COIN OSI layer, various bits should be excised. The symbol
+  BONSAIG should be defined only if dylp is being built as part of bonsaiG.
 */
+
+
 
 #include "dylib_strrtns.h"
 #include "dy_cmdint.h"
 #include "dylib_keytab.h"
 
 static char sccsid[] UNUSED = "@(#)cmdint.c	3.12	11/11/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   MAXCMDFILES is pretty much arbitrary. The i/o package enforces the system
-  limit. All we need here is something reasonable for sizing the dy_cmdchns
+  limit. All we need here is something reasonable for sizing the cmdchns
   array.
 */
 
 #define MAXCMDFILES 16
 
 /*
-  dy_cmdchns keeps track of the i/o id and echo status for each command file
+  cmdchns keeps track of the i/o id and echo status for each command file
   that's open. level is the current nesting level.
 */
 
@@ -53,7 +57,7 @@ static bool prompt ;
 static struct { ioid chn ;
 		bool cecho ;
 		bool gecho ;
-		bool prompt ; } dy_cmdchns[MAXCMDFILES-1] ;
+		bool prompt ; } cmdchns[MAXCMDFILES-1] ;
 
 /*
   User command table definitions. It is important that the commands be in 
@@ -63,7 +67,7 @@ static struct { ioid chn ;
   For the dylp OSI layer, only lpcontrol, and lpprint are available.
 */
 
-#ifndef COIN_USE_DYLP
+#ifdef BONSAIG
 #  define HELP_NDX 1
 #  define LPPRINT_NDX 2
 #  define OBJECTIVE_NDX 3
@@ -141,7 +145,7 @@ static cmd_retval docmd (lex_struct *txt)
   extern cmd_retval dy_printopt(const char *keywd),
 		    dy_ctlopt(const char *keywd) ;
 
-#ifndef COIN_USE_DYLP
+#ifdef BONSAIG
 
 /* mip_setup.c */
 
@@ -202,7 +206,7 @@ static cmd_retval docmd (lex_struct *txt)
     case LPCTL_NDX:
     { retval = dy_ctlopt(keywd) ;
       break ; }
-#   ifndef COIN_USE_DYLP
+#   ifdef BONSAIG
     case MIPPRINT_NDX:
     { retval = mip_printopt(keywd) ;
       break ; }
@@ -287,13 +291,13 @@ static cmd_retval indcmd (bool silent)
 /*
   Stash the old command channel, then try to open the new file.
 */
-  dy_cmdchns[level].chn = dy_cmdchn ;
-  dy_cmdchns[level].cecho = dy_cmdecho ;
-  dy_cmdchns[level].gecho = dy_gtxecho ;
-  dy_cmdchns[level].prompt = prompt ;
+  cmdchns[level].chn = dy_cmdchn ;
+  cmdchns[level].cecho = dy_cmdecho ;
+  cmdchns[level].gecho = dy_gtxecho ;
+  cmdchns[level].prompt = prompt ;
   dy_cmdchn = openfile(file->string,"r") ;
   if (dy_cmdchn < 0)
-  { dy_cmdchn = dy_cmdchns[level].chn ;
+  { dy_cmdchn = cmdchns[level].chn ;
     return (cmdHALTERROR) ; }
   (void) setmode(dy_cmdchn,'l') ;
 /*
@@ -436,11 +440,11 @@ cmd_retval process_cmds (bool silent)
 	{ retval = cmdHALTNOERROR ; }
 	else
 	{ if (closefile(dy_cmdchn) == FALSE) warn(232,rtnnme,idtopath(dy_cmdchn)) ;
-	  dy_cmdchn = dy_cmdchns[--level].chn ;
+	  dy_cmdchn = cmdchns[--level].chn ;
 	  outfmt(dy_logchn,dy_gtxecho,"\n\treturning to command source file %s\n",
 		 idtopath(dy_cmdchn)) ;
-	  dy_cmdecho = dy_cmdchns[level].cecho ;
-	  dy_gtxecho = dy_cmdchns[level].gecho ;
+	  dy_cmdecho = cmdchns[level].cecho ;
+	  dy_gtxecho = cmdchns[level].gecho ;
 	  retval = cmdOK ; }
 	break ; }
       case LCERR:

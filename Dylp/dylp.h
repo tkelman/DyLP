@@ -28,6 +28,7 @@
 
 /*
   @(#)dylp.h	4.6	10/15/05
+  svn/cvs: $Id$
 
   This file contains definitions related to dylp, a subroutine library which
   implements a dynamic (primal-dual) linear programming algorithm based on
@@ -59,6 +60,7 @@
 */
 
 #include "dylib_errs.h"
+#include "dylib_io.h"
 #include "consys.h"
 
 /*
@@ -1738,12 +1740,6 @@ extern void dy_defaults(lpopts_struct **opts, lptols_struct **tols),
 
 extern lpret_enum dylp(lpprob_struct *orig_lp, lpopts_struct *orig_opts,
 		       lptols_struct *orig_tols, lpstats_struct *orig_stats) ;
-
-#ifdef COIN_USE_DYLP
-extern lpret_enum dylp_dolp(
-                       lpprob_struct *orig_lp, lpopts_struct *orig_opts,
-		       lptols_struct *orig_tols, lpstats_struct *orig_stats) ;
-#endif
 
 /*
   dylp_utils.c

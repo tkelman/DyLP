@@ -37,6 +37,7 @@
 #include "glpinv.h"
 
 static char sccsid[] UNUSED = "@(#)dy_basis.c	4.6	11/06/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   The basis data structure. glpinv/glpluf does not distinguish between

@@ -37,8 +37,10 @@
 #include "dylp.h"
 
 #include <limits.h>
+#include <float.h>
 
 static char sccsid[] UNUSED = "@(#)options.c	3.5	09/25/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   Routines to acquire dylp's defaults and limits for options and tolerances.

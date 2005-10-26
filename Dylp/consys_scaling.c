@@ -62,6 +62,7 @@
 #endif
 
 static char sccsid[] UNUSED = "@(#)consys_scaling.c	4.8	10/15/05" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 
 

@@ -49,6 +49,7 @@
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_scaling.c	4.5	11/06/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   Define this symbol to enable checks on the calculation of rows of the

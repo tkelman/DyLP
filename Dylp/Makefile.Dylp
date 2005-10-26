@@ -1,6 +1,10 @@
 
 # Secondary makefile for dylp.
 
+# svn/cvs: $Id$
+
+# Dylp source files
+
 LIBSRC :=
 LIBSRC += dy_cmdint.c
 LIBSRC += consys_io.c
@@ -41,55 +45,14 @@ LIBSRC += vector_utils.c
 
 ###############################################################################
 
-# Different C++ implementations can choose different sizes for the bool data
-# type. To make sure the C code will interoperate, we need to form a correct
-# typedef for the fake bool type defined in loustd.h. If this isn't already
-# defined, try to find the booltype program. Failing that, bail and let the
-# client sort it out.
+# Set DYLP_COMPILE_DEFS
 
-DylpToolDir ?= ../Utils
-
-ifndef BOOLTYPE
-  ifndef BOOLTYPEPROG
-    pathsearch = $(firstword $(wildcard $(addsuffix /$(1), \
-		 $(subst :, ,$(DylpToolDir):$(PATH)))))
-    BOOLTYPEPROG := $(call pathsearch,booltype)
-  endif
-  ifneq ($(BOOLTYPEPROG),)
-    BOOLTYPE := $(shell $(BOOLTYPEPROG))
-  else
-    $(warning Cannot find booltype program)
-  endif
-  ifeq ($(BOOLTYPE),)
-    $(error Cannot determine proper C type for "typedef <type> bool")
-  endif
-endif
-
-# Programming environments and hardware differ in their support for floating
-# point computation. fpchecks attempts to sort it out and spit out the
-# correct compile-time symbol definitions.
-
-ifndef FPCONFIGFLAGS
-  ifndef FPCONFIGPROG
-    pathsearch = $(firstword $(wildcard $(addsuffix /$(1), \
-		 $(subst :, ,$(DylpToolDir):$(PATH)))))
-    FPCONFIGPROG := $(call pathsearch,fpchecks)
-  endif
-  ifneq ($(FPCONFIGPROG),)
-    FPCONFIGFLAGS := $(shell $(FPCONFIGPROG))
-  else
-    $(warning Cannot find fpchecks program)
-  endif
-  ifeq ($(FPCONFIGFLAGS),)
-    $(error Cannot determine proper floating point configuration flags. \
-    	    Bailing out. Check vector.h and take it from there)
-  endif
-endif
+include ../Utils/Makefile.Config
 
 # By default, the COIN boilerplate puts -I- in CXXFLAGS. Hence the current
 # directory must be explicitly added to the search list for include files.
 
-CXXFLAGS += -I. -I ../Lib -DBOOL=$(BOOLTYPE) -DCOIN_USE_DYLP $(FPCONFIGFLAGS)
+CXXFLAGS += -I. -I ../Lib $(DYLP_COMPILE_DEFS)
 
 # COIN installation directory
 
@@ -97,29 +60,41 @@ InstallDir ?= $(CoinDir)
 
 # Directory to hold dependency information.
 
-DEPDIR := Dep
-export DEPDIR
+export DEPDIR := Dep
 
-# Makefile.lib is expecting C++ source. We need to preempt it here.
+# Makefile.lib is expecting C++ source (.cpp extension). We need to help it by
+# setting LIBOBJ and LIBDEP here. In order that libDylpStdLib and (if required)
+# libsunmath are actually included in libDylp.so, force the linker to choose
+# static libraries (=B static). Otherwise we'll have to add libDylpStdLib and
+# libsunmath to future links with libDylp. This would be particularly annoying
+# for libsunmath, which is required only in the Sun Workshop environment.
 
 LIBOBJ := $(addprefix $(TARGETDIR)/, $(LIBSRC:.c=.o))
-LIBOBJ += -lDylpStdLib
-LIBLDFLAGS += -L../Lib
+LIBDEP := $(addprefix $(DEPDIR)/, $(LIBSRC:.c=.d))
+
 VPATH += :../Lib
+LIBOBJ += -lDylpStdLib
+
+LIBLDFLAGS += -L../Lib -B static
+
+# Finding libsunmath is a little dicey. The bet here is that if the binary
+# for workshop is in <path>/bin/workshop, then in a standard installation
+# libsunmath will be in <path>/lib.
+
 ifeq ($(SunOS_PROGENV),SUNWspro)
   PathToSunmath := $(subst bin/workshop,lib,$(call pathsearch,workshop))
   VPATH += :$(PathToSunmath)
   LIBOBJ += -lsunmath
 endif
-LIBDEP := $(addprefix $(DEPDIR)/, $(LIBSRC:.c=.d))
 
 export LIBSRC
 export LIBOBJ
 export LIBDEP
 
-# Would be nice if Makefile.lib exported these.
+# Would be nice if these were defined outside of Makefile.lib. Definitions must
+# match.
 
-LIBNAMEOPT := lib$(LIBNAME)$(OptLevel)$(LIBEXT)
+LIBNAMEOPT := lib$(LIBNAME)$(OptVersion)$(LIBEXT)
 LIBNAMENOOPT := lib$(LIBNAME)$(LIBEXT)
 
 # Directory to record what we've built.
@@ -160,7 +135,7 @@ clean:
 
 distclean:
 	@ cd ${InstallDir}/lib ; rm -rf lib$(LIBNAME)*
-	@ rm -f $(LIBNAMENOOPT)
+	@ rm -f lib$(LIBNAME)*
 	@ if [ -d $(BUILDS) ] ; then \
 	    for dir in `ls $(BUILDS)` ; do \
 	      if [ -d $$dir ] ; then \

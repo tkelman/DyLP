@@ -32,6 +32,7 @@
 #endif
 
 static char sccsid[] UNUSED = "@(#)glplib4.c	1.2	09/25/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 #include <limits.h>
 #include <stdlib.h>

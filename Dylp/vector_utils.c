@@ -36,6 +36,7 @@
 #include "vector.h"
 
 static char sccsid[] UNUSED = "@(#)vector_utils.c	4.5	11/06/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 static char *noname = "<<n/a>>" ;
 

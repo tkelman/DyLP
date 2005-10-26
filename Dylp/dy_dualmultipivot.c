@@ -28,6 +28,7 @@
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_dualmultipivot.c	4.6	10/15/05" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   This is an experimental dual pivoting algorithm. The inspiration comes from
@@ -382,7 +383,7 @@ static dyret_enum scanForDualInCands (dualcand_struct *incands, int outdir,
   char *rtnnme = "scanForDualInCands" ;
 # endif
 
-# ifndef NDEBUG
+# if !defined(NDEBUG) || defined(PARANOIA)
   int print ;
 
   print = dy_opts->print.pivoting ;	/* suppress print in dy_chkpiv */

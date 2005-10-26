@@ -42,6 +42,7 @@
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_pivreject.c	4.4	11/06/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 
 

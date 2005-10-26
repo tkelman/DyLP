@@ -35,6 +35,7 @@
 #include "consys.h"
 
 static char sccsid[] UNUSED = "@(#)consys_mathutils.c	4.5	11/11/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 
 

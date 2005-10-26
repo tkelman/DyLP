@@ -28,6 +28,7 @@
 
 /*
   @(#)consys.h	4.4	11/11/04
+  svn/cvs: $Id$
 
   This header file contains declarations for a constraint system data
   structure, tailored for LP-based branch-and-cut MILP algorithms (more

@@ -25,6 +25,7 @@
 
 /*
   @(#)glpluf.h	1.1	10/18/02
+  svn/cvs: $Id$
 */
 
 #ifndef _GLPLUF_H

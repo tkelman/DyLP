@@ -34,6 +34,7 @@
 #include <limits.h>
 
 static char sccsid[] UNUSED = "@(#)dylp_utils.c	4.6	10/15/05" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 
 

@@ -114,6 +114,7 @@
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_dualpivot.c	4.7	10/15/05" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   Define this symbol to enable a thorough check of the updates to cbar and

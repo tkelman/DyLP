@@ -33,6 +33,7 @@
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_setup.c	4.7	10/15/05" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 /*
   dyopts_dflt

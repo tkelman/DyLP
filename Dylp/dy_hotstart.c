@@ -69,6 +69,7 @@
 #include "dylp.h"
 
 static char sccsid[] UNUSED = "@(#)dy_hotstart.c	4.5	11/06/04" ;
+static char svnid[] UNUSED = "$Id$" ;
 
 
 
