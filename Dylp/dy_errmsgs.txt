@@ -1,8 +1,9 @@
-@0@@(#)bonsaierrs.txt	4.3	11/06/04@
+  sccs: @(#)bonsaierrs.txt	4.3	11/06/04
+  svn/cvs: $Id$
 
-  This file is a portion of the bonsaiG MILP code.
+  This file is a part of the OsiDylp LP distribution.
 
-        Copyright (C) 2004 Lou Hafer
+        Copyright (C) 2005 Lou Hafer
 
         School of Computing Science
         Simon Fraser University
@@ -20,8 +21,11 @@
   more details.
 
   You should have received a copy of the GNU General Public License along
-  with this program; if not, write to the Free Software Foundation, Inc., 59
-  Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  with this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St., Fifth Floor, Boston, MA  02110-1301  USA
+
+  I haven't yet gone through and removed messages specific to the bonsaiG
+  MIP code. That'll happen eventually.
 
   General error messages, useful pretty much anywhere
 
@@ -203,7 +207,7 @@
 @179@[%s]: deleting empty constraint %s (%d).@
 @180:199@<<open>>@
 
-  Error messages from the bonsai main program
+  Error messages from the main program
 
 @200@cannot get system time.@
 @201@could not open log file %s; logging disabled.@
@@ -682,6 +686,7 @@
 @744:749@<<open>>@
 
 	Error messages related to branching priority and tour groups
+	(bonsai MIP code only)
 
 @750@(T%d): invalid priority %d recovered for %s (%d).@
 @751@(T%d:#%d\@%d): %d variable(s) remain to be forced;
@@ -722,6 +727,7 @@
 @775:799@<<open>>@
 
 	Error messages related to expansion of the active subproblem.
+	(bonsai MIP code only)
 
 @800@(T%d:#%d\@%d): missing liveinfo or var1/var2 structures.@
 @801@(T%d:#%d\@%d): this node is already a parent.@
