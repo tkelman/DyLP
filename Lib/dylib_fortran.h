@@ -1,10 +1,9 @@
 #ifndef _DYLIB_FORTRAN_H
 #define _DYLIB_FORTRAN_H
 /*
-  Common typedefs, definitions, macros, etc., which are handy when constructing
-  C code that must talk to Fortran code.
+  This file is part of the support library  for the OsiDylp LP distribution.
 
-        Copyright (C) 1999 Lou Hafer
+        Copyright (C) 2005 Lou Hafer
 
         School of Computing Science
         Simon Fraser University
@@ -22,8 +21,8 @@
   more details.
 
   You should have received a copy of the GNU General Public License along
-  with this program; if not, write to the Free Software Foundation, Inc., 59
-  Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  with this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St., Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /*
@@ -32,6 +31,9 @@
 */
 
 /*
+  Common typedefs, definitions, macros, etc., which are handy when constructing
+  C code that must talk to Fortran code.
+
   Off the top, typedefs and defines for the basic equivalences between
   Fortran and C data types. This list isn't complete, but it covers the
   common ones.  (Taken from the Sun Fortran Programmer's Guide.)
