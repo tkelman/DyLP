@@ -51,9 +51,8 @@
 			  dy_errmsgs.txt).
   -E <errlog-file>	A logging file for error messages (default is to
 			  direct error messages to stderr and the log file).
-  -o <option-file>	Control ('.spc') options for dylp. Defaults to stdin,
-                          which is not recommended since control entries may
-                          be processed in ways unfriendly to terminal entry.
+  -o <option-file>	Control ('.spc') options for dylp. Default is to not
+			look for an options file.
   -m <problem-file>	The problem ('.mps') specification. Defaults to stdin.
   -L <log-file>		A log of dylp's execution (default is no execution
 			  logging).
@@ -122,7 +121,6 @@ bool dy_cmdecho, dy_gtxecho ;
 
 char *outpath ;
 
-int lponly_print_level;         /* stephent */
 consys_struct *main_sys ;
 lpprob_struct *main_lp ;
 lpopts_struct *main_lpopts ;
@@ -185,23 +183,19 @@ void print_help (ioid chn, bool echo)
   outfmt(chn,echo,"\n\t\t\t%s","direct error messages to the log file).") ;
 
   outfmt(chn,echo,"\n  %s\t%s","-o <option-file>",
-	 "Control ('.spc') options for dylp. Defaults to stdin,") ;
-  outfmt(chn,echo,"\n\t\t\t%s",
-	 "which is not recommended since control commands may") ;
-  outfmt(chn,echo,"\n\t\t\t%s",
-	 "be processed in ways unfriendly to terminal entry.") ;
+	 "Control ('.spc') options file for dylp (default is no file).") ;
 
   outfmt(chn,echo,"\n  %s\t%s","-m <problem-file>",
-	 "The problem ('.mps') specification. Defaults to stdin.") ;
+	 "The problem ('.mps') specification (no default).") ;
 
   outfmt(chn,echo,"\n  %s\t\t%s","-L <log-file>",
 	 "A log of dylp's execution (default is no execution") ;
   outfmt(chn,echo,"\n\t\t\t%s","logging).") ;
 
   outfmt(chn,echo,"\n  %s\t%s","-O <output-file>",
-	 "The output file. Defaults to stdout unless the -s") ;
+	 "The output file. Defaults to stdout unless the -s or -t") ;
   outfmt(chn,echo,"\n\t\t\t%s",
-	 "option is present, in which case the default is no") ;
+	 "options are present, in which case the default is no") ;
   outfmt(chn,echo,"\n\t\t\t%s","output.") ;
 
   outfmt(chn,echo,"\n  %s\t\t\t%s","-h",
@@ -209,7 +203,7 @@ void print_help (ioid chn, bool echo)
   outfmt(chn,echo,"\n  %s\t\t\t%s","-v",
 	 "Print version and exit.") ;
 
-  outfmt(chn,echo,"\n\n%s%s",
+  outfmt(chn,echo,"\n\n%s %s",
 	 "The -m option is just an alternate way to specify the",
 	 "<problem-file>.") ;
 
@@ -239,6 +233,13 @@ static void get_timeval (struct timeval *tv)
 */
 
 { struct rusage ruse ;
+
+# ifndef NDEBUG
+/*
+  Avoid a `read from unitialised' error.
+*/
+  memset(&ruse,0,sizeof(struct rusage)) ;
+# endif
 
 /*
   Retrieve the current time.
@@ -407,7 +408,7 @@ void stats_lp (char *outpath, bool echo, lpprob_struct *lp,
 
 
 
-lpret_enum do_lp_all (struct timeval *elapsed)
+lpret_enum do_lp_all (struct timeval *elapsed, int printlvl)
 
 /*
   This routine is a wrapper which makes up the difference between the
@@ -464,13 +465,14 @@ lpret_enum do_lp_all (struct timeval *elapsed)
       flips++ ; } }
 /*
   Set up options, statistics, and solve the lp. After we're done, dump the
-  statistics and free the dylp statistics structure.
+  statistics and free the dylp statistics structure. The options specified
+  here (cold start using a logical basis and the full constraint system) are
+  appropriate for the initial solution of an LP.
 */
   initial_lpopts = (lpopts_struct *) MALLOC(sizeof(lpopts_struct)) ;
   memcpy(initial_lpopts,main_lpopts,sizeof(lpopts_struct)) ;
-  initial_lpopts->forcecold = TRUE ;
 
-  dy_setprintopts(lponly_print_level,initial_lpopts) ;
+  dy_setprintopts(printlvl,initial_lpopts) ;
 
 # ifdef DYLP_STATISTICS
   initial_lpstats = NULL ;
@@ -634,16 +636,17 @@ int main (int argc, char *argv[])
   if (optind < argc)
   { dohelp = TRUE ; } 
 /*
-  LP-only setup.
+  What's our output level? If the user has specified a print level, go with it.
+  Otherwise, take a cue from any -s or -t flags. Default to print level 2.
 */
-  if (silent == TRUE)
-    lponly_print_level = 0 ;
-  else
-  if (terse == TRUE)
-    lponly_print_level = 1 ;
-  else
-    lponly_print_level = 2 ;
-  if (printlvl >= 0) lponly_print_level = printlvl ;
+  if (printlvl < 0)
+  { if (silent == TRUE)
+      printlvl = 0 ;
+    else
+    if (terse == TRUE)
+      printlvl = 1 ;
+    else
+      printlvl = 2 ; }
 /*
   Output file name: if the user hasn't specified one, and we're not running
   silent, default to stdout.
@@ -751,9 +754,15 @@ int main (int argc, char *argv[])
       outfmt(outchn,FALSE,"\n\n") ; } }
 /*
   Time to set up the lp options. Establish a set of defaults, then read the
-  options file to see what the user has in mind.
+  options file to see what the user has in mind. Because this is a standalone
+  shell, doing a one-time solution for an LP, set up a default of cold start
+  using the full system and a logical basis. This can be overridden in a .spc
+  file if desired.
 */
   dy_defaults(&main_lpopts,&main_lptols) ;
+  main_lpopts->forcecold = TRUE ;
+  main_lpopts->fullsys = TRUE ;
+  main_lpopts->initbasis = 1 ;
   if (optpath != NULL)
   { dy_cmdchn = openfile(optpath,"r") ;
     if (dy_cmdchn == IOID_INV) exit (1) ;
@@ -789,8 +798,9 @@ int main (int argc, char *argv[])
 /*
   Run the lp.
 */
-  if (do_lp_all(&lptime) == FALSE)
-  { errmsg(202,rtnnme,main_sys->nme) ; }
+  if (do_lp_all(&lptime,printlvl) == FALSE)
+  { errmsg(443,rtnnme,main_sys->nme,dy_prtlpphase(main_lp->phase,TRUE),
+	   main_lp->iters) ; }
 /*
   Should we produce any output? Print to a file, if requested.
 */
@@ -799,9 +809,10 @@ int main (int argc, char *argv[])
 /*
   Any final terminal output we should do?
 */
-  if (lponly_print_level >= 1)
-  { if (lponly_print_level >= 2)
-    { dy_dumpcompact(dy_logchn,(dy_logchn == IOID_INV)?TRUE:FALSE,main_lp,FALSE) ; }
+  if (printlvl >= 1)
+  { if (printlvl >= 2)
+    { dy_dumpcompact(dy_logchn,
+		     (dy_logchn == IOID_INV)?TRUE:FALSE,main_lp,FALSE) ; }
     outfmt(dy_logchn,TRUE,"\nReturn code %s",dy_prtlpret(main_lp->lpret)) ;
     if (main_lp->phase == dyDONE)
       outfmt(dy_logchn,TRUE," after %d pivots",main_lp->iters) ;

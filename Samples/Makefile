@@ -16,8 +16,8 @@
 # example, if you do a make in this directory, rather than from the top level).
 # To override the top level setting, change `?=' to `:='.
 
-export OptLevel ?= -g -O
-export DYLP_OPTIONS ?=
+export OptLevel ?= -g
+export DYLP_OPTIONS ?= info stats
 
 ###############################################################################
 
@@ -47,24 +47,25 @@ default: osi_dylp
 ###############################################################################
 
 osi_dylp osi+dylp: dylplibdepend
-	${MAKE} -f Makefile.Samples $@
+	@ ${MAKE} -f Makefile.Samples $@
 
 odsi+dylp: dylplibdepend odsilibdepend
-	${MAKE} -f Makefile.Samples $@
+	@ ${MAKE} -f Makefile.Samples $@
 
 # Better have the dylp library built before we try for the samples.
 
 dylplibdepend:
-	cd ../Dylp ; $(MAKE) -f Makefile install
+	@ cd ../Dylp ; $(MAKE) -f Makefile install
 
 # For odsi+dylp, we need OsiDylp and all the underlying Coin libraries.
 
 odsilibdepend:
-	cd $(CoinDir)/Osi/OsiDylp ; $(MAKE) -f Makefile
+	@ cd $(CoinDir)/Osi/OsiDylp ; $(MAKE) -f Makefile
 
 # We need to set BOOLTYPE nd FPCONFIGFLAGS in order to suppress execution of
 # the configuration programs, which may not exist when we're just doing a
 # clean.
 
 clean distclean:
-	${MAKE} -f Makefile.Samples BOOLTYPE=bogus FPCONFIGFLAGS=bogus $@
+	@ ${MAKE} -f Makefile.Samples BOOLTYPE=bogus FPCONFIGFLAGS=bogus $@
+
