@@ -472,7 +472,7 @@ static dyret_enum scanForDualInCands (dualcand_struct *incands, int outdir,
     if (flgon(statk,vstatBASIC|vstatNBFX))
     { reject = -1 ; }
     else
-    if (abarik == 0)
+    if (withintol(abarik,0.0,dy_tols->zero))
     { reject = -2 ; }
     else
     { if (outdir == -1)
@@ -1456,6 +1456,7 @@ dyret_enum dualmultiin (int i, int outdir,
 
   char *rtnnme = "dualmultiin" ;
 
+  /* dy_dualpivot.c */
   dyret_enum dy_confirmDualPivot(int i, int j, double *abari,
 				 double maxabari, double **p_abarj) ;
 
@@ -1747,7 +1748,8 @@ dyret_enum dualmultiin (int i, int outdir,
 #     endif
 
       deltaj = candk->flip.delta ;
-      dy_lp->z += dy_cbar[j]*deltaj ;
+      if (dy_ddegenset[j] == 0)
+      { dy_lp->z += dy_cbar[j]*deltaj ; }
       if (consys_mulaccumcol(dy_sys,j,deltaj,accumj) == FALSE)
       { errmsg(122,rtnnme,dy_sys->nme,
 	       "column",consys_nme(dy_sys,'v',j,TRUE,NULL),j) ;

@@ -279,7 +279,7 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
   checkflags = 0 ;
   setflg(checkflags,ladFACTOR|ladPRIMALCHK|ladPRIMFEAS|ladPFQUIET|
 		    ladDUALCHK|ladDUALFEAS|ladDFQUIET) ;
-  if (lpretval == dyrOPTIMAL && dy_lp->iterf == 0)
+  if (lpretval == dyrOPTIMAL && dy_lp->basis.etas == 0)
     clrflg(checkflags,ladFACTOR) ;
 /*
   Start with the easy stuff -- clear the pivot reject list and back out any
@@ -1217,7 +1217,7 @@ static dyret_enum primal1 (void)
 	  dy_lp->ubnd.ratio = 0 ;
 	  break ; }
 	case dyrSWING:
-	{ if (dy_lp->iterbrk >= 10)
+	{ if (dy_lp->basis.pivs >= 10)
 	  { lpretval = duennaresult ;
 	    do_pivots = FALSE ; }
 	  break ; }
@@ -1675,7 +1675,7 @@ static dyret_enum primal2 (void)
 	  dy_lp->ubnd.ratio = 0 ;
 	  break ; }
 	case dyrSWING:
-	{ if (dy_lp->iterbrk >= 10)
+	{ if (dy_lp->basis.pivs >= 10)
 	  { lpretval = duennaresult ;
 	    do_pivots = FALSE ; }
 	  break ; }
@@ -1863,7 +1863,7 @@ lpret_enum dy_primal (void)
   dy_lp->lpret = lpINV ;
   (void) dy_setpivparms(-100,-100) ;
   (void) dy_setpivparms(+1,+1) ;
-  dy_lp->iterbrk = 0 ;
+  dy_lp->basis.pivs = 0 ;
 /*
   We open a loop here to allow for the possibility of returning to phase I if
   we loose feasibility in phase II. There's a limit on how many times we'll

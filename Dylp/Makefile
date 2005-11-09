@@ -49,16 +49,16 @@ default: install
 # We need the dylp support library to build the dylp library.
 
 libdepend:
-	cd ../Lib ; $(MAKE) -f Makefile install
+	@ cd ../Lib ; $(MAKE) -f Makefile install
 
 # Build/install the dylp library
 
 library install: libdepend
-	${MAKE} -f Makefile.Dylp $@
+	@ ${MAKE} -f Makefile.Dylp $@
 
 # We need to set BOOLTYPE nd FPCONFIGFLAGS in order to suppress execution of
 # the configuration programs, which may not exist when we're just doing a
 # clean.
 
 clean distclean: 
-	${MAKE} -f Makefile.Dylp BOOLTYPE=bogus FPCONFIGFLAGS=bogus $@
+	@ ${MAKE} -f Makefile.Dylp BOOLTYPE=bogus FPCONFIGFLAGS=bogus $@

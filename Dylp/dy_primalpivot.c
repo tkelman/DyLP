@@ -1060,8 +1060,8 @@ static dyret_enum primalout (int xjndx, int indir,
 		be (cleanly) degenerate
     dyrMADPIV:	the pivot coefficient abar<ij> would be numerically unstable
     dyrREQCHK:	a possibly bogus abar<ij> was selected as the pivot, and
-		refactoring seems wise before trying to use it (iterf > 1 is
-		the criteria)
+		refactoring seems wise before trying to use it
+		(basis.etas > 1 is the criteria)
     dyrUNBOUND:	the problem is unbounded
     dyrLOSTPFEAS: primal feasibility has been lost
     dyrFATAL:	fatal confusion
@@ -1364,7 +1364,7 @@ static dyret_enum primalout (int xjndx, int indir,
     { if (*deltaj < dy_tols->inf)
       { if (*xindx != xjndx)
 	{ if (ratioij >= 1.0)
-	  { if (dy_lp->iterf > 1 &&
+	  { if (dy_lp->basis.etas > 1 &&
 		withintol(abarij,0,dy_tols->bogus*dy_tols->zero))
 	    { retval = dyrREQCHK ;
 #  	      ifndef NDEBUG
@@ -1599,7 +1599,8 @@ static dyret_enum primalupdate (int xjndx, int indir,
 	  epsl = 0 ;
 	val = dy_xbasic[xkpos]-deltak ;
 	setcleanzero(val,eps0) ;
-	if (val != 0.0 && fabs(val) < eps0*dy_tols->bogus && dy_lp->iterf > 1)
+	if (val != 0.0 &&
+	    fabs(val) < eps0*dy_tols->bogus && dy_lp->basis.etas > 1)
 	{ retval = dyrREQCHK ;
 #	  ifndef NDEBUG
 	  if (dy_opts->print.pivoting >= 1)
@@ -1708,7 +1709,7 @@ static dyret_enum primalupdate (int xjndx, int indir,
   close enough to snap to it.
 */
         if (flgoff(dy_status[xkndx],vstatBFX|vstatBLB|vstatBUB))
-	{ if (fabs(val-lbk) < epsl*dy_tols->bogus && dy_lp->iterf > 1) 
+	{ if (fabs(val-lbk) < epsl*dy_tols->bogus && dy_lp->basis.etas > 1) 
 	  { retval = dyrREQCHK ;
 #	    ifndef NDEBUG
 	    if (dy_opts->print.pivoting >= 1)
@@ -1719,7 +1720,7 @@ static dyret_enum primalupdate (int xjndx, int indir,
 #	    endif
 	  }
 	  else
-	  if (fabs(ubk-val) < epsu*dy_tols->bogus && dy_lp->iterf > 1) 
+	  if (fabs(ubk-val) < epsu*dy_tols->bogus && dy_lp->basis.etas > 1) 
 	  { retval = dyrREQCHK ;
 #	    ifndef NDEBUG
 	    if (dy_opts->print.pivoting >= 1)
@@ -1955,22 +1956,22 @@ static dyret_enum primalupdate (int xjndx, int indir,
   pivot.
 */
   if (xjndx != xindx)
-  { deltaj = cbarj/abarij ;
-    setcleanzero(deltaj,dy_tols->zero) ;
-    if (deltaj != 0)
+  { if (fabs(cbarj) > dy_tols->cost)
     { for (xkpos = 1 ; xkpos <= dy_sys->concnt ; xkpos++)
-      { deltak = deltaj*betai[xkpos] ;
-	eps0 = dy_tols->cost*(1.0+fabs(deltak)) ;
+      { deltak = cbarj*betai[xkpos] ;
+	deltak = deltak/abarij ;
 	val = dy_y[xkpos]+deltak ;
-	setcleanzero(val,eps0) ;
-	if (val != 0.0 && fabs(val) < eps0*dy_tols->bogus && dy_lp->iterf > 1)
+	setcleanzero(val,dy_tols->cost) ;
+	if (val != 0.0 &&
+	    dy_lp->basis.etas > 1 && fabs(val) < dy_tols->cost*dy_tols->bogus)
 	{ retval = dyrREQCHK ;
-  #       ifndef NDEBUG
+#         ifndef NDEBUG
 	  if (dy_opts->print.pivoting >= 1)
 	    warn(374,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-		 dy_lp->tot.iters,"y",xkpos,fabs(val),eps0*dy_tols->bogus,
-		 eps0*dy_tols->bogus-val) ;
-  #       endif
+		 dy_lp->tot.iters,"y",xkpos,fabs(val),
+		 dy_tols->cost*dy_tols->bogus,
+		 dy_tols->cost*dy_tols->bogus-val) ;
+#         endif
 	}
 	dy_y[xkpos] = val ; } } }
 /*

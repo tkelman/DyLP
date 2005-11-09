@@ -118,10 +118,11 @@ static char svnid[] UNUSED = "$Id$" ;
 
 /*
   Define this symbol to enable a thorough check of the updates to cbar and
-  rho, but be aware that it'll almost certainly trigger fatal errors if
-  the LP is numerically ill-conditioned.
+  rho. Set to FALSE if you want errors to trigger a fatal error, TRUE to note
+  the errors but soldier on. Be aware that this check will almost certainly
+  trigger fatal errors if the LP is numerically ill-conditioned.
 
-  #define CHECK_DSE_UPDATES
+  #define CHECK_DSE_UPDATES TRUE
 */
 
 
@@ -269,7 +270,7 @@ dyret_enum dy_confirmDualPivot (int i, int j, double *abari,
   The return value should be REQCHK if we've pivoted since the last refactor.
   Otherwise, put x<i> on the reject list.
 */
-    if (dy_lp->iterf > 1)
+    if (dy_lp->basis.etas > 1)
     { retval = dyrREQCHK ; }
     else
     if (dy_chkpiv(abarj_i,maxabari) < 1.0)
@@ -659,7 +660,8 @@ return (retval) ; }
 
 #ifdef CHECK_DSE_UPDATES
 
-static bool check_dse_update (int xkndx, double u_cbark, double u_rhok)
+static bool check_dse_update (int xkndx, double u_cbark, double u_rhok,
+			      bool recalc)
 
 /*
   This routine checks x<k> for consistent status, then does one of the
@@ -673,6 +675,8 @@ static bool check_dse_update (int xkndx, double u_cbark, double u_rhok)
     xkndx:	index for the variable
     u_cbark:	updated cbar<k> (valid only if x<k> is nonbasic)
     u_rhok:	updated rho<k> (valid only if x<k> is basic)
+    recalc:	TRUE if dseupdate is already recommending that this value
+		be recalculated from scratch, FALSE otherwise.
 
   Returns: TRUE if the updates agree with the values calculated from first
 	   principles, FALSE otherwise.
@@ -705,7 +709,7 @@ static bool check_dse_update (int xkndx, double u_cbark, double u_rhok)
     { errmsg(388,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
 	     dy_lp->tot.iters,"rho",xkpos,u_rhok,rhok,fabs(u_rhok-rhok),
 	     dy_tols->reframe*(1+fabs(rhok))) ;
-      retval = FALSE ; }
+      if (recalc == FALSE) retval = CHECK_DSE_UPDATES ; }
     FREE(betak) ; }
 /*
   For nonbasic variables, check that the reduced cost c<k> - c<B>abar<k>
@@ -730,18 +734,18 @@ static bool check_dse_update (int xkndx, double u_cbark, double u_rhok)
       { errmsg(388,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
 	       dy_lp->tot.iters,"cbar",xkndx,u_cbark,cbark,fabs(u_cbark-cbark),
 	       dy_tols->reframe*(1+fabs(cbark))) ;
-	retval = FALSE ; } }
+	if (recalc == FALSE) retval = CHECK_DSE_UPDATES ; } }
     else
     { if (!withintol(cbark,0.0,dy_tols->dfeas))
       { if (withintol(cbark,0.0,1000*dy_tols->dfeas))
 	{ warn(388,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-	       dy_lp->tot.iters,"cbar",xkndx,0,cbark,
+	       dy_lp->tot.iters,"cbar",xkndx,0.0,cbark,
 	       fabs(cbark),dy_tols->dfeas) ; }
 	else
 	{ errmsg(388,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-		 dy_lp->tot.iters,"cbar",xkndx,0,cbark,
+		 dy_lp->tot.iters,"cbar",xkndx,0.0,cbark,
 		 fabs(cbark),dy_tols->dfeas) ;
-	  retval = FALSE ; } } }
+	  if (recalc == FALSE) retval = CHECK_DSE_UPDATES ; } } }
     FREE(abark) ; }
   
   return (retval) ; }
@@ -767,11 +771,14 @@ static void dualpricexk (int xkndx, int *xindx, double *nbbari,
 
   Parameters:
     xkndx:	the index of x<k>, the variable to be priced
-    xindx:	(o) set to the index of x<k> if x<k> should supplant the
-		current candidate x<i>
-    nbbari:	(i) the normalised `reduced cost' of x<i> 
+    xindx:	(i) index of the current incumbent x<i> (the value is
+		    not used within dualpricexk)
+		(o) updated to the index of x<k> if x<k> should supplant the
+		    current candidate x<i>
+    nbbari:	(i) the normalised `reduced cost' of x<i>
+		(o) updated if x<k> supplants the previous incumbent
     pivreject:	(o) set to TRUE if x<k> would be the winning candidate,
-		but it's flagged with the NOPIVOT qualifier
+		    but it's flagged with the NOPIVOT qualifier
 
   Returns: TRUE if x<k> supplanted x<i>, FALSE otherwise
 */
@@ -821,7 +828,7 @@ static void dualpricexk (int xkndx, int *xindx, double *nbbari,
 #     endif
       return ; }
     else
-    if (dy_lp->iterf > 1)
+    if (dy_lp->basis.etas > 1)
     {
 #     ifndef NDEBUG
       if (dy_opts->print.pricing >= 3)
@@ -1208,7 +1215,7 @@ static dyret_enum dualin (int xindx, int outdir,
     if (flgon(xkstatus,vstatBASIC|vstatNBFX))
     { reject = -1 ; }
     else
-    if (abarik == 0)
+    if (withintol(abarik,0.0,dy_tols->zero))
     { reject = -2 ; }
     else
     { if (outdir == -1)
@@ -1253,7 +1260,6 @@ static dyret_enum dualin (int xindx, int outdir,
   by this leaving dual.
 */
     deltak = fabs(dy_cbar[xkndx]/abarik) ;
-    setcleanzero(deltak,dy_tols->cost) ;
 #   ifndef NDEBUG
     if (dy_opts->print.pivoting >= 2)
     { outfmt(dy_logchn,dy_gtxecho,"\t%g",deltak) ; }
@@ -1364,7 +1370,7 @@ static dyret_enum dualin (int xindx, int outdir,
   { case dyrINV:
     { if (deltamax < dy_tols->inf)
       { if (ratioij >= 1.0)
-	{ if (dy_lp->iterf > 1 &&
+	{ if (dy_lp->basis.etas > 1 &&
 	      withintol(abarij,0,dy_tols->bogus*dy_tols->zero))
 	  { retval = dyrREQCHK ;
 #  	    ifndef NDEBUG
@@ -1482,12 +1488,16 @@ static dyret_enum dseupdate (int xindx, int xjndx, int *candxi, double *tau,
 */
 
 { int xipos,xkndx,xkpos ;
-  double abarij,cbarj,abarik,cbark,rhoi,rhok,alphak,candbbari,deltak,tolk ;
+  double abarij,abarkj,cbarj,abarik,cbark,rhoi,rhok,alphak,candbbari,deltak ;
   double *betak ;
   flags xjstatus,xkstatus ;
-  bool pivreject ;
+  bool pivreject,recalc ;
   dyret_enum retval ;
   char *rtnnme = "dseupdate" ;
+
+# ifndef NDEBUG
+  bool accurate,badguess ;
+# endif
 
 /*
   Do a little setup and pull out some common values. If we're feeling
@@ -1506,7 +1516,6 @@ static dyret_enum dseupdate (int xindx, int xjndx, int *candxi, double *tau,
   rhoi = tau[xipos] ;
 # ifdef PARANOIA
   rhok = exvec_ssq(betai,dy_sys->concnt) ;
-  setcleanzero(rhok,dy_tols->zero) ;
   if (!withintol(rhoi,rhok,dy_tols->zero*(1+rhok)))
   { if (!withintol(rhoi,rhok,dy_tols->zero+dy_tols->bogus*(1+rhok)))
     { errmsg(394,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
@@ -1521,9 +1530,10 @@ static dyret_enum dseupdate (int xindx, int xjndx, int *candxi, double *tau,
 /*
   Have we drifted so far that we should reset the norms from scratch?  The
   test is that the iteratively updated norm rho<i> is within dy_tols->reframe
-  percent of the exact value ||beta<i>||^2. (We use the PSE reframe tolerance
-  because it's handy, but note the only guarantee on beta<i> is that it's
-  greater than 0.) Then do a simplified loop to price a candidate.
+  percent of the value tau<i> = ||beta<i>||^2 that we calculated as
+  beta<i>inv(B).  The PSE reframe tolerance is used here because it's handy,
+  and because it's appropriately loose (default of .1).  Once the norms are
+  recalculated, execute a simplified loop to price a candidate.
 */
   if (!withintol(dy_rho[xipos],rhoi,dy_tols->reframe*(1+rhoi)))
   { 
@@ -1546,44 +1556,58 @@ static dyret_enum dseupdate (int xindx, int xjndx, int *candxi, double *tau,
       { 
 #       ifndef NDEBUG
 	if (dy_opts->print.pricing >= 3)
-	{ outfmt(dy_logchn,dy_gtxecho,"\n\tpricing %s (%d), status %s; << status >>",
-		   consys_nme(dy_sys,'v',xkndx,TRUE,NULL),xkndx,
-		   dy_prtvstat(xkstatus)) ; }
+	{ outfmt(dy_logchn,dy_gtxecho,
+		 "\n\tpricing %s (%d), status %s; << status >>",
+		 consys_nme(dy_sys,'v',xkndx,TRUE,NULL),xkndx,
+		 dy_prtvstat(xkstatus)) ; }
 #       endif
 	continue ; }
       dualpricexk(xkndx,candxi,&candbbari,&pivreject) ; } }
-
 /*
   If we didn't recalculate from scratch, open a loop to walk the basis and
-  update the row norms rho<k>. After we update each norm, call dualpricexk to
-  price the variable and replace the current candidate if that's appropriate.
-  Variables that are within bound can be rejected out-of-hand.
+  update the row norms rho<k>. About the only guarantee we have for rho<k> is
+  that it's greater than zero.  The observed numerical behaviour for this
+  calculation is just awful. Try to anticipate particularly bad instances:
+  rho<k> large, roughly equal, and opposite sign to the iterative update; and
+  abar<kj>/abar<ij> very large.
 */
   else
   { dy_rho[xipos] = rhoi ;
     betak = NULL ;
     for (xkpos = 1 ; xkpos <= dy_sys->concnt ; xkpos++)
-    { xkndx = dy_basis[xkpos] ;
+    { recalc = FALSE ;
+      xkndx = dy_basis[xkpos] ;
       if (xkpos == xipos)
-      { alphak = 1/abarij ;
-	setcleanzero(alphak,dy_tols->zero) ;
-	rhok = alphak*alphak*rhoi ; }
+      { rhok = rhoi/(abarij*abarij) ;
+	if (fabs(abarij) < 1.0e-5) recalc = TRUE ; }
       else
-      { alphak = abarj[xkpos]/abarij ;
-	setcleanzero(alphak,dy_tols->zero) ;
-	rhok = dy_rho[xkpos] - 2*alphak*tau[xkpos] + alphak*alphak*rhoi ; }
-      setcleanzero(rhok,dy_tols->zero) ;
+      { abarkj = abarj[xkpos] ;
+	if (abarkj != 0.0)
+	{ rhok = 0 ;
+	  if (fabs(abarkj/abarij) > 1.0e5) recalc = TRUE ;
+	  alphak = -(2*tau[xkpos]*abarkj)/abarij ;
+	  rhok += alphak ;
+	  alphak = (rhoi*abarkj*abarkj)/(abarij*abarij) ;
+	  rhok += alphak ;
+	  if (dy_rho[xkpos] > 1.0e8 && rhok < -1.0e8) recalc = TRUE ;
+	  rhok += dy_rho[xkpos] ; }
+	else
+	{ rhok = dy_rho[xkpos] ; } }
+
 #     ifdef CHECK_DSE_UPDATES
-      if (check_dse_update (xkndx,0.0,rhok) == FALSE) return (dyrFATAL) ;
-#     endif
 /*
-  rho<k> should not be less than 0, but as a practical matter, it can take
-  some pretty wild swings. When wierdness strikes, just recalculate.  Warn
-  the user, if they're interested. A high zero tolerance can trigger lots
-  of recalculations if the basis norms get down toward 10^-3 or 10^-4 (in
-  which case rho is on the order of 10^-6 to 10^-8).
+  This will return a fatal error only if CHECK_DSE_UPDATES is defined as FALSE
+  and the update code did not recommend we recalculate.
 */
-      if (rhok <= dy_tols->bogus*dy_tols->zero)
+      if (check_dse_update(xkndx,0.0,rhok,recalc) == FALSE)
+        return (dyrFATAL) ;
+#     endif
+
+/*
+  If the update code recommended a recalculation, or rho<k> ends up less than
+  zero, we need to recalculate.
+*/
+      if (recalc == TRUE || rhok < 0.0)
       { if (betak == NULL)
 	{ betak = (double *) CALLOC(dy_sys->concnt+1,sizeof(double)) ; }
 	else
@@ -1592,23 +1616,43 @@ static dyret_enum dseupdate (int xindx, int xjndx, int *candxi, double *tau,
 	dy_btran(betak) ;
 	cbark = exvec_ssq(betak,dy_sys->concnt) ;
 #       ifndef NDEBUG
-	if (dy_opts->print.dual >= 1 &&
-	    ( rhok <= 0 || fabs(rhok-cbark) > dy_tols->zero))
-	{ warn(393,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-	       dy_lp->tot.iters+1,xkpos,rhok,xkpos,dy_rho[xkpos],xkpos,cbark,
-	       dy_rho[xkpos]-cbark) ; }
+	if (withintol(rhok,cbark,dy_tols->cost*(1+cbark)))
+	{ accurate = TRUE ; }
+	else
+	{ accurate = FALSE ; }
+	if (accurate == recalc)
+	  badguess = TRUE ;
+	else
+	  badguess = FALSE ;
+	if (dy_opts->print.dual >= 5 ||
+	    (dy_opts->print.dual >= 3 && accurate == FALSE && badguess == TRUE))
+	{ outfmt(dy_logchn,dy_gtxecho,"\n\t(%s)%d: recalculated rho<%d>; ",
+		 dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,xkpos) ;
+	  outfmt(dy_logchn,dy_gtxecho,
+		 "original %g, updated %g, correct %g, error %g;",
+		 dy_rho[xkpos],rhok,cbark,rhok-cbark) ;
+	  if (badguess == TRUE)
+	  { outfmt(dy_logchn,dy_gtxecho," bad guess.") ; }
+	  else
+	  { outfmt(dy_logchn,dy_gtxecho," good guess.") ; } }
 #	endif
 	dy_rho[xkpos] = cbark ; }
       else
       { dy_rho[xkpos] = rhok ; }
+/*
+  Now that we've updated the norm, call dualpricexk to price the variable,
+  supplanting the incumbent if that's appropriate.  Variables that are within
+  bound can be rejected out-of-hand.
+*/
       xkstatus = dy_status[xkndx] ;
       if (flgoff(xkstatus,vstatBLLB|vstatBUUB))
       { 
 #       ifndef NDEBUG
 	if (dy_opts->print.pricing >= 3)
-	{ outfmt(dy_logchn,dy_gtxecho,"\n\tpricing %s (%d), status %s; << status >>",
-		   consys_nme(dy_sys,'v',xkndx,TRUE,NULL),xkndx,
-		   dy_prtvstat(xkstatus)) ; }
+	{ outfmt(dy_logchn,dy_gtxecho,
+		 "\n\tpricing %s (%d), status %s; << status >>",
+		 consys_nme(dy_sys,'v',xkndx,TRUE,NULL),xkndx,
+		 dy_prtvstat(xkstatus)) ; }
 #       endif
 	continue ; }
       dualpricexk(xkndx,candxi,&candbbari,&pivreject) ; }
@@ -1651,30 +1695,21 @@ static dyret_enum dseupdate (int xindx, int xjndx, int *candxi, double *tau,
     deltak = cbarj*abarik/abarij ;
     if (deltak != 0)
     { cbark = dy_cbar[xkndx]-deltak ;
-      tolk = snaptol3(dy_tols->cost,0,fabs(deltak)) ;
-      setcleanzero(cbark,tolk) ;
-#     ifndef NDEBUG
       if ((flgon(xkstatus,vstatNBLB) && cbark < -dy_tols->dfeas) ||
 	  (flgon(xkstatus,vstatNBUB) && cbark > dy_tols->dfeas))
-      { if (dy_opts->print.dual >= 3)
+      { retval = dyrLOSTDFEAS ;
+#       ifndef NDEBUG
+	if (dy_opts->print.dual >= 5)
 	{ outfmt(dy_logchn,dy_gtxecho,
 		 "\n      lost dual feasibility, %s (%d) %s,",
 		 consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,
 		 dy_prtvstat(xkstatus)) ;
 	  outfmt(dy_logchn,dy_gtxecho,
 		 " old = %g, new = %g, abarij =  %g, delta = %g, tol = %g .",
-		 dy_cbar[xkndx],cbark,abarij,deltak,dy_tols->dfeas) ; } }
-#     endif
-      dy_cbar[xkndx] = cbark ;
-      if ((flgon(xkstatus,vstatNBLB) && cbark < -dy_tols->dfeas) ||
-	  (flgon(xkstatus,vstatNBUB) && cbark > dy_tols->dfeas))
-      { 
-#	ifndef NDEBUG
-	warn(347,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-	     dy_lp->tot.iters,consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,
-	     dy_prtvstat(xkstatus),xkndx,cbark,dy_tols->dfeas) ;
+		 dy_cbar[xkndx],cbark,abarij,deltak,dy_tols->dfeas) ; }
 #       endif
-	retval = dyrLOSTDFEAS ; } }
+      }
+      dy_cbar[xkndx] = cbark ; }
 #   ifdef CHECK_DSE_UPDATES
     else
     { cbark = dy_cbar[xkndx] ; }
@@ -1773,7 +1808,6 @@ static dyret_enum dualupdate (int xjndx, int indir,
   double deltai,xi,lbi,ubi ;
   double xj,cbarj,deltaj,abarij,ubj,lbj ;
   double deltak,yk ;
-  double epsl,epsu,eps0 ;
   flags stati,statj,statk ;
   dyret_enum retval,upd_retval ;
   bool swing ;
@@ -1781,6 +1815,9 @@ static dyret_enum dualupdate (int xjndx, int indir,
   double swingratio,maxswing ;
   char *rtnnme = "dualupdate" ;
 
+# ifdef PARANOIA
+  double epsl,epsu ;
+# endif
 
   retval = dyrOK ;
   swing = FALSE ;
@@ -1974,13 +2011,28 @@ static dyret_enum dualupdate (int xjndx, int indir,
   { stati = vstatNBUB ;
     xi = ubi ; }
   else
-  { if (fabs(xi-lbi) < fabs(xi-ubi))
+  { if (lbi == ubi)
+    { stati = vstatNBFX ;
+      xi = lbi ; }
+    else
+    if (fabs(xi-lbi) < fabs(xi-ubi))
     { stati = vstatNBLB ;
       xi = lbi ; }
     else
     { stati = vstatNBUB ;
       xi = ubi ; }
-    retval = dyrREQCHK ; }
+    retval = dyrREQCHK ;
+#   ifndef NDEBUG
+    if (dy_opts->print.dual >= 3)
+    { outfmt(dy_logchn,dy_gtxecho,
+	     "\n      (%s)%d: Forced leaving variable %s (%d) = %g",
+	     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	     consys_nme(dy_sys,'v',xindx,FALSE,NULL),xindx,dy_x[xindx]) ;
+      outfmt(dy_logchn,dy_gtxecho," to %s bound %g, error %g;",
+	     (stati == vstatNBUB)?"upper":"lower",xi,fabs(dy_x[xindx]-xi)) ;
+      outfmt(dy_logchn,dy_gtxecho," recommending request refactor.") ; }
+#   endif
+  }
   dy_status[xindx] = stati ;
   dy_x[xindx] = xi ;
 /*
@@ -1994,16 +2046,13 @@ static dyret_enum dualupdate (int xjndx, int indir,
     { xj = lbj+deltaj ; }
     else
     { xj = ubj+deltaj ; }
-    eps0 = snaptol1(fabs(deltaj)) ;
-    setcleanzero(xj,eps0) ;
+    setcleanzero(xj,dy_tols->zero) ;
 /*
   Choose a new status for x<j>. The tests for abovebnd and belowbnd will use
   the feasibility tolerance.  If newxk is within the snap tolerance of the
   bound, force it to be exactly at the bound. If the variable should be
   fixed, force it to bound even if it's only within feasibility distance.
 */
-    epsu = snaptol2(ubj,fabs(deltaj)) ;
-    epsl = snaptol2(lbj,fabs(deltaj)) ;
     if (statj == vstatBFR)
     { statj = vstatBFR ; }
     else
@@ -2022,15 +2071,15 @@ static dyret_enum dualupdate (int xjndx, int indir,
       { statj = vstatBUB ; } }
     if (flgon(statj,vstatBLB|vstatBUB) && lbj == ubj)
     { statj = vstatBFX ; }
-    if (dy_lp->iterf > 1 && dy_tols->bogus > 1.0 && xj != 0.0 &&
+    if (dy_lp->basis.etas > 1 && dy_tols->bogus > 1.0 && xj != 0.0 &&
 	flgoff(statj,vstatBLB|vstatBFX|vstatBUB))
-    { if (fabs(xj) < eps0*dy_tols->bogus)
+    { if (fabs(xj) < dy_tols->zero*dy_tols->bogus)
       { retval = dyrREQCHK ; 
 #	ifndef NDEBUG
 	if (dy_opts->print.pivoting >= 1)
 	  warn(374,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-	       dy_lp->tot.iters,"x",xjndx,fabs(xj),eps0*dy_tols->bogus,
-	       eps0*dy_tols->bogus-xj) ;
+	       dy_lp->tot.iters,"x",xjndx,fabs(xj),dy_tols->zero*dy_tols->bogus,
+	       dy_tols->zero*dy_tols->bogus-xj) ;
 #	endif
       } }
     if (flgon(statj,vstatBLLB|vstatBUUB))
@@ -2085,25 +2134,27 @@ static dyret_enum dualupdate (int xjndx, int indir,
     dy_ddegenset[xindx] = dy_ddegenset[xjndx] ;
     dy_ddegenset[xjndx] = xkpos ; }
 
-  deltaj =  cbarj/abarij ;
-  setcleanzero(deltaj,dy_tols->zero) ;
-  if (deltaj != 0)
+  if (fabs(cbarj) > dy_tols->cost)
   { for (xkpos = 1 ; xkpos <= dy_sys->concnt ; xkpos++)
     { xkndx = dy_basis[xkpos] ;
       if (dy_lp->degen > 0 && dy_ddegenset[xkndx] < dy_lp->degen) continue ;
-      deltak = deltaj*betai[xkpos] ;
-      eps0 = dy_tols->cost*(1.0+fabs(deltak)) ;
+      deltak = cbarj*betai[xkpos] ;
+      deltak = deltak/abarij ;
       yk = dy_y[xkpos]+deltak ;
-      setcleanzero(yk,eps0) ;
-      if (yk != 0.0 && dy_lp->iterf > 1 && fabs(yk) < eps0*dy_tols->bogus)
+/* ZZ_DEBUG_ZZ
+      setcleanzero(yk,dy_tols->cost) ;
+      if (yk != 0.0 &&
+	  dy_lp->basis.etas > 1 && fabs(yk) < dy_tols->cost*dy_tols->bogus)
       { retval = dyrREQCHK ;
-  #     ifndef NDEBUG
+#       ifndef NDEBUG
 	if (dy_opts->print.pivoting >= 1)
 	  warn(374,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-	       dy_lp->tot.iters,"y",xkpos,fabs(yk),eps0*dy_tols->bogus,
-	       eps0*dy_tols->bogus-yk) ;
-  #     endif
+	       dy_lp->tot.iters,"y",xkpos,fabs(yk),
+	       dy_tols->cost*dy_tols->bogus,
+	       dy_tols->cost*dy_tols->bogus-yk) ;
+#       endif
       }
+*/
       dy_y[xkpos] = yk ; } }
 /*
   Decide on a return value. Swing overrides the others, as it'll cause us to
@@ -2275,7 +2326,9 @@ dyret_enum dy_dualpivot (int xindx, int outdir,
 				 double **p_abarj) ;
 
 # ifdef PARANOIA
-  dy_chkdual() ;
+  int chkduallvl = 2 ;
+
+  dy_chkdual(chkduallvl) ;
 # endif
 
 /*
@@ -2563,8 +2616,8 @@ dyret_enum dy_dualpivot (int xindx, int outdir,
 /*
   Attempt the pivot to update the LU factorisation. This can fail for three
   reasons: the pivot element didn't meet the numerical stability criteria
-  (but we've already checked this), the pivot produced a singular basis, or
-  the basis package ran out of space.
+  (we've already checked this, but the check can miss near singularity),
+  the pivot produced a singular basis, or the basis package ran out of space.
 
   If we fail, and we've done flips as part of a multipivot, we have a
   problem.  There's no easy way to back out the flips, and without the pivot
@@ -2586,8 +2639,8 @@ dyret_enum dy_dualpivot (int xindx, int outdir,
       dy_ftran(abarj,TRUE) ;
       retval = dy_pivot(xipos,abarj[xipos],maxabari) ; } }
 /*
-  The basis is successfully pivoted. Now we need to update the primal and
-  dual variables. We'll use dualupdate for the job. If that works, call
+  If the basis is successfully pivoted, we need to do updates. 
+  Call dualupdate to do the primal and dual variables. If that works, call
   dseupdate to update dual steepest edge information and choose a leaving
   variable for the next iteration.
 
@@ -2608,7 +2661,7 @@ dyret_enum dy_dualpivot (int xindx, int outdir,
       if (dseretval != dyrOK) retval = dseretval ; }
     if (retval == dyrOK) retval = inretval ;
 #   ifdef PARANOIA
-    dy_chkdual() ;
+    dy_chkdual(chkduallvl) ;
 #   endif
   }
 

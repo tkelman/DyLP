@@ -600,10 +600,11 @@ dyret_enum dy_accchk (flags *checks)
       { if (dy_setpivparms(+1,0) == FALSE) continue ; }
 #     ifndef NDEBUG
       if (print >= 2 || (print >= 1 && results != 0))
-      { outfmt(dy_logchn,dy_gtxecho,
-	       "\n      [%s] refactoring at (%s)%d, iterf %d, %s ...",
+      { outfmt(dy_logchn,dy_gtxecho,"\n      [%s] refactoring at (%s)%d, %s, ",
 	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	       dy_lp->iterf,dy_prtpivparms(-1)) ; }
+	       dy_prtpivparms(-1)) ;
+        outfmt(dy_logchn,dy_gtxecho,"%d pivots since last refactor.",
+	       dy_lp->basis.etas) ; }
 #     endif
       factorflags = ladPRIMALS|ladDUALS ;
       if (refactorcnt == 0 && flgon(*checks,ladEXPAND))
@@ -696,15 +697,25 @@ dyret_enum dy_accchk (flags *checks)
 /*
   Information prints on the results of the accuracy checks.
 */
-    if (print >= 5)
-    { if (flgon(*checks,ladPRIMALCHK) && flgoff(results,ladPRIMALCHK))
-      { outfmt(dy_logchn,dy_gtxecho,"\n\tpassed primal accuracy check, ") ;
-	outfmt(dy_logchn,dy_gtxecho,"residual/(1+normb) = %g/%g = %g < %g.",
-	       primalresid,(1+normb),primalresid/(1+normb),dy_tols->pchk) ; }
-      if (flgon(*checks,ladDUALCHK) && flgoff(results,ladDUALCHK))
-      { outfmt(dy_logchn,dy_gtxecho,"\n\tpassed dual accuracy check, ") ;
-	outfmt(dy_logchn,dy_gtxecho,"residual/(1+normc) = %g/%g = %g < %g.",
-	       dualresid,(1+normc),dualresid/(1+normc),dy_tols->dchk) ; } }
+    if ((print >= 3 && flgon(results,ladPRIMALCHK)) ||
+	(print >= 3 && flgon(*checks, ladPRIMALCHK)))
+    { outfmt(dy_logchn,dy_gtxecho,"\n\t%s primal accuracy check, ",
+	     (flgon(results,ladPRIMALCHK))?"failed":"passed") ;
+      outfmt(dy_logchn,dy_gtxecho,"residual/(1+normb) = %g/%g = %g %c %g.",
+	     primalresid,(1+normb),primalresid/(1+normb),
+	     (flgon(results,ladPRIMALCHK))?'>':'<',dy_tols->pchk) ;
+      outfmt(dy_logchn,dy_gtxecho," (%.2f%%)",
+	     primalresid/(dy_tols->pchk*(1+normb))*100) ; }
+
+    if ((print >= 3 && flgon(results,ladDUALCHK)) ||
+	(print >= 3 && flgon(*checks, ladDUALCHK)))
+    { outfmt(dy_logchn,dy_gtxecho,"\n\t%s dual accuracy check, ",
+	     (flgon(results,ladDUALCHK))?"failed":"passed") ;
+      outfmt(dy_logchn,dy_gtxecho,"residual/(1+normc) = %g/%g = %g %c %g.",
+	     dualresid,(1+normc),dualresid/(1+normc),
+	     (flgon(results,ladDUALCHK))?'>':'<',dy_tols->dchk) ;
+      outfmt(dy_logchn,dy_gtxecho," (%.2f%%)",
+	     dualresid/(dy_tols->dchk*(1+normc))*100) ; }
 
     if (print >= 3)
     { if (flgon(results,ladPRIMALCHK))
@@ -900,7 +911,11 @@ dyret_enum dy_accchk (flags *checks)
 	  dfeascnt++ ;
 	  dfeaserrs[xkndx] = cbarj ;
 #	  endif
-	  setflg(results,ladDUALFEAS) ; } } }
+	  setflg(results,ladDUALFEAS) ; } }
+	if (flgon(results,ladDUALFEAS))
+	  dy_lp->basis.dinf++ ;
+	else
+	  dy_lp->basis.dinf = 0 ; }
 
 # ifndef NDEBUG
 /*
@@ -1028,7 +1043,7 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
 
   Refactoring is handled inside dy_accchk, which see for additional
   comments.  Where refactoring is attempted (either for error recovery or
-  simply because iterf says it's time) and dy_factor reports that it has
+  simply because basis.etas says it's time) and dy_factor reports that it has
   discovered and patched a singular basis, la Duenna will return dyrRESELECT
   to force the calling simplex algorithm to reselect the entering (leaving)
   variable.  Refactoring can fail; again, see dy_accchk and dy_factor for
@@ -1085,17 +1100,17 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
   checkflags = 0 ;
 /*
   Bump the various pivot and iteration counts, and see if we're in trouble
-  because of the total pivot limit. It's important to get iterf and iterbrk
-  correct --- they come into the control of basis factorisation and the
-  pivot reject list, and should not change unless we successfully pivoted the
-  basis. The others are less critical.
+  because of the total pivot limit. It's important to get basis.etas and
+  basis.pivs correct --- they come into the control of basis factorisation
+  and the pivot reject list, and should not change unless we successfully
+  pivoted the basis. The others are less critical.
 */
   pivok = dy_lp->pivok ;
   dy_lp->prev_pivok = pivok ;
   dy_lp->pivok = FALSE ;
   if (pivok == TRUE && xindx != xjndx)
-  { dy_lp->iterf++ ;
-    dy_lp->iterbrk++ ; }
+  { dy_lp->basis.etas++ ;
+    dy_lp->basis.pivs++ ; }
   if (dy_lp->phase == dyPRIMAL1)
   { dy_lp->p1.iters++ ;
     if (pivok == TRUE) dy_lp->p1.pivs++ ;
@@ -1192,9 +1207,10 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
 #     ifndef NDEBUG
       if (print >= 1)
       { outfmt(dy_logchn,dy_gtxecho,
-	       "\n  [%s] refactor requested at (%s)%d, iterf %d.",
-	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	       dy_lp->iterf) ; }
+	       "\n  [%s] refactor requested at (%s)%d, ",
+	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ;
+        outfmt(dy_logchn,dy_gtxecho,"%d pivots since last refactor.",
+	       dy_lp->basis.etas) ; }
 #     endif
       retval = dyrREQCHK ;
       break ; } 
@@ -1233,7 +1249,7 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
       break ; }
     case dyrBSPACE:
     { setflg(checkflags,ladFACTOR) ;
-      if (dy_lp->iterf == 0) setflg(checkflags,ladEXPAND) ;
+      if (dy_lp->basis.etas == 0) setflg(checkflags,ladEXPAND) ;
 #     ifndef NDEBUG
       if (print >= 1)
       { if (flgoff(checkflags,ladEXPAND))
@@ -1276,23 +1292,25 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
   versa), so it's actually buried in dy_accchk, we just have to request it.
   It'll occasionally happen that an accuracy check will repeat because it's
   had the misfortune to fall on a pivot which is followed by pivots which
-  don't count toward iterf (nonbasic moving from bound to bound is the most
-  common cause). Something to think about fixing up --- either a a separate
-  count, iterc, for accuracy checks, or remember the iterf value of the most
-  recent accuracy check.
+  don't count toward basis.etas (nonbasic moving from bound to bound is the
+  most common cause). Something to think about fixing up --- either a a
+  separate count, iterc, for accuracy checks, or remember the basis.etas
+  value of the most recent accuracy check.
 
   While we're here, check on the pivot tolerance. If we've been running with
   reduced tolerance for a while, we should boost it back to normal.
 */
-  if (dy_lp->iterf >= dy_opts->factor)
+  if (dy_lp->basis.etas >= dy_opts->factor)
   { setflg(checkflags,ladFACTOR) ;
     dy_checkpivtol() ;
 #   ifndef NDEBUG
     if (print >= 2)
     { outfmt(dy_logchn,dy_gtxecho,
-	     "\n    [%s] (%s)%d: scheduled refactor, iterf %d, interval %d, ",
+	     "\n    [%s] (%s)%d: scheduled refactor, interval %d, ",
 	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	     dy_lp->iterf,dy_opts->factor) ;
+	     dy_opts->factor) ;
+      outfmt(dy_logchn,dy_gtxecho,"%d pivots since last refactor,",
+	     dy_lp->basis.etas) ;
       if (dy_lp->phase == dyDUAL)
       { outfmt(dy_logchn,dy_gtxecho,"yb = %g.",dy_calcdualobj()) ; }
       else
@@ -1302,7 +1320,7 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
       { outfmt(dy_logchn,dy_gtxecho,"cx = %g.",dy_calcobj()) ; } }
 #   endif
   }
-  if ((dy_lp->iterf%dy_opts->check == 0 && dy_lp->iterf != 0) ||
+  if ((dy_lp->basis.etas%dy_opts->check == 0 && dy_lp->basis.etas != 0) ||
       flgon(checkflags,ladFACTOR))
   { if (dy_lp->phase == dyPRIMAL1)
     { setflg(checkflags,ladPRIMALCHK) ; }
@@ -1313,11 +1331,14 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
     if (dy_lp->phase == dyDUAL)
     { setflg(checkflags,ladPRIMALCHK|ladDUALCHK|ladDUALFEAS|ladDFQUIET) ; }
 #   ifndef NDEBUG
-    if (dy_lp->iterf%dy_opts->check == 0 && dy_lp->iterf != 0 && print >= 2)
+    if (dy_lp->basis.etas%dy_opts->check == 0 &&
+	dy_lp->basis.etas != 0 && print >= 2)
     { outfmt(dy_logchn,dy_gtxecho,
-	     "\n    [%s] (%s)%d: scheduled check, iterf %d, interval %d.",
+	     "\n    [%s] (%s)%d: scheduled check, interval %d, ",
 	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	     dy_lp->iterf,dy_opts->check) ; }
+	     dy_opts->check) ;
+      outfmt(dy_logchn,dy_gtxecho,"%d pivots since last refactor.",
+	     dy_lp->basis.etas) ; }
 #   endif
   }
 /*

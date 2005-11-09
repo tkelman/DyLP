@@ -534,6 +534,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
   switch (lvl)
   { case 0:
     { opts->print.major = 0 ;
+      opts->print.scaling = 0 ;
       opts->print.setup = 0 ;
       opts->print.crash = 0 ;
       opts->print.pricing = 0 ;
@@ -549,6 +550,8 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
       break ; }
     case 1:
     { opts->print.major = maxx(opts->print.major,dyopts_dflt.print.major) ;
+      opts->print.scaling =
+	  maxx(opts->print.scaling,dyopts_dflt.print.scaling) ;
       opts->print.setup = maxx(opts->print.setup,dyopts_dflt.print.setup) ;
       opts->print.crash = maxx(opts->print.crash,dyopts_dflt.print.crash) ;
       opts->print.pricing = maxx(opts->print.pricing,
@@ -569,6 +572,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
       break ; }
     case 2:
     { opts->print.major = maxx(opts->print.major,1) ;
+      opts->print.scaling = maxx(opts->print.scaling,1) ;
       opts->print.setup = maxx(opts->print.setup,1) ;
       opts->print.crash = maxx(opts->print.crash,1) ;
       opts->print.pricing = maxx(opts->print.pricing,0) ;
@@ -584,6 +588,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
       break ; }
     case 3:
     { opts->print.major = maxx(opts->print.major,1) ;
+      opts->print.scaling = maxx(opts->print.scaling,2) ;
       opts->print.setup = maxx(opts->print.setup,2) ;
       opts->print.crash = maxx(opts->print.crash,2) ;
       opts->print.pricing = maxx(opts->print.pricing,0) ;
@@ -599,6 +604,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
       break ; }
     case 4:
     { opts->print.major = maxx(opts->print.major,1) ;
+      opts->print.scaling = maxx(opts->print.scaling,2) ;
       opts->print.setup = maxx(opts->print.setup,3) ;
       opts->print.crash = maxx(opts->print.crash,3) ;
       opts->print.pricing = maxx(opts->print.pricing,0) ;
@@ -614,6 +620,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
       break ; }
     default:
     { opts->print.major = maxx(opts->print.major,1) ;
+      opts->print.scaling = maxx(opts->print.scaling,2) ;
       opts->print.setup = maxx(opts->print.setup,5) ;
       opts->print.crash = maxx(opts->print.crash,4) ;
       opts->print.pricing = maxx(opts->print.pricing,1) ;

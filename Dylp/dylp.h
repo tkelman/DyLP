@@ -918,6 +918,8 @@ typedef struct
     scaling	  Controls print level during initial evaluation and scaling of
 		  the original constraint system.
 		  1: start and finish messages
+		  2: stability measures for original and scaled matrices;
+		     adjustments to tolerances.
     setup	  Controls print level while creating the initial constraint
 		  system for dylp.
 		  1: start and finish messages.
@@ -1393,14 +1395,21 @@ extern bool dy_gtxecho ;
   prev_pivok	Set to pivok at head of dy_duenna. Provides status of just
 		completed pivot for post-Duenna decisions.
 
-  iterf         The number of iterations which changed the basis since the
-		last time the basis was factored. Used to schedule periodic
+  basis		Various fields related to basis change, refactoring, etc.
+
+    etas	The number of basis changes (hence eta matrices) since the
+		the basis was last factored. Used to schedule periodic
 		factoring of the basis. Reset to 0 each time the basis is
 		factored.
-  iterbrk       The number of iterations which changed the basis since entry
-		into a primal or dual simplex phase. Used when deciding
-		whether to remove variables from the pivot reject list, and
-		whether to pop out of a simplex phase due to excessive swing.
+    pivs        The number of basis pivots since entry into a primal or dual
+		simplex phase (excludes bound-to-bound simplex `pivots').
+		Used when deciding whether to remove variables from the pivot
+		reject list, and whether to pop out of a simplex phase due to
+		excessive swing.
+    dinf	Number of successive refactors with dual infeasibility.
+		Cleared at the start of a simplex phase.
+		Incremented/cleared in dy_accchk iff a dual feasibility check
+		is performed.
 
   degen		Activation level of antidegeneracy algorithm. Held at 0 when
 		the antidegeneracy algorithm is not active. Incremented each
@@ -1470,8 +1479,9 @@ typedef struct
 	   int pivs ; } d2 ;
   bool pivok ;
   bool prev_pivok ;
-  int iterf ;
-  int iterbrk ;
+  struct { int etas ;
+	   int pivs ;
+	   int dinf ; } basis ;
   int degen ;
   int degenpivcnt ;
   int idlecnt ;
@@ -1760,7 +1770,7 @@ extern void dy_finishup(lpprob_struct *orig_lp, dyphase_enum phase) ;
 
 extern bool dy_chkstatus(int vndx),
             dy_chkdysys(consys_struct *orig_sys) ;
-extern void dy_chkdual(void) ;
+extern void dy_chkdual(int lvl) ;
 
 #endif
 

@@ -395,7 +395,7 @@ void dy_initbasis (int concnt, int factor, double zero_tol)
   if (zero_tol != 0.0) luf_basis->luf->eps_tol = zero_tol ;
   luf_basis->luf->piv_tol = pivtols[pivlevel].stable ;
   luf_basis->luf->piv_lim =  pivtols[pivlevel].look ;
-  luf_basis->luf->max_gro = 10e6 ;
+  luf_basis->luf->max_gro = 1.0e7 ;
 /*
   This is the smallest value that can appear on the diagonal of U after a
   pivot update. dylp will (in extremis) drop its pivot selection tolerance
@@ -515,8 +515,6 @@ void dy_ftran (double *col, bool save)
 
   inv_ftran(luf_basis,col,isave) ;
 
-  for (i = 1 ; i <= dy_sys->concnt ; i++) setcleanzero(col[i],dy_tols->zero) ;
-
   return ; }
 
 
@@ -535,8 +533,6 @@ void dy_btran (double *col)
 { int i ;
 
   inv_btran(luf_basis,col) ;
-
-  for (i = 1 ; i <= dy_sys->concnt ; i++) setcleanzero(col[i],dy_tols->zero) ;
 
   return ; }
 
@@ -1100,7 +1096,8 @@ dyret_enum dy_factor (flags *calcflgs)
   selection.
 
   At present, glpinv/glpluf will crash and burn if they encounter fatal
-  problems.
+  problems. The basis load is implicit --- the routine factor_loadcol is
+  called from luf_decomp to load up the coefficients.
 */
   try_again = TRUE ;
   patched = FALSE ;
@@ -1179,12 +1176,12 @@ dyret_enum dy_factor (flags *calcflgs)
   }
 /*
   If we reach here, we managed to factor the basis.  Reset the count of
-  iterations since the last refactor.  If the basis was patched, we have some
+  pivots since the last refactor.  If the basis was patched, we have some
   serious cleanup to do, so call adjust_therest to deal with the details.
   Otherwise, turn to the requests to calculate values for the primal and/or
   dual variables.
 */
-  dy_lp->iterf = 0 ;
+  dy_lp->basis.etas = 0 ;
   if (patched == TRUE)
   { retcode = adjust_therest(patchcnt,patches) ;
     FREE(patches) ;
@@ -1217,7 +1214,10 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
 
 /*
   This routine handles a single pivot. It first checks that the pivot element
-  satisfies a stability test, then calls inv_update to pivot the basis.
+  satisfies a stability test, then calls inv_update to pivot the basis. We
+  can still run into trouble, however, if the pivot results in a singular or
+  near-singular basis. `Near-singular' is determined by comparing the basis
+  stability measure (min_vrratio) with stableTol.
 
   NOTE: There is an implicit argument here that's not immediately obvious.
 	inv_update gets the entering column from a cached result set with the
@@ -1244,6 +1244,12 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
 { int retval ;
   double ratio ;
   dyret_enum retcode ;
+
+# ifdef REFACTOR_WHEN_UNSTABLE
+  flags calcflgs = ladPRIMALS|ladDUALS ;
+# endif
+
+  const double stableTol = 1.0e-7 ;
   char *rtnnme = "dy_pivot" ;
 
 /*
@@ -1252,7 +1258,16 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
   no excuse for not doing it now.
 */
   ratio = dy_chkpiv(abarij,maxabarj) ;
-  if (ratio < 1.0) return (dyrMADPIV) ;
+  if (ratio < 1.0)
+  {
+#   ifndef NDEBUG
+    if (dy_opts->print.basis >= 3)
+    { outfmt(dy_logchn,dy_gtxecho,
+	     "\n      %s(%d) pivot aborted; est. pivot stability %g.",
+	     dy_prtlpphase(dy_lp->phase,TRUE),
+	     dy_lp->tot.iters,rtnnme,ratio) ; }
+#   endif
+    return (dyrMADPIV) ; }
 /*
   Make the call to inv_update, then recode the result.
 */
@@ -1260,8 +1275,9 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
 # ifndef NDEBUG
   if ((retval == 0 && dy_opts->print.basis >= 5) ||
       (retval > 0 && dy_opts->print.basis >= 3))
-  { outfmt(dy_logchn,dy_gtxecho,"\n    %s(%d) stability after basis pivot %g.",
-           dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+  { outfmt(dy_logchn,dy_gtxecho,"\n    %s(%d) estimated pivot stability %g; ",
+           dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,ratio) ;
+    outfmt(dy_logchn,dy_gtxecho,"measured pivot stability %g.",
 	   luf_basis->min_vrratio) ; }
 # endif
   switch (retval)
@@ -1273,7 +1289,8 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
     { retcode = dyrSINGULAR ;
 #     ifndef NDEBUG
       if (dy_opts->print.basis >= 2)
-      { outfmt(dy_logchn,dy_gtxecho,"\n    %s(%d) singular basis (%s) after pivot.",
+      { outfmt(dy_logchn,dy_gtxecho,
+	       "\n    %s(%d) singular basis (%s) after pivot.",
 	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       (retval == 1)?"structural":"numeric") ; }
 #     endif
@@ -1292,6 +1309,26 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
     { errmsg(1,rtnnme,__LINE__) ;
       retcode = dyrFATAL ;
       break ; } }
+/*
+  The pivot succeeded, but do we want to live with the result? If the local
+  stability measure for the pivot is too small, claim singularity, which will
+  force a refactor and appropriate error recovery actions. Bump the pivoting
+  parameters in hopes of improving stability.
+*/
+# ifdef REFACTOR_WHEN_UNSTABLE
+  if (luf_basis->min_vrratio*luf_basis->upd_tol < stableTol)
+  {
+#   ifndef NDEBUG
+    if (dy_opts->print.basis >= 3)
+    { outfmt(dy_logchn,dy_gtxecho,
+	     "\n      %s(%d) estimated stability after pivot %g < tol = %g;",
+	     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	     luf_basis->min_vrratio*luf_basis->upd_tol ) ;
+      outfmt(dy_logchn,dy_gtxecho," forcing singularity.") ; }
+#   endif
+    (void) dy_setpivparms(+1,0) ;
+    retcode = dyrSINGULAR ; }
+# endif
   
   return (retcode) ; }
 

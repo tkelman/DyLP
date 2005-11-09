@@ -564,7 +564,7 @@ bool dy_dumpcompact (ioid chn, bool echo, lpprob_struct *soln, bool nbzeros)
 	     dy_prtvstat(soln->status[vndx]),val) ; }
   
   if (nononbasic == TRUE)
-    outfmt(dy_logchn,dy_gtxecho,"\n\nNo nonbasic architectural variables.\n") ;
+    outfmt(chn,echo,"\n\nNo nonbasic architectural variables.\n") ;
   else
     outchr(chn,echo,'\n') ;
 

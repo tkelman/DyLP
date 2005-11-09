@@ -529,10 +529,10 @@ dyret_enum dy_updateprimals (int j, double deltaj, double *p_abarj)
   Clean zeros and values judged to be at bound cannot be bogus, so we can
   skip the test.  If bogus === 1.0, there's no point in doing these tests,
   because the bogus region is identical to the tolerance region.  The
-  corrective action for a bogus value is to refactor. If iterf == 1, we've
-  just refactored, so again, no sense in checking.
+  corrective action for a bogus value is to refactor. If basis.etas == 1,
+  we've just refactored, so again, no sense in checking.
 */
-    if (dy_lp->iterf > 1 && dy_tols->bogus > 1.0 &&
+    if (dy_lp->basis.etas > 1 && dy_tols->bogus > 1.0 &&
 	newxk != 0 && flgoff(newstatk,vstatBLB|vstatBUB|vstatBFX))
     { if (fabs(newxk) < eps0*dy_tols->bogus)
       { retval = dyrREQCHK ;
@@ -1449,7 +1449,7 @@ bool dy_chkstatus (int vndx)
 
 
 
-void dy_chkdual (void)
+void dy_chkdual (int lvl)
 
 /*
   This routine checks the dual variables and reduced costs for correctness,
@@ -1469,6 +1469,12 @@ void dy_chkdual (void)
   subproblem). Unfortunately, given the way that the perturbation is applied
   (directly to dy_cbar), there's no way I know of to check for correct values
   of perturbed reduced costs and duals.
+
+  Parameters:
+    lvl:	0: suppresses all printing (allows or convenient suppression
+		   of messages without recompiling)
+		1: prints a summary only if problems are detected
+		2: prints a warning for each problem detected
 */
 
 { int i,j,m,n ;
@@ -1477,10 +1483,13 @@ void dy_chkdual (void)
   bool degenActive ;
   double *y,*cbar ;
 
-  /*
-    Scaling can tighten the base value of tols.cost, and we don't want that
-    here. Hardwire the default value.
-  */
+  int yerrcnt,cbarerrcnt,ycbarerrcnt,cbarstatuserrcnt ;
+  double yerrtot,cbarerrtot ;
+
+/*
+  Scaling can tighten the base value of tols.cost, and we don't want that
+  here. Hardwire the default value.
+*/
   const double base_tol = 1.0e-11 ;
 
   char *rtnnme = "dy_chkdual" ;
@@ -1516,44 +1525,60 @@ void dy_chkdual (void)
 
   When dual antidegeneracy is active, in a position that's involved in a
   restricted subproblem, the real dual should be 0.  Since reduced
-  subproblems are nested, it's sufficient to check dy_ddegenset.
+  subproblems are nested, it's sufficient to check dy_ddegenset == 0.
 */
   tol = 100*base_tol ;
+  yerrcnt = 0 ;
+  yerrtot = 0.0 ;
   for (i = 1 ; i <= m ; i++)
   { j = dy_basis[i] ;
     if (dy_ddegenset[j] == 0)
     { diff = fabs(dy_y[i]-y[i]) ;
       if (diff > tol)
-      { warn(321,rtnnme,
-	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	     "uninvolved",
-	     "dy_y",i,dy_y[i],y[i],diff,tol) ; } }
+      { if (lvl >= 2)
+	{ warn(321,rtnnme,
+	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	       (dy_lp->degen == 0)?"real":"uninvolved",
+	       "dy_y",i,dy_y[i],y[i],diff,tol) ; }
+	yerrcnt++ ;
+	yerrtot += diff ; } }
     else
     { if (fabs(y[i]) > dy_tols->dfeas)
-      { warn(321,rtnnme,
-	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	     "real",
-	     "y",i,y[i],0.0,y[i],dy_tols->cost) ; } } }
+      { if (lvl >= 2)
+	{ warn(321,rtnnme,
+	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	       "real",
+	       "y",i,y[i],0.0,y[i],dy_tols->cost) ; }
+	yerrcnt++ ;
+	yerrtot += fabs(y[i]) ; } } }
 /*
   Now try for the reduced costs. As with the duals, if the column is involved
   in the reduced subproblem, the real reduced cost should be 0. If not, they
   should be identical.
 */
   tol = 1000*base_tol ;
+  cbarerrcnt = 0 ;
+  cbarerrtot = 0.0 ;
   for (j = 1 ; j <= n ; j++)
   { if (dy_ddegenset[j] == 0)
     { diff = fabs(dy_cbar[j]-cbar[j]) ;
       if (diff > tol)
-      { warn(321,rtnnme,
-	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	     "uninvolved",
-	     "dy_cbar",j,dy_cbar[j],cbar[j],diff,tol) ; } }
+      { if (lvl >= 2)
+	{ warn(321,rtnnme,
+	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	       (dy_lp->degen == 0)?"real":"uninvolved",
+	       "dy_cbar",j,dy_cbar[j],cbar[j],diff,tol) ; }
+      cbarerrcnt++ ;
+      cbarerrtot += diff ; } }
     else
     { if (fabs(cbar[j]) > dy_tols->dfeas)
-      { warn(321,rtnnme,
-	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	     "real",
-	     "cbar",j,cbar[j],0.0,cbar[j],dy_tols->cost) ; } } }
+      { if (lvl >= 2)
+	{ warn(321,rtnnme,
+	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	       "real",
+	       "cbar",j,cbar[j],0.0,cbar[j],dy_tols->cost) ; }
+      cbarerrcnt++ ;
+      cbarerrtot += fabs(cbar[j]) ; } } }
 /*
   Check that, for 1 < i < m, that the reduced cost of the logical
   equals the negative of the dual variable for the constraint for variables
@@ -1562,40 +1587,69 @@ void dy_chkdual (void)
   have cbar<i> = c<i> - dot(y,a<i>). Unfortunately, we don't know c<i> (though
   we could calculate it).
 */
+  ycbarerrcnt = 0 ;
   for (i = 1 ; i <= m ; i++)
   { statj = dy_status[i] ;
     if (dy_ddegenset[i] == 0)
     { cbarj = cbar[i] ;
       yi = y[i] ;
       if (fabs(cbarj+yi) > base_tol)
-      { warn(336,rtnnme,
-	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	     consys_nme(dy_sys,'v',i,FALSE,NULL),i,dy_prtvstat(statj),
-	     "real",-yi,cbarj,fabs(cbarj+yi),dy_tols->cost) ; } } }
+      { if (lvl >= 2)
+	{ warn(336,rtnnme,
+	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	       consys_nme(dy_sys,'v',i,FALSE,NULL),i,dy_prtvstat(statj),
+	       "real",-yi,cbarj,fabs(cbarj+yi),dy_tols->cost) ; }
+	ycbarerrcnt++ ; } } }
 /*
   Check that primal status agrees with reduced costs. If antidegeneracy is
   active, the real values should still be in agreement (zero is neutral, hence
   should not cause an error).
 */
+  cbarstatuserrcnt = 0 ;
   for (j = 1 ; j <= n ; j++)
   { statj = dy_status[j] ;
     cbarj = dy_cbar[j] ;
     if ((flgon(statj,vstatNBLB) && cbarj < -dy_tols->dfeas) ||
 	(flgon(statj,vstatNBUB) && cbarj > dy_tols->dfeas) ||
 	flgon(statj,vstatNBFR|vstatSB))
-    { warn(347,rtnnme,dy_sys->nme,
-	   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	   consys_nme(dy_sys,'v',j,FALSE,NULL),j,
-	     dy_prtvstat(statj),j,cbarj,dy_tols->dfeas) ; }
+    { if (lvl >= 2)
+      { warn(347,rtnnme,dy_sys->nme,
+	     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	     consys_nme(dy_sys,'v',j,FALSE,NULL),j,
+	       dy_prtvstat(statj),j,cbarj,dy_tols->dfeas) ; }
+      cbarstatuserrcnt++ ; }
     if (degenActive && dy_ddegenset[j] < dy_lp->degen)
     { cbarj = cbar[j] ;
       if ((flgon(statj,vstatNBLB) && cbarj < -dy_tols->dfeas) ||
 	  (flgon(statj,vstatNBUB) && cbarj > dy_tols->dfeas) ||
 	  flgon(statj,vstatNBFR|vstatSB))
-      { warn(347,rtnnme,dy_sys->nme,
-	     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	     consys_nme(dy_sys,'v',j,FALSE,NULL),j,
-	       dy_prtvstat(statj),j,cbarj,dy_tols->dfeas) ; } } }
+      { if (lvl >= 2)
+	{ warn(347,rtnnme,dy_sys->nme,
+	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	       consys_nme(dy_sys,'v',j,FALSE,NULL),j,
+		 dy_prtvstat(statj),j,cbarj,dy_tols->dfeas) ; }
+	cbarstatuserrcnt++ ; } } }
+/*
+  Summary. Print if there's any error.
+*/
+  if (lvl >= 1 && yerrcnt+cbarerrcnt+ycbarerrcnt+cbarstatuserrcnt > 0)
+  { outfmt(dy_logchn,dy_gtxecho,"\n  %s: [%s]: (%s)%d: ",rtnnme,
+	   dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ;
+    if (yerrcnt > 0)
+    { outfmt(dy_logchn,dy_gtxecho,"%d y value errors (%g)", yerrcnt,yerrtot) ; }
+    if (cbarerrcnt > 0)
+    { if (yerrcnt > 0) outfmt(dy_logchn,dy_gtxecho,", ") ;
+      outfmt(dy_logchn,dy_gtxecho,"%d cbar value errors (%g)",
+	     cbarerrcnt,cbarerrtot) ; }
+    if (ycbarerrcnt > 0)
+    { if (yerrcnt+cbarerrcnt > 0) outfmt(dy_logchn,dy_gtxecho,", ") ;
+      outfmt(dy_logchn,dy_gtxecho,"%d y/cbar agreement errors",ycbarerrcnt) ; }
+    if (cbarstatuserrcnt > 0)
+    { if (yerrcnt+cbarerrcnt+ycbarerrcnt > 0)
+      { outfmt(dy_logchn,dy_gtxecho,", ") ; }
+      outfmt(dy_logchn,dy_gtxecho,
+	     "%d cbar/status agreement errors",cbarstatuserrcnt) ; }
+    outchr(dy_logchn,dy_gtxecho,'.') ; }
 /*
   Clean up and we're done.
 */

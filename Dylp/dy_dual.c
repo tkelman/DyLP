@@ -184,7 +184,7 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
   checkflags = 0 ;
   setflg(checkflags,ladFACTOR|ladPRIMALCHK|ladPRIMFEAS|ladPFQUIET|
 		    ladDUALCHK|ladDUALFEAS|ladDFQUIET) ;
-  if (lpretval == dyrOPTIMAL && dy_lp->iterf == 0)
+  if (lpretval == dyrOPTIMAL && dy_lp->basis.etas == 0)
     clrflg(checkflags,ladFACTOR) ;
 /*
   Start with the easy stuff -- clear the pivot reject list and back out any
@@ -290,11 +290,13 @@ static dyret_enum dual2 (void)
   Returns: appropriate dual lpret_enum code.
 */
 
-{ int candxi,xindx,outdir,xjndx,indir,optcnt,lostfeascnt ;
+{ int candxi,xindx,outdir,xjndx,indir,optcnt ;
   double cbarj,abarij,delta ;
   flags xistatus,checks ;
   bool do_pivots ;
   dyret_enum lpretval,outresult,pivresult,duennaresult,preopresult ;
+
+  const int successiveDinf = 40 ;
 
   char *rtnnme = "dual2" ;
 
@@ -317,7 +319,7 @@ static dyret_enum dual2 (void)
   dy_lp->pivok = FALSE ;
   dy_lp->prev_pivok = FALSE ;
   lpretval = dyrINV ;
-  lostfeascnt = 0 ;
+  dy_lp->basis.dinf = 0 ;
 /*
   Do a little initialisation, then open the outer loop. It's purpose is to
   recover from false terminations (optimality or unboundedness which
@@ -490,7 +492,7 @@ static dyret_enum dual2 (void)
 	    do_pivots = FALSE ;
 	    break ; }
 	  case dyrSWING:
-	  { if (dy_lp->iterbrk >= 10)
+	  { if (dy_lp->basis.pivs >= 10)
 	    { lpretval = duennaresult ;
 	      do_pivots = FALSE ; }
 	    else
@@ -498,11 +500,27 @@ static dyret_enum dual2 (void)
 	    { do_pivots = FALSE ; }
 	    break ; }
 	  case dyrLOSTDFEAS:
-	  { lostfeascnt++ ;
-	    if (lostfeascnt > 10)
+	  {
+#	    ifndef NDEBUG
+	    if (dy_opts->print.dual >= 3 &&
+		dy_lp->basis.dinf < successiveDinf)
+	    { outfmt(dy_logchn,dy_gtxecho,
+		     "\n(%s)%d: dual infeasible for %d successive refactors.",
+		     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+		     dy_lp->basis.dinf) ; }
+	    if (dy_opts->print.dual >= 1 &&
+	    	dy_lp->basis.dinf >= successiveDinf)
+	    { outfmt(dy_logchn,dy_gtxecho,
+		     "\n  (%s)%d: dual infeasibility for %d successive",
+		     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+		     successiveDinf) ;
+	      outfmt(dy_logchn,dy_gtxecho," refactors; aborting.") ; }
+#	    endif
+	    if (dy_lp->basis.dinf >= successiveDinf)
 	    { lpretval = duennaresult ;
 	      do_pivots = FALSE ; }
 	    else
+	    if (candxi <= 0)
 	    { do_pivots = FALSE ; }
 	    break ; }
 	  case dyrACCCHK:
@@ -681,7 +699,7 @@ lpret_enum dy_dual (void)
   dy_lp->lpret = lpINV ;
   (void) dy_setpivparms(-100,-100) ;
   (void) dy_setpivparms(+1,+1) ;
-  dy_lp->iterbrk = 0 ;
+  dy_lp->basis.pivs = 0 ;
 
 /*
   Call dual2 to take us to optimality. We'll also make the usual conversion

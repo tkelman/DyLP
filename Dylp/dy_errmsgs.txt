@@ -312,7 +312,7 @@
 @339@[%s]: (%s)%d: cycling suspected; %d pivots with no change in objective.@
 @340@[%s]: could not construct reduced right-hand-side (b - Nx<N>).
 @341@[%s]: (%s)%d: %s accuracy check failed;
-	1-norm(%c) = %g; residual %g, tolerance %g.@
+	1+norm(%c) = %g; residual %g, tolerance %g.@
 @342@[%s]: %s (%d) was in degenerate set, but restored value %g
 	is not at lb = %g or ub = %g; %s %g, tolerance %g.@
 @343@[%s]: fatal error at pivot %d.@
@@ -396,8 +396,7 @@
 @391@[%s]: (%s)%d: failed to clear superbasics prior to return to phase I.@
 @392@[%s]: (%s)%d: could not calculate beta<%d> or abar<%d>
 	for dual pivot; leaving variable %s (%d).@
-@393@[%s]: (%s)%d: updated basis inverse row norm rho<%d> = %g <= 0.
-	previous rho<%d> = %g; corrected rho<%d> = %g; swing = %g.@
+@393@<<open>>@
 @394@[%s]: (%s)%d: inconsistency in rho<%d> for pivot row;
 	inv(B)beta<%d> = %g, ||beta<%d>||^2 = %g, err = %g, tol = %g.@
 @395@[%s]: previous return code %s; cannot hot start.@
@@ -441,7 +440,8 @@
 @441@[%s]: (%s)%d: unexpected situation; previous simplex %s returned %s.@
 @442@[%s]: (%s)%d: logical for newly activated constraint %s (%d) has
 	status %s but constraint should be %s.@
-@443:449@<<open>>@
+@443@[%s]: (%s)%d: failed to solve lp relaxation, return code %s.@
+@444:449@<<open>>@
 
   Error messages from the arc consistency package.
 

@@ -421,7 +421,7 @@ static dyret_enum scanForPrimOutCands (primcand_struct *outcands,
     if (flgon(statk,vstatBFR))
     { reject = -1 ; }
     else
-    if (abarkj == 0)
+    if (withintol(abarkj,0.0,dy_tols->zero))
     { reject = -2 ; }
     else
     { ubk = vub[k] ;
@@ -766,8 +766,8 @@ dyret_enum primmultiout (int j, int indir,
 		be (cleanly) degenerate
     dyrMADPIV:	the pivot coefficient abar<ij> would be numerically unstable
     dyrREQCHK:	a possibly bogus abar<ij> was selected as the pivot, and
-		refactoring seems wise before trying to use it (iterf > 1 is
-		the criteria)
+		refactoring seems wise before trying to use it
+		(basis.etas > 1 is the criteria)
     dyrUNBOUND:	the problem is unbounded
     dyrFATAL:	fatal confusion
 */

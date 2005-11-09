@@ -49,7 +49,7 @@ static char svnid[] UNUSED = "$Id$" ;
 /*
   pivrej_struct
   
-  Each pivrej_struct holds the index of the variable, the value of iterbrk
+  Each pivrej_struct holds the index of the variable, the value of basis.pivs
   at the time of rejection, and an indication of why the variable was
   rejected:
     * dyrSINGULAR indicates that the basis became singular when this
@@ -66,7 +66,7 @@ static char svnid[] UNUSED = "$Id$" ;
   Field		Definition
   -----		----------
   ndx		index of rejected variable
-  iter		value of iterbrk when the pivot was rejected
+  iter		value of basis.pivs when the pivot was rejected
   why		the reason the pivot was rejected (dyrSINGULAR or dyrMADPIV)
   ratio         the ratio returned by dy_chkpiv when the pivot was rejected,
 		multiplied by the value of dy_tols.pivot at time of rejection
@@ -92,7 +92,7 @@ static pivrej_struct *pivrejlst = NULL ;
   cnt		number of entries in pivrejlst
   mad		number of entries rejected due to small abar<ij>
   sing		number of entries rejected due to singular basis
-  iter_reduced	value of iterbrk when the pivot tolerance was reduced;
+  iter_reduced	value of basis.pivs when the pivot tolerance was reduced;
 		-1 if we're running with the default tolerance.
   savedtol	saved copy of the default pivot tolerance; captured by
 		initpivrej
@@ -157,7 +157,7 @@ void dy_checkpivtol (void)
 */
 
 { if (pivrej_ctl.iter_reduced > 0 &&
-      dy_lp->iterbrk-pivrej_ctl.iter_reduced > dy_opts->factor)
+      dy_lp->basis.pivs-pivrej_ctl.iter_reduced > dy_opts->factor)
   { dy_tols->pivot = pivrej_ctl.savedtol ;
     pivrej_ctl.iter_reduced = -1 ; }
     
@@ -415,7 +415,7 @@ dyret_enum dy_addtopivrej (int j, dyret_enum why,
   And fill in the entry.
 */
   pivrejlst[ndx].ndx = j ;
-  pivrejlst[ndx].iter = dy_lp->iterbrk ;
+  pivrejlst[ndx].iter = dy_lp->basis.pivs ;
   pivrejlst[ndx].why = why ;
   switch (why)
   { case dyrSINGULAR:
@@ -455,9 +455,9 @@ dyret_enum dy_dealWithPunt (void)
 /*
   This routine decides on the appropriate action(s) when a simplex decides to
   punt. The algorithm is this:
-    1) Sort the entries in pivrejlst into two sets: iter == iterbrk (current)
-       and iter != iterbrk (old). In the current set, count the number of mad
-       and singular entries.
+    1) Sort the entries in pivrejlst into two sets: iter == basis.pivs
+       (current) and iter != basis.pivs (old). In the current set, count
+       the number of mad and singular entries.
     2) If there are any entries in old, remove them from pivrejlst and
        return with an indication to resume pivoting (dyrRESELECT).
     3) If all entries in current are of type singular, return with an
@@ -503,7 +503,7 @@ dyret_enum dy_dealWithPunt (void)
   Setup and scan pivrejlst as indicated above.
 */
   last = pivrej_ctl.cnt ;
-  brk = dy_lp->iterbrk ;
+  brk = dy_lp->basis.pivs ;
   old = (int *) MALLOC((last+1)*sizeof(int)) ;
   current = (int *) MALLOC((last+1)*sizeof(int)) ;
   oldcnt = 0 ;
@@ -596,11 +596,9 @@ dyret_enum dy_dealWithPunt (void)
   FREE(current) ;
 
 # ifndef NDEBUG
-  if (retval == dyrPUNT)
-  { outfmt(dy_logchn,dy_gtxecho,"\n  PUNT! pivrej = %d, singular = %d",
-	   pivrej_ctl.cnt,pivrej_ctl.sing) ;
-    outfmt(dy_logchn,dy_gtxecho,"\n  prev_pivok = %d, iterbrk = %d",
-	   dy_lp->prev_pivok,dy_lp->iterbrk) ; }
+  if (retval == dyrPUNT && dy_opts->print.pivreject >= 1)
+  { outfmt(dy_logchn,dy_gtxecho,"\n  PUNT! mad = %d, singular = %d.",
+	   pivrej_ctl.mad,pivrej_ctl.sing) ; }
 # endif
 # ifdef DYLP_STATISTICS
   if (dy_stats != NULL && retval == dyrPUNT) dy_stats->pivrej.puntret++ ;
