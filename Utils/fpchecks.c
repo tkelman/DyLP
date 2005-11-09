@@ -138,55 +138,55 @@ typedef union { unsigned char fpchr[8] ; double fpdbl ; } fpunion_t ;
 */
 
 
-static fpunion_t LE_QNaNbits = {(unsigned char) '\376',
-				 (unsigned char) '\377',
-				 (unsigned char) '\377',
-				 (unsigned char) '\377',
-			         (unsigned char) '\377',
-				 (unsigned char) '\377',
-				 (unsigned char) '\377',
-				 (unsigned char) '\177'} ;
-static fpunion_t LE_SNaNbits = {(unsigned char) '\001',
-				 (unsigned char) '\0',
-				 (unsigned char) '\0',
-				 (unsigned char) '\0',
-				 (unsigned char) '\0',
-				 (unsigned char) '\0',
-				 (unsigned char) '\360',
-				 (unsigned char) '\177'} ;
-static fpunion_t LE_Infbits = {(unsigned char) '\0',
-				(unsigned char) '\0',
-				(unsigned char) '\0',
-				(unsigned char) '\0',
-				(unsigned char) '\0',
-				(unsigned char) '\0',
-				(unsigned char) '\360',
-				(unsigned char) '\177'} ;
+static fpunion_t LE_QNaNbits = { { (unsigned char) '\376',
+				   (unsigned char) '\377',
+				   (unsigned char) '\377',
+				   (unsigned char) '\377',
+				   (unsigned char) '\377',
+				   (unsigned char) '\377',
+				   (unsigned char) '\377',
+				   (unsigned char) '\177' } } ;
+static fpunion_t LE_SNaNbits = { { (unsigned char) '\001',
+				   (unsigned char) '\0',
+				   (unsigned char) '\0',
+				   (unsigned char) '\0',
+				   (unsigned char) '\0',
+				   (unsigned char) '\0',
+				   (unsigned char) '\360',
+				   (unsigned char) '\177' } } ;
+static fpunion_t LE_Infbits = { { (unsigned char) '\0',
+				  (unsigned char) '\0',
+				  (unsigned char) '\0',
+				  (unsigned char) '\0',
+				  (unsigned char) '\0',
+				  (unsigned char) '\0',
+				  (unsigned char) '\360',
+				  (unsigned char) '\177' } } ;
 
-static fpunion_t BE_QNaNbits = {(unsigned char) '\177',
-				 (unsigned char) '\377',
-				 (unsigned char) '\377',
-				 (unsigned char) '\377',
-				 (unsigned char) '\377',
-				 (unsigned char) '\377',
-				 (unsigned char) '\377',
-				 (unsigned char) '\376'} ;
-static fpunion_t BE_SNaNbits = {(unsigned char) '\177',
-				 (unsigned char) '\360',
-				 (unsigned char) '\0',
-				 (unsigned char) '\0',
-				 (unsigned char) '\0',
-				 (unsigned char) '\0',
-				 (unsigned char) '\0',
-				 (unsigned char) '\001'} ;
-static fpunion_t BE_Infbits = {(unsigned char) '\177',
-				(unsigned char) '\360',
-				(unsigned char) '\0',
-				(unsigned char) '\0',
-				(unsigned char) '\0',
-				(unsigned char) '\0',
-				(unsigned char) '\0',
-				(unsigned char) '\0'} ;
+static fpunion_t BE_QNaNbits = { { (unsigned char) '\177',
+				   (unsigned char) '\377',
+				   (unsigned char) '\377',
+				   (unsigned char) '\377',
+				   (unsigned char) '\377',
+				   (unsigned char) '\377',
+				   (unsigned char) '\377',
+				   (unsigned char) '\376' } } ;
+static fpunion_t BE_SNaNbits = { { (unsigned char) '\177',
+				   (unsigned char) '\360',
+				   (unsigned char) '\0',
+				   (unsigned char) '\0',
+				   (unsigned char) '\0',
+				   (unsigned char) '\0',
+				   (unsigned char) '\0',
+				   (unsigned char) '\001' } } ;
+static fpunion_t BE_Infbits = { { (unsigned char) '\177',
+				  (unsigned char) '\360',
+				  (unsigned char) '\0',
+				  (unsigned char) '\0',
+				  (unsigned char) '\0',
+				  (unsigned char) '\0',
+				  (unsigned char) '\0',
+				  (unsigned char) '\0' } } ;
 
 /*
   finite and fpclass functions

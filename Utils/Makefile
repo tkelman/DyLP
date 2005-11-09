@@ -31,4 +31,4 @@ default: tools
 ###############################################################################
 
 tools clean distclean:
-	${MAKE} -f Makefile.Utils $@
+	@ ${MAKE} -f Makefile.Utils $@

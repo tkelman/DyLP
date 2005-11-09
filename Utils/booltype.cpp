@@ -38,7 +38,7 @@
 #include <iostream>
 #include <string>
 
-extern "C" char *getCtype(int bytes) ;
+extern "C" const char *getCtype(int bytes) ;
 
 int main (int argc, char *argv[])
 

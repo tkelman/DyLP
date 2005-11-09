@@ -37,7 +37,7 @@
   type that should be used to define BOOL in the makefile.
 */
 
-char *getCtype (int bytes)
+const char *getCtype (int bytes)
 
 { if (bytes == sizeof(char))
     return ("char") ;
