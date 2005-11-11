@@ -784,7 +784,9 @@ double dy_calcdualobj (void)
 /*
   This routine calculates the dual objective z = yb, taking into account
   nonbasic variables at nonzero bounds. NOTE that the value returned will not
-  reflect the contribution due to inactive variables.
+  reflect the contribution due to inactive variables. Also, unlike the primal
+  case, we need to correct dy_y on the fly to compensate for duals involved in
+  a perturbed subproblem when antidegeneracy is active.
 
   Parameters: none
 
@@ -830,10 +832,14 @@ double dy_calcdualobj (void)
   vub = dy_sys->vub ;
 
 /*
-  Start with the easy part: dot(y,b) for active explicit constraints.
+  Start with the easy part: dot(y,b) for active explicit constraints. We need
+  to exclude duals incorporated in a degenerate subproblem, which are by
+  definition zero.
 */
   for (i = 1 ; i <= m ; i++)
-  { if (dy_y[i] != 0) z += dy_y[i]*rhs[i] ; }
+  { j = dy_basis[i] ;
+    if (dy_ddegenset[j] == 0 && dy_y[i] != 0)
+    { z += dy_y[i]*rhs[i] ; } }
 /*
   Now the harder part: the contribution due to variables nonbasic at nonzero
   bounds. For the standard max primal/min dual setup, the math tells us that
@@ -850,7 +856,8 @@ double dy_calcdualobj (void)
   slack with a finite nonzero upper bound.
 */
   for (j = 1 ; j <= n ; j++)
-  { statj = getflg(dy_status[j],vstatSTATUS) ;
+  { if (dy_ddegenset[j] > 0) continue ;
+    statj = getflg(dy_status[j],vstatSTATUS) ;
     if (flgon(statj,vstatBASIC)) continue ;
     cbarj = dy_cbar[j] ;
     if (cbarj == 0) continue ;
@@ -1515,8 +1522,7 @@ void dy_chkdual (int lvl)
 
   for (j = 1 ; j <= n ; j++)
   { cbarj = consys_dotcol(dy_sys,j,y) ;
-    cbar[j] = dy_sys->obj[j]-cbarj ;
-    setcleanzero(cbar[j],dy_tols->cost) ; }
+    cbar[j] = dy_sys->obj[j]-cbarj ; }
 /*
   Now see if we agree on the values for the duals. When dual antidegeneracy
   is inactive, or for columns not involved in the restricted subproblem,
@@ -1527,7 +1533,7 @@ void dy_chkdual (int lvl)
   restricted subproblem, the real dual should be 0.  Since reduced
   subproblems are nested, it's sufficient to check dy_ddegenset == 0.
 */
-  tol = 100*base_tol ;
+  tol = 1000*base_tol ;
   yerrcnt = 0 ;
   yerrtot = 0.0 ;
   for (i = 1 ; i <= m ; i++)
@@ -1543,12 +1549,11 @@ void dy_chkdual (int lvl)
 	yerrcnt++ ;
 	yerrtot += diff ; } }
     else
-    { if (fabs(y[i]) > dy_tols->dfeas)
+    { if (fabs(y[i]) > tol)
       { if (lvl >= 2)
 	{ warn(321,rtnnme,
 	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	       "real",
-	       "y",i,y[i],0.0,y[i],dy_tols->cost) ; }
+	       "real","y",i,y[i],0.0,y[i],tol) ; }
 	yerrcnt++ ;
 	yerrtot += fabs(y[i]) ; } } }
 /*
@@ -1571,12 +1576,11 @@ void dy_chkdual (int lvl)
       cbarerrcnt++ ;
       cbarerrtot += diff ; } }
     else
-    { if (fabs(cbar[j]) > dy_tols->dfeas)
+    { if (fabs(cbar[j]) > tol)
       { if (lvl >= 2)
 	{ warn(321,rtnnme,
 	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	       "real",
-	       "cbar",j,cbar[j],0.0,cbar[j],dy_tols->cost) ; }
+	       "real","cbar",j,cbar[j],0.0,cbar[j],tol) ; }
       cbarerrcnt++ ;
       cbarerrtot += fabs(cbar[j]) ; } } }
 /*
@@ -1598,7 +1602,7 @@ void dy_chkdual (int lvl)
 	{ warn(336,rtnnme,
 	       dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	       consys_nme(dy_sys,'v',i,FALSE,NULL),i,dy_prtvstat(statj),
-	       "real",-yi,cbarj,fabs(cbarj+yi),dy_tols->cost) ; }
+	       "real",-yi,cbarj,fabs(cbarj+yi),base_tol) ; }
 	ycbarerrcnt++ ; } } }
 /*
   Check that primal status agrees with reduced costs. If antidegeneracy is

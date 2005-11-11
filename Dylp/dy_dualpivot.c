@@ -120,9 +120,19 @@ static char svnid[] UNUSED = "$Id$" ;
   Define this symbol to enable a thorough check of the updates to cbar and
   rho. Set to FALSE if you want errors to trigger a fatal error, TRUE to note
   the errors but soldier on. Be aware that this check will almost certainly
-  trigger fatal errors if the LP is numerically ill-conditioned.
+  trigger fatal errors if the LP is numerically ill-conditioned. You must
+  also define PARANOIA during the dylp build.
 
   #define CHECK_DSE_UPDATES TRUE
+*/
+/*
+  Define this symbol to enable a thorough check of the dual pivot row abar<i>.
+  As with CHECK_DSE_UPDATES, define this as TRUE if you just want to know
+  about errors, FALSE if an error should trigger an abort. Here, too, the check
+  will almost certainly trigger fatal errors if the LP has numerical problems.
+  You must also define PARANOIA during the dylp build.
+
+  #define CHECK_DUAL_PIVROW TRUE
 */
 
 
@@ -264,7 +274,7 @@ dyret_enum dy_confirmDualPivot (int i, int j, double *abari,
     if (!withintol(abarj_i,abari_j,1000*tol))
     { warn(385,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
 	   dy_lp->tot.iters+1,i,j,abari_j,abarj_i,
-	   fabs(abarj_i-abarj_i),tol) ; }
+	   fabs(abari_j-abarj_i),tol) ; }
 #   endif
 /*
   The return value should be REQCHK if we've pivoted since the last refactor.
@@ -289,6 +299,129 @@ dyret_enum dy_confirmDualPivot (int i, int j, double *abari,
 
   *p_abarj = abarj ;
   return (retval) ; }
+
+
+
+#ifdef CHECK_DUAL_PIVROW
+
+static bool check_dualpivrow (int xipos, const double *abari, double maxabari)
+
+/*
+  This routine does a cross-check of the dual pivot row abar<i>, row i of
+  inv(B)N. abar<ik> is calculated as dot(beta<i>,a<k>), where beta<i> is
+  row i of inv(B). Here we cross-check by calculating inv(B)a<k> and
+  comparing the two values of abar<ik>.
+
+  Experience says that this routine can churn out huge numbers of errors
+  for numerically difficult problems, even with quite loose tolerances.
+  It'll issue a warning for an individual coefficient only when the
+  precentage error exceeds 1% (a huge error, by any usual accuracy
+  standards).
+
+  Parameters:
+    xipos:	basis position of the leaving variable
+    abari:	row i of inv(B)N, the pivot row coefficients
+    maxabari:	maximum value in abari
+  
+  Returns: TRUE if the two methods of calculation agree, CHECK_DUAL_PIVROW
+	   otherwise. (In use, this controls whether a failure results in
+	   an abort.)
+*/
+
+{ int k ;
+  flags statk ;
+  double *abark ;
+  double abari_k,abark_i ;
+  bool retval ;
+  int printtmp ;
+
+  int errcnt ;
+  double tol,diff,pct,maxpct,maxerr,maxerrcoeff,toterr,toterrcoeffs ;
+
+  char *rtnnme = "check_dualpivrow" ;
+
+/*
+  Suppress print in dy_chkpiv.
+*/
+  printtmp = dy_opts->print.pivoting ;
+  dy_opts->print.pivoting = 0 ;
+/*
+  Somewhat arbitrarily, declare that an error of .0001% (1.0e-6) is our limit.
+*/
+  tol = 1.0e-6 ;
+  retval = TRUE ;
+
+  errcnt = 0 ;
+  toterr = 0 ;
+  toterrcoeffs = 0 ;
+  maxpct = 0 ;
+  maxerr = 0 ;
+  maxerrcoeff = 0 ;
+
+  abark = (double *) MALLOC((dy_sys->concnt+1)*sizeof(double)) ;
+/*
+  Open a loop to do the scan. The first order of business is a consistency
+  check on x<k>'s status. In primal terms, we're not interested in pursuing
+  basic or nonbasic fixed variables any further. These correspond to nonbasic
+  duals and basic free duals, respectively. We just want to check
+  coefficients corresponding to basic duals that can be pivoted out.
+*/
+  for (k = 1 ; k <= dy_sys->varcnt ; k++)
+  { statk = dy_status[k] ;
+    if (dy_chkstatus(k) == FALSE)
+    { retval = CHECK_DUAL_PIVROW ;
+      continue ; }
+    if (flgon(statk,vstatBASIC|vstatNBFX)) continue ;
+/*
+  Acquire column a<k> and calculate abar<k> = inv(B)a<k>.
+*/
+    if (consys_getcol_ex(dy_sys,k,&abark) == FALSE)
+    { errmsg(122,rtnnme,dy_sys->nme,"column",
+	     consys_nme(dy_sys,'c',k,TRUE,NULL),k) ;
+      retval = CHECK_DUAL_PIVROW ;
+      continue ; }
+    dy_ftran(abark,FALSE) ;
+/*
+  Exclude values that are not numerically stable pivots. These will never be
+  pivots, and they complicate the business of generating a meaningful metric.
+*/
+    abari_k = abari[k] ;
+    abark_i = abark[xipos] ;
+    if (dy_chkpiv(abark_i,maxabari) < 1.0) continue ;
+/*
+  Do the comparison. Because the relative magnitude of coefficients varies
+  wildly, we'll work with percentage error. Remember the worst we've seen.
+  Issue an individual warning for errors of 1% or more.
+*/
+    diff = fabs(abark_i-abari_k) ;
+    pct = diff/fabs(abark_i) ;
+    if (pct > tol)
+    { errcnt++ ;
+      toterr += diff ;
+      toterrcoeffs += fabs(abark_i) ;
+      if (pct > maxpct)
+      { maxpct = pct ;
+	maxerr = diff ;
+	maxerrcoeff = fabs(abark_i) ; }
+      if (pct > .01)
+      { warn(385,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
+	     dy_lp->tot.iters+1,dy_basis[xipos],k,abari_k,abark_i,
+	     fabs(abark_i-abari_k),.01*fabs(abark_i)) ; }
+      retval = CHECK_DUAL_PIVROW ; } }
+  FREE(abark) ;
+/*
+  Print a summary message if any coefficients failed the comparison.
+*/
+  if (errcnt > 0)
+  { outfmt(dy_logchn,dy_gtxecho,"\n(%s)%d: comparing pivot row %d. ",
+	   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,xipos) ;
+    outfmt(dy_logchn,dy_gtxecho,
+	   "%d coeffs differ, total error %g%%, max %g%% (%g/%g).",
+	   errcnt,(toterr/toterrcoeffs)*100,maxpct*100,maxerr,maxerrcoeff) ; }
+  
+  return (retval) ; }
+
+#endif /* CHECK_DUAL_PIVROW */
 
 
 
@@ -323,10 +456,6 @@ bool dualpivrow (int xipos, double *betai, double *abari, double *maxabari)
   double abarik ;
   char *rtnnme = "dualpivrow" ;
 
-# ifdef PARANOIA
-  double tol ;
-  double *ak ;
-# endif
 # ifndef NDEBUG
   pkvec_struct *ai ;
 # endif
@@ -365,64 +494,23 @@ bool dualpivrow (int xipos, double *betai, double *abari, double *maxabari)
 
 /*
   We need to do individual dot products dot(beta<i>,a<j>) to obtain abar<i>.
-  We also want max<j> abar<i> so that we can check a potential pivot for
-  numerical stability. So, open a loop to walk the columns, doing the
+  We also want maxabar<i> = MAX{j}(abar<i>) so that we can check a potential
+  pivot for numerical stability. Open a loop to walk the columns, doing the
   necessary calculations for each nonbasic column which is eligible for
   entry.
-
-  The paranoid version of the loop body does a lot more work: a consistency
-  check on x<k>'s status and a check that dot(beta<i>,a<k>) = (inv(B)a<k>)<i>.
-  Here it's just a warning. If we actually choose a pivot with numerical drift,
-  corrective action is forced. See dy_confirmDualPivot.
-
-  The base tolerance for this check is hardwired to 1.0e-11, dylp's default
-  zero tolerance. We don't want the check here tightening when scaling decides
-  to tighten the zero tolerance. Experience says that this check is overly
-  conservative --- other error control mechanisms usually take precedence at a
-  later point --- hence it only issues a warning.
 */
   *maxabari = 0 ;
   for (xkndx = 1 ; xkndx <= dy_sys->varcnt ; xkndx++)
-  { 
-#   ifdef PARANOIA
-    xkstatus = dy_status[xkndx] ;
-    if (dy_chkstatus(xkndx) == FALSE) return (FALSE) ;
-    if (flgon(xkstatus,vstatBASIC)) continue ;
-    abarik = consys_dotcol(dy_sys,xkndx,betai) ;
-    if (isnan(abarik) == TRUE)
-    { errmsg(320,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-	     dy_lp->tot.iters,"betai",xkndx,"dual pivot row") ;
-      return (FALSE) ; }
-    ak = NULL ;
-    if (consys_getcol_ex(dy_sys,xkndx,&ak) == FALSE)
-    { errmsg(122,rtnnme,dy_sys->nme,"column",
-	     consys_nme(dy_sys,'c',xkndx,TRUE,NULL),xkndx) ;
-      if (ak != NULL) FREE(ak) ;
-      return (FALSE) ; }
-    dy_ftran(ak,FALSE) ;
-    tol = (1.0+fabs(ak[xipos]))*1.0e-11*1000 ;
-    if (!withintol(ak[xipos],abarik,tol))
-    { warn(385,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-	   dy_lp->tot.iters+1,dy_basis[xipos],xkndx,abarik,ak[xipos],
-	   fabs(ak[xipos]-abarik),tol) ; }
-    FREE(ak) ;
-    if (!withintol(abarik,0,dy_tols->zero))
-    { abari[xkndx] = abarik ;
-      if (fabs(abarik) > *maxabari) *maxabari = fabs(abarik) ; }
-#   else
-    xkstatus = dy_status[xkndx] ;
+  { xkstatus = dy_status[xkndx] ;
     if (flgon(xkstatus,vstatBASIC|vstatNBFX)) continue ;
     abarik = consys_dotcol(dy_sys,xkndx,betai) ;
     if (!withintol(abarik,0,dy_tols->zero))
     { abari[xkndx] = abarik ;
-      if (fabs(abarik) > *maxabari) *maxabari = fabs(abarik) ; }
-#   endif
-  }
+      if (fabs(abarik) > *maxabari) *maxabari = fabs(abarik) ; } }
 
 # ifndef NDEBUG
 /*
-  If the user is interested, print the transformed row abar<i>. There should
-  be no dirty zeroes here.
+  If the user is interested, print the transformed row abar<i>.
 */
   if ((dy_lp->phase != dyADDVAR && dy_opts->print.pivoting >= 4) ||
       (dy_lp->phase == dyADDVAR && dy_opts->print.varmgmt >= 3))
@@ -432,11 +520,19 @@ bool dualpivrow (int xipos, double *betai, double *abari, double *maxabari)
 	   xipos,*maxabari) ;
     cnt = 1 ;
     for (xkndx = 1 ; xkndx <= dy_sys->varcnt ; xkndx++)
-    { if (abari[xkndx] == 0) continue ;
+    { if (fabs(abari[xkndx]) < .001*dy_tols->zero) continue ;
       cnt = (cnt+1)%2 ;
       if (cnt == 0) outchr(dy_logchn,dy_gtxecho,'\n') ;
       outfmt(dy_logchn,dy_gtxecho,
 	     "\ta<%d,%d> = %g",xipos,xkndx,abari[xkndx]) ; } }
+# endif
+# ifdef CHECK_DUAL_PIVROW
+/*
+  And if the user is really paranoid, go over the pivot row with a fine tooth
+  comb. check_dualpivrow can return FALSE only if CHECK_DUAL_PIVROW is defined
+  to be FALSE.
+*/
+  if (check_dualpivrow(xipos,abari,*maxabari) == FALSE) return (FALSE) ;
 # endif
 
 /*
@@ -511,12 +607,21 @@ void dualdegenin (void)
   architecturals, the relevant constraint is the upper/lower bound. For
   logicals, it's the associated architectural constraint. Equalities can't be
   loosened.) And, of course, we're only interested if the value is 0.
+
+  You might think that a toleranced test would work here, and to some extent
+  it does, but ... inevitably, we'll suck up a few dual variables that really
+  aren't involved in the degeneracy, just very small at the point the
+  restricted problem is formed. Then, as we pivot, these values can
+  legitimately grow large, and it plays havoc with accuracy checks and
+  iterative updates, because chunks of the code are doing on-the-fly
+  compensation, setting y<i> to 0 for duals involved in the restricted
+  subproblem.
 */
   for (j = 1 ; j <= dy_sys->varcnt ; j++)
   { if (dy_ddegenset[j] != oldlvl) continue ;
     statj = dy_status[j] ;
     if (flgon(statj,vstatBASIC|vstatNBFX)) continue ;
-    if (fabs(dy_cbar[j]) > dy_tols->dfeas) continue ;
+    if (dy_cbar[j] != 0.0) continue ;
 /*
   Make the perturbation. We need to perturb in the correct direction (positive
   for NBLB, negative for NBUB) in order to maintain dual feasibility.
@@ -679,7 +784,8 @@ static bool check_dse_update (int xkndx, double u_cbark, double u_rhok,
 		be recalculated from scratch, FALSE otherwise.
 
   Returns: TRUE if the updates agree with the values calculated from first
-	   principles, FALSE otherwise.
+	   principles, CHECK_DSE_UPDATES otherwise. (In use, this controls
+	   whether a failure causes an abort.)
 */
 
 { int xkpos,xindx,xipos ;
@@ -2326,7 +2432,7 @@ dyret_enum dy_dualpivot (int xindx, int outdir,
 				 double **p_abarj) ;
 
 # ifdef PARANOIA
-  int chkduallvl = 2 ;
+  int chkduallvl = 1 ;
 
   dy_chkdual(chkduallvl) ;
 # endif

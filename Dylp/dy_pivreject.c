@@ -371,8 +371,8 @@ dyret_enum dy_addtopivrej (int j, dyret_enum why,
 
 /*
   Flag the culprit. That takes care of the externally visible activity. (The
-  default case in this switch and are needed to suppress GCC
-  warnings --- it doesn't grok the paranoid check.)
+  default case in this switch is needed to suppress GCC warnings --- it
+  doesn't grok the paranoid check.)
 */
 # ifndef NDEBUG
   if (dy_opts->print.pivreject >= 2)

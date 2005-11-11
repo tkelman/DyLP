@@ -392,7 +392,7 @@ static bool groombasis ()
   { if (dy_opts->groom >= 2)
     { retval = FALSE ; }
     else
-    { (void) dy_setpivparms(0,+1) ; } }
+    { (void) dy_setpivparms(+1,0) ; } }
 
   return (retval) ; }
 
@@ -630,8 +630,8 @@ dyret_enum dy_accchk (flags *checks)
   Do the accuracy checks. Calculate (b - x<N>) - Bx<B> and/or c<B> - yB,
   as requested, as well as the relevant 1-norms and residuals.
 
-  By definition, when dual degeneracy is active the perturbed positions in
-  dy_y should be 0.
+  By definition, when dual degeneracy is active the real value of the duals
+  involved in the degeneracy is zero.
 */
     normb = 0 ;
     primalresid = 0 ;
@@ -1098,6 +1098,7 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
   retval = dyrINV ;
   outflags = 0 ;
   checkflags = 0 ;
+
 /*
   Bump the various pivot and iteration counts, and see if we're in trouble
   because of the total pivot limit. It's important to get basis.etas and
