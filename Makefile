@@ -43,7 +43,7 @@ export OptLevel := -O
 # systems. Informational printing is relatively inexpensive, but will produce
 # annoying warnings about numerical problems for some lps.
 
-export DYLP_OPTIONS := info
+export DYLP_OPTIONS := stats info
 
 # NOTE: Assignments to LibType, OptLevel, and DYLP_OPTIONS in subsidiary
 # makefiles are conditional (`?='), so that any definition here (including an
@@ -71,14 +71,14 @@ default: install
 ###############################################################################
 
 library install:
-	cd Dylp ; ${MAKE} -f Makefile $@
+	@ cd Dylp ; ${MAKE} -f Makefile $@
 
 samples:
-	cd Samples ; ${MAKE} -f Makefile
+	@ cd Samples ; ${MAKE} -f Makefile
 
 clean distclean:
-	cd Dylp ; ${MAKE} -f Makefile $@
-	cd Lib ; ${MAKE} -f Makefile $@
-	cd Utils ; ${MAKE} -f Makefile $@
-	cd Samples ; ${MAKE} -f Makefile $@
+	@ cd Dylp ; ${MAKE} -f Makefile $@
+	@ cd Lib ; ${MAKE} -f Makefile $@
+	@ cd Utils ; ${MAKE} -f Makefile $@
+	@ cd Samples ; ${MAKE} -f Makefile $@
 
