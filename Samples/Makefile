@@ -16,7 +16,7 @@
 # example, if you do a make in this directory, rather than from the top level).
 # To override the top level setting, change `?=' to `:='.
 
-export OptLevel ?= -g
+export OptLevel ?= -O
 export DYLP_OPTIONS ?= info stats
 
 ###############################################################################
@@ -39,10 +39,11 @@ include ${MakefileDir}/Makefile.coin
 
 .PHONY: default clean distclean
 
-# Default is to make only the C main program, osi_dylp. If you're doing C++,
-# you probably want to look at using the OsiDylp OSI layer.
+# There are two sample main programs, osi_dylp, a simple C shell that uses
+# dylp directly, and odsi+dylp, a C++ shell that uses dylp through the OsiDylp
+# OSI interface layer. osi_dylp does not depend on Coin code.
 
-default: osi_dylp
+default: osi_dylp odsi+dylp
 
 ###############################################################################
 

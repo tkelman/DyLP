@@ -7,10 +7,38 @@
 # will look for a dylp options (.spc) file and add it to the osi_dylp command
 # line.
 
-# Usage:
-set usage = "plain <mps file> [additional osi_dylp parameters]"
+# Edit here to choose the C interface (osi_dylp) or
+# the OSI interface (odsi+dylp) as the default.
 
-set osi_dylp = "./osi_dylp -e ../Dylp/dy_errmsgs.txt"
+set wrapper = (./osi_dylp -e ../Dylp/dy_errmsgs.txt)
+#set wrapper = (./odsi+dylp)
+
+# Usage message
+
+set usage =  "plain [-odsi|-dylp] [additional parameters] <mps file>"
+set usage1 = "  Where -odsi selects the odsi+dylp (OsiDylp/C++) wrapper"
+set usage2 = "        -dylp selects the osi_dylp (native/C) wrapper"
+set usage3 = "        and [additional parameters] should be appropriate"
+set usage4 = "        for the specified wrapper."
+set usage5 = "        The default wrapper is $wrapper[1]"
+
+if ($#argv < 1) then
+  set argv = "--help"
+endif
+
+# See if the user has specified a front-end on the command line.
+
+switch ($argv[1])
+  case -odsi:
+    set wrapper = "./odsi+dylp"
+    shift
+    breaksw
+  case -dylp:
+    set wrapper = "./osi_dylp -e ../Dylp/dy_errmsgs.txt"
+    shift
+    breaksw
+endsw
+
 set netlib = "~/COIN/Mps/Netlib"
 
 # MPS file should be the last parameter
@@ -33,6 +61,11 @@ else if (-e ${netlib}/${example}.mps.gz) then
 else
  if ("${example}" != "--help") echo "Can't locate mps file for $example."
  echo "Usage: $usage"
+ echo $usage1:q
+ echo $usage2:q
+ echo $usage3:q
+ echo $usage4:q
+ echo $usage5:q
  exit
 endif
 
@@ -48,7 +81,7 @@ else
   set spcfile
 endif
 
-# If there are two or more arguments, the rest are assumed to be osi_dylp
+# If there are two or more arguments, the rest are assumed to be
 # command line parameters. In the absence of user preferences, set "-t"
 # for terse output.
 
@@ -70,7 +103,7 @@ if ("$flags" != "") then
 endif
 echo "."
 
-$osi_dylp $spcfile \
+$wrapper $spcfile \
       -m ${mpsfile} -L ${example}.log \
       -O ${example}.out $flags
 
