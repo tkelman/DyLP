@@ -330,6 +330,11 @@ bool dy_actNBPrimArch (consys_struct *orig_sys, int ovndx)
 */
   dy_frame[j] = TRUE ;
   dy_gamma[j] = 1 ;
+/*
+  And finally, a little bookkeeping.
+*/
+  if (dy_sys->archvcnt >= dy_lp->sys.maxvars)
+    dy_lp->sys.loadablevars = FALSE ;
 
 # ifndef NDEBUG
   if (dy_opts->print.varmgmt >= 3)

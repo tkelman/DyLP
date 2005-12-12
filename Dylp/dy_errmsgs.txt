@@ -383,7 +383,7 @@
 	this should not be!@
 @383@[%s]: (%s)%d: pivot multiplier would be below limit %g. Declaring %s.@
 @384@[%s]: (%s)%d: could not calculate reduced costs.@
-@385@[%s]: (%s)%d: pivot abar<%d,%d> = %g; should be %g, error %g, tol %g.@
+@385@[%s]: (%s)%d: pivot abar<%d,%d> = %g; should be %g, error %g (%g%%), tol %g.@
 @386@[%s]: (%s)%d: no %s variable selected
 	at start of pivot loop.@
 @387@[%s]: (%s)%d: %d false terminations;

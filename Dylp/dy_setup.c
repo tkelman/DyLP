@@ -120,7 +120,7 @@ lpopts_struct dyopts_dflt = { -1,	/* scan */
 				0,	/* initcons.i2l */
 				TRUE,	/* initcons.i2uopen */
 				90 },	/* initcons.i2u */
-			      1,	/* initbasis */
+			      ibLOGICAL, /* coldbasis */
 			      { TRUE,	/* finpurge.cons */
 				TRUE },	/* finpurge.vars */
 			      { FALSE,	/* heroics.d2p */
@@ -139,7 +139,8 @@ lpopts_struct dyopts_dflt = { -1,	/* scan */
 				1,	/* print.dual */
 				1,	/* print.basis */
 				0,	/* print.conmgmt */
-				0	/* print.varmgmt */
+				0,	/* print.varmgmt */
+				1 	/* print.force */
 			      }
 			    } ;
 
@@ -182,7 +183,7 @@ lpopts_struct dyopts_lb = { 200,	/* scan */
 			      0,	/* initcons.i2l */
 			      FALSE,	/* initcons.i2uopen */
 			      0 },	/* initcons.i2u */
-			      1,	/* initbasis */
+			      ibLOGICAL, /* coldbasis */
 			      { FALSE,	/* finpurge.cons */
 				FALSE }, /* finpurge.vars */
 			    { FALSE,	/* heroics.d2p */
@@ -201,7 +202,8 @@ lpopts_struct dyopts_lb = { 200,	/* scan */
 			      0,	/* print.dual */
 			      0,	/* print.basis */
 			      0,	/* print.conmgmt */
-			      0		/* print.varmgmt */
+			      0,	/* print.varmgmt */
+			      0		/* print.force */
 			    }
 			  } ;
 
@@ -251,7 +253,7 @@ lpopts_struct dyopts_ub = { 1000,	/* scan */
 			      180,	/* initcons.i2l */
 			      TRUE,	/* initcons.i2uopen */
 			      180 },	/* initcons.i2u */
-			      3,	/* initbasis */
+			      ibARCH,	/* coldbasis */
 			      { TRUE,	/* finpurge.cons */
 				TRUE },	/* finpurge.vars */
 			    { TRUE,	/* heroics.d2p */
@@ -270,7 +272,8 @@ lpopts_struct dyopts_ub = { 1000,	/* scan */
 			      7,	/* print.dual */
 			      5,	/* print.basis */
 			      5,	/* print.conmgmt */
-			      4		/* print.varmgmt */
+			      4,	/* print.varmgmt */
+			      3		/* print.force */
 			    }
 			  } ;
 
@@ -508,23 +511,25 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
 
 /*
   This routine tweaks the lp print level options based on a single integer
-  code. It's intended to allow clients of dylp to set up overall print
+  code. It's intended to allow clients of dylp to easily set up overall print
   levels. Just a big case statement.
   
   Level 0 forces dylp to shut up.
   
-  Level 1 assumes the normal dylp defaults (phase1, phase2, dual, and basis
-  print levels set to 1, which allows messages about extraordinary events).
+  Level 1 assumes the normal dylp defaults (phase1, phase2, dual, force, and
+  basis print levels set to 1, which allows messages about extraordinary
+  events).
 
-  Levels 2--5 provide increasing amounts of information. At level 1 and
-  above, a specific setting of a dylp value to a higher value will override
-  the value here.
-
-  Levels less then 0 are forced to 0, and anything over 4 is interpreted as 5.
+  Levels 2 -- 5 provide increasing amounts of information.
+  
+  At level 1 and above, a specific setting of a dylp value to a higher value
+  in the options structure passed in as a parameter will override the value
+  here.
 
   Parameters:
     lvl:	overall print level
-    opts:	options structure; should be preloaded with defaults
+    opts:	options structure; for all except lvl = 0, should be preloaded
+		with valid values for print options.
   
   Returns: undefined
 */
@@ -547,6 +552,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
       opts->print.basis = 0 ;
       opts->print.conmgmt = 0 ;
       opts->print.varmgmt = 0 ;
+      opts->print.force = 0 ;
       break ; }
     case 1:
     { opts->print.major = maxx(opts->print.major,dyopts_dflt.print.major) ;
@@ -569,6 +575,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
 				 dyopts_dflt.print.conmgmt) ;
       opts->print.varmgmt = maxx(opts->print.varmgmt,
 				 dyopts_dflt.print.varmgmt) ;
+      opts->print.force = maxx(opts->print.force,dyopts_dflt.print.force) ;
       break ; }
     case 2:
     { opts->print.major = maxx(opts->print.major,1) ;
@@ -585,6 +592,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
       opts->print.basis = maxx(opts->print.basis,1) ;
       opts->print.conmgmt = maxx(opts->print.conmgmt,1) ;
       opts->print.varmgmt = maxx(opts->print.varmgmt,1) ;
+      opts->print.force = maxx(opts->print.force,1) ;
       break ; }
     case 3:
     { opts->print.major = maxx(opts->print.major,1) ;
@@ -601,6 +609,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
       opts->print.basis = maxx(opts->print.basis,2) ;
       opts->print.conmgmt = maxx(opts->print.conmgmt,2) ;
       opts->print.varmgmt = maxx(opts->print.varmgmt,2) ;
+      opts->print.force = maxx(opts->print.force,1) ;
       break ; }
     case 4:
     { opts->print.major = maxx(opts->print.major,1) ;
@@ -617,6 +626,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
       opts->print.basis = maxx(opts->print.basis,3) ;
       opts->print.conmgmt = maxx(opts->print.conmgmt,3) ;
       opts->print.varmgmt = maxx(opts->print.varmgmt,2) ;
+      opts->print.force = maxx(opts->print.force,2) ;
       break ; }
     default:
     { opts->print.major = maxx(opts->print.major,1) ;
@@ -633,6 +643,7 @@ void dy_setprintopts (int lvl, lpopts_struct *opts)
       opts->print.basis = maxx(opts->print.basis,5) ;
       opts->print.conmgmt = maxx(opts->print.conmgmt,3) ;
       opts->print.varmgmt = maxx(opts->print.varmgmt,2) ;
+      opts->print.force = maxx(opts->print.force,3) ;
       break ; } }
   
   return ; }

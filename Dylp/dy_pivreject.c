@@ -358,8 +358,24 @@ dyret_enum dy_addtopivrej (int j, dyret_enum why,
   double ratio ;
   char *rtnnme = "dy_addtopivrej" ;
 
+# ifndef NDEBUG
+  int saveprint ;
+
+  saveprint = dy_opts->print.pivoting ;
+  dy_opts->print.pivoting = 0 ;
+# endif
+
+/*
+  We don't actually need the pivot ratio until further down, but it's handy
+  to do it here where we can easily suppress the internal print, then restore
+  the print level.
+*/
+  ratio = dy_chkpiv(abarij,maxabarij) ;
   n = dy_sys->varcnt ;
 
+# ifndef NDEBUG
+  dy_opts->print.pivoting = saveprint ;
+# endif
 # ifdef PARANOIA
   if (j < 1 || j > n)
   { errmsg(102,rtnnme,dy_sys->nme,"variable",j,1,n) ;
@@ -368,13 +384,11 @@ dyret_enum dy_addtopivrej (int j, dyret_enum why,
   { errmsg(1,rtnnme,__LINE__) ;
     return (dyrFATAL) ; }
 # endif
-
-/*
-  Flag the culprit. That takes care of the externally visible activity. (The
-  default case in this switch is needed to suppress GCC warnings --- it
-  doesn't grok the paranoid check.)
-*/
 # ifndef NDEBUG
+/*
+  The default case in this switch is needed to suppress GCC warnings --- it
+  doesn't grok the paranoid check.
+*/
   if (dy_opts->print.pivreject >= 2)
   { outfmt(dy_logchn,dy_gtxecho,
 	   "\n  marking %s (%d) ineligible for pivoting ",
@@ -384,18 +398,19 @@ dyret_enum dy_addtopivrej (int j, dyret_enum why,
       { outfmt(dy_logchn,dy_gtxecho,"(%s).",dy_prtdyret(why)) ;
 	break ; }
       case dyrMADPIV:
-      { ratio = dy_chkpiv(abarij,maxabarij) ;
-	outfmt(dy_logchn,dy_gtxecho,"(%s = %g).",dy_prtdyret(why),ratio) ;
+      { outfmt(dy_logchn,dy_gtxecho,"(%s = %g).",dy_prtdyret(why),ratio) ;
 	break ; }
       default:
       { errmsg(1,rtnnme,__LINE__) ;
 	return (dyrFATAL) ; } } }
 # endif
-  setflg(dy_status[j],vstatNOPIVOT) ;
+
 /*
-  Now make the entry in the pivot reject list. Check for adequate list length
-  and expand if necessary.
+  Flag the culprit --- the extent of externally visible activity.  Then make
+  the entry in the pivot reject list. Check for adequate list length and
+  expand if necessary.
 */
+  setflg(dy_status[j],vstatNOPIVOT) ;
   ndx = pivrej_ctl.cnt++ ;
   if (ndx >= pivrej_ctl.sze)
   { newsze = minn(2*pivrej_ctl.sze,n+1) ;
@@ -411,9 +426,6 @@ dyret_enum dy_addtopivrej (int j, dyret_enum why,
     { errmsg(337,rtnnme,dy_sys->nme,pivrej_ctl.sze,newsze) ;
       return (dyrFATAL) ; }
     pivrej_ctl.sze = newsze ; }
-/*
-  And fill in the entry.
-*/
   pivrejlst[ndx].ndx = j ;
   pivrejlst[ndx].iter = dy_lp->basis.pivs ;
   pivrejlst[ndx].why = why ;

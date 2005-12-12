@@ -165,7 +165,8 @@ dyret_enum dy_confirmDualPivot (int i, int j, double *abari,
   for an explanation of why dylp takes this approach.
   
   This routine calculates the column vector abar<j> = inv(B)a<j> and then
-  compares the two values obtained for the pivot abar<ij>.
+  compares the two values obtained for the pivot abar<ij>. The criteria
+  for acceptance is a difference of less than 1 part in pctErr (see below).
 
   The reason we need this routine is that numerical inaccuracy happens. In
   particular, we're looking to avoid the situation where the value from
@@ -181,9 +182,9 @@ dyret_enum dy_confirmDualPivot (int i, int j, double *abari,
   inv(B)a<j> that it will subsequently use for the basis update.
 
   Returning dyrMADPIV for the case where the values of abar<ij> do not agree
-  and the basis was just refactored doesn't address the numeric problem, but
-  it will get x<i> onto the rejected pivot list, and we can hope that some
-  other x<i> will result in a different choice of x<j>.
+  and the basis was recently refactored doesn't address the numeric problem,
+  but it will get x<i> onto the rejected pivot list, and we can hope that
+  some other x<i> will result in a different choice of x<j>.
 
   Parameters:
     i:		The index of the variable x<i> selected to leave.
@@ -193,26 +194,28 @@ dyret_enum dy_confirmDualPivot (int i, int j, double *abari,
     maxabari:	The maximum absolute value in abari.
     p_abarj:	(o) used to return abar<j>
 
-  Returns: dyrOK if the values agree.
+  Returns: dyrOK if the values agree, or if the values differ but we've
+		just refactored.
 	   dyrREQCHK if the values differ and there's been at least one
 		pivot since the last refactor of the basis. At least we
 		can try to fix the problem.
 	   dyrMADPIV if the values agree and are honestly mad, or if the
 		values disagree and the value from abar<j> is mad.
-	   dyrFATAL if the calculation fails, or (paranoid only) if the
-	       difference is large
+	   dyrFATAL if the calculation fails
 */
 
 { int xipos ;
   double *abarj ;
-  double abari_j,abarj_i,tol ;
+  double abari_j,abarj_i,tol,err,pivRating ;
   dyret_enum retval ;
 
-# ifndef NDEBUG
-  int cnt,xkpos ;
-# endif
+  const double pctErr = 1.0e-10 ;
 
   char *rtnnme = "confirmDualPivot" ;
+
+# ifndef NDEBUG
+  int cnt,xkpos,printtmp ;
+# endif
 
   retval = dyrINV ;
 
@@ -246,44 +249,57 @@ dyret_enum dy_confirmDualPivot (int i, int j, double *abari,
 
 # ifndef NDEBUG
   if (dy_opts->print.pivoting >= 4)
-  { outfmt(dy_logchn,dy_gtxecho,"\n\tentering column abar<%d> = inv(B)a<%d>:",j,j) ;
+  { outfmt(dy_logchn,dy_gtxecho,
+	   "\n\tentering column abar<%d> = inv(B)a<%d>:",j,j) ;
     cnt = 1 ;
     for (xkpos = 1 ; xkpos <= dy_sys->concnt ; xkpos++)
     { if (abarj[xkpos] == 0) continue ;
       cnt = (cnt+1)%2 ;
       if (cnt == 0) outchr(dy_logchn,dy_gtxecho,'\n') ;
       outfmt(dy_logchn,dy_gtxecho,"\ta<%d,%d> = %g",xkpos,j,abarj[xkpos]) ; } }
+/*
+  Suppress print in dy_chkpiv.
+*/
+  printtmp = dy_opts->print.pivoting ;
+  dy_opts->print.pivoting = 0 ;
+# endif
+
+  pivRating = dy_chkpiv(abarj_i,maxabari) ;
+
+# ifndef NDEBUG
+  dy_opts->print.pivoting = printtmp ;
 # endif
 
 /*
-  Well, are we equal? If so, we can simply check abarj_i. Scaling can tighten
-  tols.zero, which we don't want here, so hardwire the default zero tolerance.
+  Well, are we equal? If so, the recommendation depends on pivot stability.
 */
-  tol = 1.0e-11*(1+fabs(abarj_i)) ;
-  if (withintol(abarj_i,abari_j,tol))
-  { if (dy_chkpiv(abarj_i,maxabari) < 1.0)
+  err = fabs(abarj_i-abari_j) ;
+  tol = pctErr*(1+fabs(abarj_i)) ;
+  if (err < tol)
+  { if (pivRating < 1.0)
     { retval = dyrMADPIV ; }
     else
     { retval = dyrOK ; } }
 /*
-  Nope, not equal. If we're paranoid, print a warning.
+  Nope, not equal. If we're paranoid, print a warning for really bad cases.
 */
   else
   { 
 #   ifdef PARANOIA
-    if (!withintol(abarj_i,abari_j,1000*tol))
+    if (!(err > tol*1000))
     { warn(385,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-	   dy_lp->tot.iters+1,i,j,abari_j,abarj_i,
-	   fabs(abari_j-abarj_i),tol) ; }
+	   dy_lp->tot.iters+1,i,j,abari_j,abarj_i,err,
+	   fabs(err/abarj_i),pctErr) ; }
 #   endif
 /*
-  The return value should be REQCHK if we've pivoted since the last refactor.
-  Otherwise, put x<i> on the reject list.
+  If we've done at least one pivot since refactoring, request a refactor. But
+  if we've just refactored, report ok unless the pivot is numerically
+  unstable.
 */
-    if (dy_lp->basis.etas > 1)
+    if (dy_lp->basis.etas >= 2)
     { retval = dyrREQCHK ; }
     else
-    if (dy_chkpiv(abarj_i,maxabari) < 1.0)
+    if (pivRating < 1.0)
     { retval = dyrMADPIV ; }
     else
     { retval = dyrOK ; }
@@ -291,9 +307,10 @@ dyret_enum dy_confirmDualPivot (int i, int j, double *abari,
 #   ifndef NDEBUG
     if (dy_opts->print.dual >= 3)
     { outfmt(dy_logchn,dy_gtxecho,"\n      dual pivot numeric drift: ") ;
-      outfmt(dy_logchn,dy_gtxecho,"abari<j> = %g, abarj<i> = %g, diff = %g; ",
+      outfmt(dy_logchn,dy_gtxecho,"abari<j> = %g, abarj<i> = %g, diff = %g",
 	     abari_j,abarj_i,fabs(abari_j-abarj_i)) ;
-      outfmt(dy_logchn,dy_gtxecho,"recommending %s.",dy_prtdyret(retval)) ; }
+      outfmt(dy_logchn,dy_gtxecho," (%g%%); ",tol*100) ;
+      outfmt(dy_logchn,dy_gtxecho,"returning %s.",dy_prtdyret(retval)) ; }
 #   endif
   }
 
@@ -543,15 +560,15 @@ bool dualpivrow (int xipos, double *betai, double *abari, double *maxabari)
 
 
 
-void dualdegenin (void)
+static void dualdegenin (void)
 
 /*
   This routine forms a new restricted subproblem, increasing the degeneracy
   level kept in dy_lp->degen. A base perturbation is calculated so
   that the maximum possible perturbation is
-     perturb = (base)*(varcnt) <= 1.0e-3
+     perturb = (base)*(varcnt) <= 1.0e-6
   This is then increased, if necessary, so that the perturbation exceeds the
-  dual feasibility tolerance. For each variable, the actual perturbation is
+  dual zero tolerance. For each variable, the actual perturbation is
   calculated as base*j.
 
   The routine should not be called if dual degeneracy isn't present, and will
@@ -575,9 +592,13 @@ void dualdegenin (void)
 
 /*
   Figure out the appropriate perturbation and bump the degeneracy level.
+  Because we're dealing directly with dual variables, we can use a smaller
+  perturbation than the primal, and we don't need to be worrying about getting
+  outside of the dy_tols.dfeas range around zero. Still, it seems prudent to
+  exceed the dual zero tolerance.
 */
-  base = pow(10,(-3-ceil(log10(dy_sys->concnt)))) ;
-  while (base <= dy_tols->pfeas) base *= 10 ;
+  base = pow(10,(-6-ceil(log10(dy_sys->concnt)))) ;
+  while (base <= dy_tols->cost) base *= 10 ;
   oldlvl = dy_lp->degen++ ;
 
 # ifndef NDEBUG
@@ -1027,12 +1048,12 @@ dyret_enum dy_dualout (int *xindx)
   for (xkpos = 1 ; xkpos <= dy_sys->concnt ; xkpos++)
   { xkndx = dy_basis[xkpos] ;
     xkstatus = dy_status[xkndx] ;
-    if (flgoff(xkstatus,vstatBLLB|vstatBUUB|vstatBFX))
+    if (flgoff(xkstatus,vstatBLLB|vstatBUUB))
     { 
 #     ifndef NDEBUG
       if (dy_opts->print.pricing >= 3)
       { outfmt(dy_logchn,dy_gtxecho,"\n\tpricing %s (%d), status %s; << status >>",
-		 consys_nme(dy_sys,'v',xkndx,TRUE,NULL),xkndx,
+		 consys_nme(dy_sys,'v',xkndx,FALSE,NULL),xkndx,
 		 dy_prtvstat(xkstatus)) ; }
 #     endif
       continue ; }
@@ -2422,7 +2443,7 @@ dyret_enum dy_dualpivot (int xindx, int outdir,
 { int xipos,xjndx,indir,degen_cyclecnt ;
   double *betai,*abari,*tau,maxabari,*abarj ;
   dyret_enum retval,inretval,dseretval,confirm ;
-  bool validxj,reselect ;
+  bool validxj,reselect,patch ;
   flags factorflgs ;
   char *rtnnme = "dy_dualpivot" ;
 
@@ -2692,16 +2713,17 @@ dyret_enum dy_dualpivot (int xindx, int outdir,
     if (abarj != NULL) FREE(abarj) ;
     return (inretval) ; }
 /*
-  Degenerate pivot? As with the primal, we'll take a pivot that moves a BFX
-  variable out of the basis.
+  Dual degenerate pivot? If not, reset the successive degenerate pivot count.
+  Note that this differs from the primal action, where pivoting a BFX or NBFR
+  variable resets degenpivcnt. Here, we'll never see NBFR (not dual feasible)
+  nor BFX (primal feasible). We could trap this later (leaving variable goes
+  to NBFX status) but it turns out to be better to let antidegeneracy kick in
+  based on dual simplex criteria.
 */
   if (inretval == dyrOK)
   { dy_lp->degenpivcnt = 0 ; }
   else
-  { if (flgon(dy_status[xindx],vstatBFX))
-      dy_lp->degenpivcnt = 0 ;
-    else
-      dy_lp->degenpivcnt++ ; }
+  { dy_lp->degenpivcnt++ ; }
 
 # ifndef NDEBUG
   if (dy_opts->print.pivoting >= 1)
@@ -2722,42 +2744,53 @@ dyret_enum dy_dualpivot (int xindx, int outdir,
 /*
   Attempt the pivot to update the LU factorisation. This can fail for three
   reasons: the pivot element didn't meet the numerical stability criteria
-  (we've already checked this, but the check can miss near singularity),
-  the pivot produced a singular basis, or the basis package ran out of space.
+  (we've already checked this, but the check's not foolproof), the pivot
+  produced a singular or near-singular basis, or the basis package ran out of
+  space.
 
   If we fail, and we've done flips as part of a multipivot, we have a
   problem.  There's no easy way to back out the flips, and without the pivot
-  we've almost certainly lost dual feasibility.  For dyrBSPACE, there's one
-  thing we can try: refactor and recalculate the primals and duals, then try
-  the pivot again. All this worked before, up to the pivot attempt, so assume
-  it'll work again.
+  we've almost certainly lost dual feasibility.  For near-singularity
+  (dyrNUMERIC) or lack of space (dyrBSPACE), we can try to refactor and
+  recalculate the primals and duals, then try the pivot again. All this
+  worked before, up to the pivot attempt, so assume it'll work again. If the
+  pivot fails a second time, well, at least we tried.
 
   For the rest, dylp's error recovery algorithms will cope, but it'll be ugly.
 */
   retval = dy_pivot(xipos,abarj[xipos],maxabari) ;
-  if (retval == dyrBSPACE)
+  if (retval == dyrBSPACE || retval == dyrNUMERIC)
   { factorflgs = ladPRIMALS|ladDUALS ;
+    patch = dy_opts->patch ;
+    dy_opts->patch = FALSE ;
     dseretval = dy_factor(&factorflgs) ;
+    dy_opts->patch = patch ;
     if (dseretval == dyrOK)
     { FREE(abarj) ;
       abarj = NULL ;
       (void) consys_getcol_ex(dy_sys,xjndx,&abarj) ;
       dy_ftran(abarj,TRUE) ;
-      retval = dy_pivot(xipos,abarj[xipos],maxabari) ; } }
+      retval = dy_pivot(xipos,abarj[xipos],maxabari) ;
+      if (retval == dyrNUMERIC) retval = dyrSINGULAR ; }
+    else
+    { if (dseretval == dyrNUMERIC)
+      { retval = dyrSINGULAR ; }
+      else
+      { retval = dseretval ; } } }
 /*
-  If the basis is successfully pivoted, we need to do updates. 
-  Call dualupdate to do the primal and dual variables. If that works, call
+  If the basis is successfully pivoted, we need to do updates.  Call
+  dualupdate to do the primal and dual variables. If that works, call
   dseupdate to update dual steepest edge information and choose a leaving
   variable for the next iteration.
 
   In terms of return values, dualupdate can return dyrOK, dyrREQCHK,
-  dyrSWING, or dyrFATAL. dyrFATAL will pop us out of simplex, so
-  we can skip dseupdate.
+  dyrSWING, or dyrFATAL.  dyrFATAL will pop us out of simplex, so we can skip
+  dseupdate.
 
-  dseupdate can return dyrOK, dyrOPTIMAL, dyrLOSTDFEAS, dyrPUNT, or dyrFATAL.
-  The only possibilities for inretval at this point are dyrOK and dyrDEGEN.
-  Basically, we're trying to return the most interesting value, resorting to
-  the bland dyrOK only if nothing else turns up.
+  dseupdate can return dyrOK, dyrOPTIMAL, dyrLOSTDFEAS, dyrPUNT, or
+  dyrFATAL.  The only possibilities for inretval at this point are dyrOK and
+  dyrDEGEN.  Basically, we're trying to return the most interesting value,
+  resorting to the bland dyrOK only if nothing else turns up.
 */
   if (retval == dyrOK)
   { dy_lp->pivok = TRUE ;

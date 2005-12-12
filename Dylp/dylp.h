@@ -733,6 +733,8 @@ typedef struct
   
   In some cases, we only know the target, so the best we can do is
   scale to it.
+
+  The utility of this idea is highly questionable.
 */
 
 #define snaptol1(zz_tgt_zz) (dy_tols->zero*(1.0+(zz_tgt_zz)))
@@ -746,6 +748,21 @@ typedef struct
 #endif /* DYLP_INTERNAL */
 
 
+
+/*
+  Enum for initial basis type.
+
+  This determines the criteria used to select the initial set of basic
+  variables during a cold start.
+
+  ibINV		invalid
+  ibLOGICAL	Use only logical (slack and artificial) variables
+  ibSLACK	Use slack variables for inequalities. Prefer architectural
+		over artificial variables for equalities.
+  ibARCH	Prefer architectural variables over logical variables.
+*/
+
+typedef enum { ibINV = 0, ibLOGICAL, ibSLACK, ibARCH } ibtype_enum ;
 
 /*
   lpopts_struct
@@ -762,7 +779,10 @@ typedef struct
   fullsys	Forces the use of the full constraint system at all times. The
 		full constraint system is loaded on startup, and all constraint
 		and variable deactivation/activation is skipped. (But see the
-		finpurge option below.)
+		finpurge option below.) (Also, this will not prevent dylp
+		from resorting to forced phase transitions, which typically
+		involve deactivation of constraints or variables. Arguably
+		this is a bad thing, and may change in the future.)
   active	Used to estimate the initial size of the dylp constraint
 		system relative to the original system.
     vars	  Fraction of original variables expected to be active at
@@ -781,16 +801,8 @@ typedef struct
     i2lopen	  TRUE if the bound is open.
     i2u		  Upper bound on angle to objective, second interval
     i2uopen	  TRUE if the bound is open.
-  initbasis	Code specifying the kind of basis built for a cold start. See
-		extensive comments in dy_coldstart.c
-		  0:	invalid
-		  1:	(logical) use only logical (slack and artificial)
-			variables.
-		  2:	(slack) use slacks to cover inequalities, prefer
-			architecturals over artificials for equalities.
-		  3:	(architectural) use architecturals to cover equalities
-			and inequalities, filling in with logicals as
-			required.
+  coldbasis	Code specifying the kind of basis built for a cold start. See
+		comments for ibtype_enum and comments in dy_coldstart.c
   finpurge	Controls whether dylp does a final deactivation of constraints
 		and/or variables. This will occur only an optimal solution is
 		found, and is not suppressed by fullsys.
@@ -1038,6 +1050,15 @@ typedef struct
 		     variables to an unbounded dual.
 		  4: prints a running commentary on constraint and variable
 		     shifts.
+    force	  Controls print level when dylp is attempting to force a
+		  transition (primal -> dual, dual -> primal) or force the
+		  use of the full constraint system.
+		  1: prints a summary message giving the result of the
+		     transition attempt
+		  2: prints messages about actions taken for individual
+		     constraints and variables.
+		  3: additional information about variables and constraints
+		     examined.
 */
 
 typedef struct
@@ -1079,7 +1100,7 @@ typedef struct
 	   double i2l ;
 	   bool i2uopen ;
 	   double i2u ; } initcons ;
-  int initbasis ;
+  ibtype_enum coldbasis ;
   struct { bool cons ;
 	   bool vars ; } finpurge ;
   struct { bool d2p ;
@@ -1098,7 +1119,8 @@ typedef struct
 	   int dual ;
 	   int basis ;
 	   int conmgmt ;
-	   int varmgmt ; } print ; } lpopts_struct ;
+	   int varmgmt ;
+	   int force ; } print ; } lpopts_struct ;
 
 
 
@@ -1437,11 +1459,13 @@ extern bool dy_gtxecho ;
     norm1	  1-norm of basic primal variables inv(B)b
     norm2	  2-norm of basic primal variables
     max		  inf-norm (max) of basic primal variables
+    maxndx	  index of max primal variable
 
   dual		Dual variable information
     norm1	  1-norm of dual variables c<B>inv(B)
     norm2	  2-norm of dual variables
     max		  inf-norm (max) of dual variables
+    maxndx	  index of max dual variable
 
 */
 
@@ -1492,10 +1516,12 @@ typedef struct
 	   double fd ; } lastz ;
   struct { double norm1 ;
 	   double norm2 ;
-	   double max ; } prim ;
+	   double max ;
+	   int maxndx ; } prim ;
   struct { double norm1 ;
 	   double norm2 ;
-	   double max ; } dual ;
+	   double max ;
+	   int maxndx ; } dual ;
   } lp_struct ;
 
 

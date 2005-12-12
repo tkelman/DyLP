@@ -159,10 +159,12 @@ typedef struct { int ndx ;
 			  double inf ;
 			  double maxinf ; } flip ; } dualcand_struct ;
 
-# ifdef PARANOIA
-  static int predictiter ;
-  static double predicttotinf,predictmaxinf ;
-# endif
+/*
+  # ifdef PARANOIA
+    static int predictiter ;
+    static double predicttotinf,predictmaxinf ;
+  # endif
+*/
 
 
 static int dualcand_cmp (const void *p_dualcand1, const void *p_dualcand2)
@@ -528,7 +530,19 @@ static dyret_enum scanForDualInCands (dualcand_struct *incands, int outdir,
     else
     { incands[candcnt].madpiv = FALSE ; }
     deltak = fabs(cbark/abarik) ;
+/* ZZ_DEBUG_ZZ
+
+   We're seeing a sort of false degeneracy --- we're running a perturbed
+   subproblem, with a very small perturbation, and that's giving deltak = 0
+   from the setcleanzero. But cbar<k> isn't 0, so the entries are not getting
+   swept up into the degenerate subproblem.
+   
+   Try removing it and see what happens.
+
+   And it seems to deal with the problem.
+
     setcleanzero(deltak,dy_tols->cost) ;
+*/
     if (rev == TRUE)
     { incands[candcnt].rev = TRUE ;
       incands[candcnt].ddelta = -deltak ;
@@ -877,6 +891,10 @@ bool selectWithInf (int i, dualcand_struct *incands,
 
   char *rtnnme = "selectWithInf" ;
 
+# ifndef NDEBUG
+  int lastdegen = 0 ;
+# endif
+
   m = dy_sys->concnt ;
   vlb = dy_sys->vlb ;
   vub = dy_sys->vub ;
@@ -913,19 +931,21 @@ bool selectWithInf (int i, dualcand_struct *incands,
 	   "\n      starting inf tot = %g, max = %g",
 	   starttotinf,startmaxinf) ; }
 # endif
-# ifdef PARANOIA
-  if (dy_lp->d2.iters > 0 && predictiter+1 == dy_lp->d2.iters)
-  { if (!atbnd(predicttotinf,starttotinf))
-    { warn(350,rtnnme,
-	   dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	   "total",predicttotinf,predictiter,
-	   starttotinf,predicttotinf-starttotinf) ; }
-    if (!atbnd(predictmaxinf,startmaxinf))
-    { warn(350,rtnnme,
-	   dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	   "maximum",predictmaxinf,predictiter,
-	   startmaxinf,predictmaxinf-startmaxinf) ; } }
-# endif
+/*
+  # ifdef PARANOIA
+    if (dy_lp->d2.iters > 0 && predictiter+1 == dy_lp->d2.iters)
+    { if (!atbnd(predicttotinf,starttotinf))
+      { warn(350,rtnnme,
+	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	     "total",predicttotinf,predictiter,
+	     starttotinf,predicttotinf-starttotinf) ; }
+      if (!atbnd(predictmaxinf,startmaxinf))
+      { warn(350,rtnnme,
+	     dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
+	     "maximum",predictmaxinf,predictiter,
+	     startmaxinf,predictmaxinf-startmaxinf) ; } }
+  # endif
+*/
 
 /*
   For better or worse, we'll stick with the sort order while deciding what to
@@ -1026,6 +1046,7 @@ bool selectWithInf (int i, dualcand_struct *incands,
     { jpos = ndx ; }
     else
     { jpos = ndx-1 ; }
+    lastdegen = jpos ;
     outfmt(dy_logchn,dy_gtxecho,"\n      after %d degen",jpos) ;
     if (bestflipcand > 0)
     { j = incands[bestflipcand].ndx ;
@@ -1092,33 +1113,38 @@ bool selectWithInf (int i, dualcand_struct *incands,
 	if (candk->madpiv == FALSE)
 	{ lastpivcand = ndx ;
 	  lastpivinf = pivinfk ; }
-	break ; } } }
+	break ; } }
+
+#   ifndef NDEBUG
+    if (dy_opts->print.pivoting >= 2)
+    { if (pivEndsScan == TRUE || flipEndsScan == TRUE)
+      { jpos = ndx ; }
+      else
+      { jpos = ndx-1 ; }
+      outfmt(dy_logchn,dy_gtxecho,"\n      after %d nondegen",jpos-lastdegen) ;
+      if (bestflipcand > 0)
+      { j = incands[bestflipcand].ndx ;
+	outfmt(dy_logchn,dy_gtxecho,
+	       ", best flip #%d, %s (%d) = %g",bestflipcand,
+	       consys_nme(dy_sys,'v',j,FALSE,NULL),j,bestflipinf) ; }
+      if (bestpivcand > 0)
+      { j = incands[bestpivcand].ndx ;
+	outfmt(dy_logchn,dy_gtxecho,
+	       ", best piv #%d, %s (%d) = %g",bestpivcand,
+	       consys_nme(dy_sys,'v',j,FALSE,NULL),j,bestpivinf) ; }
+      if (lastpivcand > 0)
+      { j = incands[lastpivcand].ndx ;
+	outfmt(dy_logchn,dy_gtxecho,
+	       ", last piv #%d, %s (%d) = %g",lastpivcand,
+	       consys_nme(dy_sys,'v',j,FALSE,NULL),j,lastpivinf) ; }
+      if (bestflipcand < 0 && bestpivcand < 0 && lastpivcand < 0)
+      { outfmt(dy_logchn,dy_gtxecho,", nothing") ; }
+      outchr(dy_logchn,dy_gtxecho,'.') ; }
+#   endif
+  }
 
   FREE(xbasic) ;
 
-# ifndef NDEBUG
-  if (dy_opts->print.pivoting >= 2)
-  { if (pivEndsScan == TRUE || flipEndsScan == TRUE)
-    { jpos = ndx ; }
-    else
-    { jpos = ndx-1 ; }
-    outfmt(dy_logchn,dy_gtxecho,"\n      after %d nondegen",jpos) ;
-    if (bestflipcand > 0)
-    { j = incands[bestflipcand].ndx ;
-      outfmt(dy_logchn,dy_gtxecho,", best flip #%d, %s (%d) = %g",bestflipcand,
-	     consys_nme(dy_sys,'v',j,FALSE,NULL),j,bestflipinf) ; }
-    if (bestpivcand > 0)
-    { j = incands[bestpivcand].ndx ;
-      outfmt(dy_logchn,dy_gtxecho,", best piv #%d, %s (%d) = %g",
-	     bestpivcand,consys_nme(dy_sys,'v',j,FALSE,NULL),j,bestpivinf) ; }
-    if (lastpivcand > 0)
-    { j = incands[lastpivcand].ndx ;
-      outfmt(dy_logchn,dy_gtxecho,", last piv #%d, %s (%d) = %g",lastpivcand,
-	     consys_nme(dy_sys,'v',j,FALSE,NULL),j,lastpivinf) ; }
-    if (bestflipcand < 0 && bestpivcand < 0 && lastpivcand < 0)
-    { outfmt(dy_logchn,dy_gtxecho,", nothing") ; }
-    outchr(dy_logchn,dy_gtxecho,'.') ; }
-# endif
 # ifdef PARANOIA
   if ((bestpivcand > 0 && lastpivcand < 0) ||
       (bestpivcand < 0 && lastpivcand > 0))
@@ -1205,13 +1231,10 @@ bool selectWithoutInf (int i, double *abari, dualcand_struct *incands,
   dualcand_struct *candk ;
 
 # ifndef NDEBUG
-  int j,jndx ;
+  int j,jndx,lastdegen ;
 # endif
 /*
   # ifdef PARANOIA
-    static int predictiter ;
-    static double predictinf ;
-
     char *rtnnme = "selectWithOutInf" ;
   # endif
 */
@@ -1329,6 +1352,7 @@ bool selectWithoutInf (int i, double *abari, dualcand_struct *incands,
     { jndx = ndx ; }
     else
     { jndx = ndx-1 ; }
+    lastdegen = jndx ;
     if (jndx > 0)
     { outfmt(dy_logchn,dy_gtxecho,"\n      after %d degen",jndx) ;
       if (lastflipcand > 0)
@@ -1369,27 +1393,29 @@ bool selectWithoutInf (int i, double *abari, dualcand_struct *incands,
       if ((flgon(stati,vstatBUUB) && !abovebnd(xi,ubi)) ||
 	  (flgon(stati,vstatBLLB) && !belowbnd(xi,lbi)))
       { flipEndsScan = TRUE ;
-	break ; } } }
+	break ; } }
 
-# ifndef NDEBUG
-  if (dy_opts->print.pivoting >= 2)
-  { if (pivEndsScan == TRUE || flipEndsScan == TRUE)
-    { jndx = ndx ; }
-    else
-    { jndx = ndx-1 ; }
-    outfmt(dy_logchn,dy_gtxecho,"\n      after %d nondegen",jndx) ;
-    if (lastflipcand > 0)
-    { j = incands[lastflipcand].ndx ;
-      outfmt(dy_logchn,dy_gtxecho,", last flip #%d, %s (%d)",lastflipcand,
-	     consys_nme(dy_sys,'v',j,FALSE,NULL),j) ; }
-    if (lastpivcand > 0)
-    { j = incands[lastpivcand].ndx ;
-      outfmt(dy_logchn,dy_gtxecho,", last piv #%d, %s (%d)",lastpivcand,
-	     consys_nme(dy_sys,'v',j,FALSE,NULL),j) ; }
-    if (lastflipcand < 0 && lastpivcand < 0)
-    { outfmt(dy_logchn,dy_gtxecho,", nothing") ; }
-    outchr(dy_logchn,dy_gtxecho,'.') ; }
-# endif
+#   ifndef NDEBUG
+    if (dy_opts->print.pivoting >= 2)
+    { if (pivEndsScan == TRUE || flipEndsScan == TRUE)
+      { jndx = ndx ; }
+      else
+      { jndx = ndx-1 ; }
+      outfmt(dy_logchn,dy_gtxecho,"\n      after %d nondegen",jndx-lastdegen) ;
+      if (lastflipcand > 0)
+      { j = incands[lastflipcand].ndx ;
+	outfmt(dy_logchn,dy_gtxecho,", last flip #%d, %s (%d)",lastflipcand,
+	       consys_nme(dy_sys,'v',j,FALSE,NULL),j) ; }
+      if (lastpivcand > 0)
+      { j = incands[lastpivcand].ndx ;
+	outfmt(dy_logchn,dy_gtxecho,", last piv #%d, %s (%d)",lastpivcand,
+	       consys_nme(dy_sys,'v',j,FALSE,NULL),j) ; }
+      if (lastflipcand < 0 && lastpivcand < 0)
+      { outfmt(dy_logchn,dy_gtxecho,", nothing") ; }
+      outchr(dy_logchn,dy_gtxecho,'.') ; }
+#   endif
+  }
+
 
 /*
   Load up the return values and we're done.
@@ -1661,18 +1687,20 @@ dyret_enum dualmultiin (int i, int outdir,
 	   bestcand,consys_nme(dy_sys,'v',j,FALSE,NULL),j,
 	   bestinf,infj) ; }
 # endif
-# ifdef PARANOIA
-  if (dy_opts->dpsel.strat >= 2 && incands[bestcand].madpiv == FALSE)
-  { predictiter = dy_lp->d2.iters ;
-    predicttotinf = starttotinf ;
-    for (ndx = 1 ; ndx < bestcand ; ndx++)
-    { predicttotinf += incands[ndx].flip.inf ; }
-    if (flipOnly == TRUE)
-      predicttotinf += candk->flip.inf ;
-    else
-      predicttotinf += candk->piv.inf ;
-    predictmaxinf = bestinf ; }
-# endif
+/*
+  # ifdef PARANOIA
+    if (dy_opts->dpsel.strat >= 2 && incands[bestcand].madpiv == FALSE)
+    { predictiter = dy_lp->d2.iters ;
+      predicttotinf = starttotinf ;
+      for (ndx = 1 ; ndx < bestcand ; ndx++)
+      { predicttotinf += incands[ndx].flip.inf ; }
+      if (flipOnly == TRUE)
+	predicttotinf += candk->flip.inf ;
+      else
+	predicttotinf += candk->piv.inf ;
+      predictmaxinf = bestinf ; }
+  # endif
+*/
 /*
   We've made our choice. But ... if this is a degenerate pivot, and
   antidegeneracy can be activated, let's hold off for a moment.

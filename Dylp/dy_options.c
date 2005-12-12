@@ -341,9 +341,9 @@ cmd_retval dy_printopt (const char *keywd)
 
   The bnf for the print option command is:
     <printopt> ::= lpprint <what> <level>
-    <what> ::= conmgmt | crash | degen | dual | basis | major |
+    <what> ::= basis | conmgmt | crash | degen | dual | force | major |
 	       phase1 | phase2 | pivoting | pivreject | pricing |
-	       setup | varmgmt
+	       scaling | setup | varmgmt
     <level> ::= <integer>
 
   Parameters:
@@ -362,15 +362,17 @@ cmd_retval dy_printopt (const char *keywd)
   command.
 */
 
-  enum prntcodes { poINV = 0, poCONMGMT, poCRASH, poDUAL, poBASIS, poMAJOR,
-		   poSCALING, poSETUP, poPRICING, poPHASE1, poPHASE2,
-		   poPIVOTING, poPIVREJ, poDEGEN, poVARMGMT } prntcode ;
+  enum prntcodes { poINV = 0, poBASIS, poCONMGMT, poCRASH,
+		   poDEGEN, poDUAL, poFORCE, poMAJOR,
+		   poPHASE1, poPHASE2, poPIVOTING, poPIVREJ,
+		   poPRICING, poSCALING, poSETUP, poVARMGMT } prntcode ;
 
   static keytab_entry prntkwds[] = { { "basis", 1, (int) poBASIS },
 				     { "conmgmt", 2, (int) poCONMGMT },
 				     { "crash", 2, (int) poCRASH },
 				     { "degen", 2, (int) poDEGEN },
 				     { "dual", 2, (int) poDUAL },
+				     { "force", 2, (int) poFORCE },
 				     { "major", 1, (int) poMAJOR },
 				     { "phase1", 6, (int) poPHASE1 },
 				     { "phase2", 6, (int) poPHASE2 },
@@ -453,6 +455,12 @@ cmd_retval dy_printopt (const char *keywd)
       dflt = opts_dflt->print.dual ;
       lb = opts_lb->print.dual ;
       ub = opts_ub->print.dual ;
+      break ; }
+    case poFORCE:
+    { opt = &main_lpopts->print.force ;
+      dflt = opts_dflt->print.force ;
+      lb = opts_lb->print.force ;
+      ub = opts_ub->print.force ;
       break ; }
     case poPIVOTING:
     { opt = &main_lpopts->print.pivoting ;
@@ -1244,13 +1252,12 @@ cmd_retval dy_ctlopt (const char *keywd)
   static int numgroomkwds = (sizeof groomkwds/sizeof (keytab_entry)) ;
 
 /*
-  Keywords used by the coldbasis option; the option value is used only by the
-  ib_populatebasis routine, so there's no real motivation for symbolic codes.
+  Keywords used by the coldbasis option.
 */
 
-  static keytab_entry basiskwds[] = { { "architectural", 1, 3 },
-				      { "logical", 1, 1 },
-				      { "slack", 1, 2 } } ;
+  static keytab_entry basiskwds[] = { { "architectural", 1, ibARCH },
+				      { "logical", 1, ibLOGICAL },
+				      { "slack", 1, ibSLACK } } ;
 
   static int numbasiskwds = (sizeof basiskwds/sizeof (keytab_entry)) ;
 
@@ -1338,10 +1345,10 @@ cmd_retval dy_ctlopt (const char *keywd)
       booldflt = opts_dflt->forcecold ;
       break ; }
     case ctlCOLDBASIS:
-    { intopt = &main_lpopts->initbasis ;
-      intdflt = opts_dflt->initbasis ;
-      intlb = opts_lb->initbasis ;
-      intub = opts_ub->initbasis ;
+    { intopt = (int *) &main_lpopts->coldbasis ;
+      intdflt = opts_dflt->coldbasis ;
+      intlb = opts_lb->coldbasis ;
+      intub = opts_ub->coldbasis ;
       numkwds = numbasiskwds ;
       kwds = basiskwds ;
       break ; }
