@@ -120,8 +120,8 @@ static char svnid[] UNUSED = "$Id$" ;
 		> 0	if i < j
 */
 static int intcompare (const void *p_i, const void *p_j)
-{ int i = *((int *) p_i) ;
-  int j = *((int *) p_j) ;
+{ int i = *((const int *) p_i) ;
+  int j = *((const int *) p_j) ;
   return ((j)-(i)) ; }
 
 
@@ -190,7 +190,7 @@ bool dy_loadcon (consys_struct *orig_sys, int i,
   pkvec_struct *ai,*aj ;
   pkcoeff_struct *aij ;
   bool retval ;
-  char *rtnnme = "dy_loadcon" ;
+  const char *rtnnme = "dy_loadcon" ;
 
 # ifndef NDEBUG
   int print ;
@@ -449,7 +449,7 @@ bool dy_actBLogPrimCon (consys_struct *orig_sys, int origi, int *inactvars)
   double lhsi,rhsi,rhslowi ;
   contyp_enum ctypi ;
 
-  char *rtnnme = "actBLogPrimCon" ;
+  const char *rtnnme = "actBLogPrimCon" ;
 
 # ifdef PARANOIA
 /*
@@ -581,7 +581,7 @@ bool dy_actBLogPrimConList (consys_struct *orig_sys,
   int *onecon,onecon_cnt,*collection,coll_cnt,coll_sze ;
   bool *seen ;
   bool with_vars,retval ;
-  char *rtnnme = "dy_actBLogPrimConList" ;
+  const char *rtnnme = "dy_actBLogPrimConList" ;
 
 # ifdef PARANOIA
   if (orig_sys == NULL)
@@ -715,7 +715,7 @@ bool dy_deactNBLogPrimCon (consys_struct *orig_sys, int i)
   double lbj,ubj,valj ;
   flags stati,statj ;
 
-  char *rtnnme = "dy_deactNBLogPrimCon" ;
+  const char *rtnnme = "dy_deactNBLogPrimCon" ;
 
 /*
   A little paranoia, mixed with prep. Check that i is valid and nonbasic.
@@ -872,7 +872,7 @@ bool dy_deactBLogPrimCon (consys_struct *orig_sys, int i)
 { int j,k,m,n,bposi,origi ;
   flags stati ;
 
-  char *rtnnme = "dy_deactBLogPrimCon" ;
+  const char *rtnnme = "dy_deactBLogPrimCon" ;
 
 /*
   A little paranoia, mixed with prep. Check that i is valid, that we can locate
@@ -1089,7 +1089,7 @@ static bool deactBLogPrimConList (consys_struct *orig_sys,
 
 { int k ;
   bool retval ;
-  char *rtnnme = "deactBLogPrimConList" ;
+  const char *rtnnme = "deactBLogPrimConList" ;
 
 # ifdef PARANOIA
   if (acndxs == NULL)
@@ -1158,7 +1158,7 @@ static int scanPrimConStdAct (consys_struct *orig_sys, int **p_ocndxs)
   flags statj ;
   bool activate ;
 
-  char *rtnnme = "scanPrimConStdAct" ;
+  const char *rtnnme = "scanPrimConStdAct" ;
 
 # ifdef PARANOIA
   if (orig_sys == NULL)
@@ -1347,7 +1347,7 @@ static int scanPrimConStdDeact (int **p_acndxs)
   flags statj ;
   bool purge ;
 
-  char *rtnnme = "scanPrimConStdDeact" ;
+  const char *rtnnme = "scanPrimConStdDeact" ;
 
 # ifdef PARANOIA
   if (p_acndxs == NULL)
@@ -1419,7 +1419,7 @@ static int scanPrimConStdDeact (int **p_acndxs)
 
 # ifndef NDEBUG
   if (dy_opts->print.varmgmt >= 1)
-  { char *strat ;
+  { const char *strat ;
     switch (dy_opts->con.deactlvl)
     { case 0:
       { strat = "normal" ;
@@ -1468,7 +1468,7 @@ int dy_deactivateCons (consys_struct *orig_sys)
   flags factorflags ;
   int retval ;
 
-  char *rtnnme = "dy_deactivateCons" ;
+  const char *rtnnme = "dy_deactivateCons" ;
 
   retval = -1 ;
 /*
@@ -1568,7 +1568,7 @@ int dy_activateCons (consys_struct *orig_sys, bool with_vars)
   flags calcflgs ;
   dyret_enum factorresult ;
 
-  char *rtnnme = "dy_activateCons" ;
+  const char *rtnnme = "dy_activateCons" ;
 
   retval = -1 ;
 

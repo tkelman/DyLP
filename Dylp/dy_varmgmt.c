@@ -104,8 +104,8 @@ static char svnid[] UNUSED = "$Id$" ;
 		> 0	if i < j
 */
 static int intcompare (const void *p_i, const void *p_j)
-{ int i = *((int *) p_i) ;
-  int j = *((int *) p_j) ;
+{ int i = *((const int *) p_i) ;
+  int j = *((const int *) p_j) ;
   return ((j)-(i)) ; }
 
 static bool prepcol_pk (consys_struct *orig_sys, int oxjndx,
@@ -131,7 +131,7 @@ static bool prepcol_pk (consys_struct *orig_sys, int oxjndx,
   pkvec_struct *aj ;
   pkcoeff_struct *aij ;
 
-  char *rtnnme = "prepcol_pk" ;
+  const char *rtnnme = "prepcol_pk" ;
 
 
 # ifdef PARANOIA
@@ -229,7 +229,7 @@ bool dy_actNBPrimArch (consys_struct *orig_sys, int ovndx)
   flags statj ;
   pkvec_struct *aj ;
   pkcoeff_struct *aij ;
-  char *rtnnme = "dy_actNBPrimArch" ;
+  const char *rtnnme = "dy_actNBPrimArch" ;
 
 # ifdef PARANOIA
   if (orig_sys == NULL)
@@ -369,7 +369,7 @@ bool dy_actNBPrimArchList (consys_struct *orig_sys, int cnt, int *ovndxs)
 
 { int j,k ;
   bool retval ;
-  char *rtnnme = "dy_actNBPrimArchList" ;
+  const char *rtnnme = "dy_actNBPrimArchList" ;
 
 # ifdef PARANOIA
   if (orig_sys == NULL)
@@ -442,7 +442,7 @@ bool dy_deactBPrimArch (consys_struct *orig_sys, int j)
   double valj ;
   flags statj,stati ;
 
-  char *rtnnme = "dy_deactBPrimArch" ;
+  const char *rtnnme = "dy_deactBPrimArch" ;
 
 /*
   Prep intermixed with paranoia. We need to retrieve the status and check that
@@ -583,7 +583,7 @@ bool dy_deactNBPrimArch (consys_struct *orig_sys, int j)
   flags statj ;
   pkvec_struct *aj ;
   pkcoeff_struct *aij ;
-  char *rtnnme = "dy_deactNBPrimArch" ;
+  const char *rtnnme = "dy_deactNBPrimArch" ;
 
 /*
   Prep intermixed with paranoia. We need to retrieve the status and check that
@@ -746,7 +746,7 @@ static bool deactNBPrimArchList (consys_struct *orig_sys,
 
 { int k ;
   bool retval ;
-  char *rtnnme = "deactNBPrimArchList" ;
+  const char *rtnnme = "deactNBPrimArchList" ;
 
 # ifdef PARANOIA
   if (avndxs == NULL)
@@ -816,7 +816,7 @@ static int scanPrimVarStdDeact (int **p_avndxs)
   bool purge ;
 
 # ifdef PARANOIA
-  char *rtnnme = "scanPrimVarStdDeact" ;
+  const char *rtnnme = "scanPrimVarStdDeact" ;
 
   if (p_avndxs == NULL)
   { errmsg(2,rtnnme,"avndxs") ;
@@ -966,7 +966,7 @@ static int scanPrimVarStdAct (consys_struct *orig_sys,
   flags statj ;
 
 # ifdef PARANOIA
-  char *rtnnme = "scanPrimVarStdAct" ;
+  const char *rtnnme = "scanPrimVarStdAct" ;
 
   if (orig_sys == NULL)
   { errmsg(2,rtnnme,"orig_sys") ;
@@ -1141,7 +1141,7 @@ int dy_deactivateVars (consys_struct *orig_sys)
 
 { int *candidates,candcnt ;
   int retval ;
-  char *rtnnme = "dy_deactivateVars" ;
+  const char *rtnnme = "dy_deactivateVars" ;
 
   retval = -1 ;
 /*
@@ -1212,7 +1212,7 @@ int dy_activateVars (consys_struct *orig_sys, int *preset)
   bool actresult,pseresult ;
   dyret_enum factorresult ;
   int retval ;
-  char *rtnnme = "dy_addvars" ;
+  const char *rtnnme = "dy_addvars" ;
 
 # ifdef PARANOIA
   if (orig_sys == NULL)

@@ -89,16 +89,16 @@ extern ENV *get_env_ptr(void);
 extern int free_lib_env(void);
 /* deinitialize library environment */
 
-extern void print(char *fmt, ...);
+extern void print(const char *fmt, ...);
 /* print informative message */
 
-extern void fault(char *fmt, ...);
+extern void fault(const char *fmt, ...);
 /* print error message and terminate program execution */
 
 #define insist(expr) \
 ((void)((expr) || (_insist(#expr, __FILE__, __LINE__), 1)))
 
-extern void _insist(char *expr, char *file, int line);
+extern void _insist(const char *expr, const char *file, int line);
 /* check for logical condition */
 
 extern double watch(void);

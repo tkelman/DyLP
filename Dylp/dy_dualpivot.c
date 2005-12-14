@@ -212,7 +212,7 @@ dyret_enum dy_confirmDualPivot (int i, int j, double *abari,
   int cnt,xkpos ;
 # endif
 
-  char *rtnnme = "confirmDualPivot" ;
+  const char *rtnnme = "confirmDualPivot" ;
 
   retval = dyrINV ;
 
@@ -338,7 +338,7 @@ static bool check_dualpivrow (int xipos, const double *abari, double maxabari)
   int errcnt ;
   double tol,diff,pct,maxpct,maxerr,maxerrcoeff,toterr,toterrcoeffs ;
 
-  char *rtnnme = "check_dualpivrow" ;
+  const char *rtnnme = "check_dualpivrow" ;
 
 /*
   Suppress print in dy_chkpiv.
@@ -454,7 +454,7 @@ bool dualpivrow (int xipos, double *betai, double *abari, double *maxabari)
 { int xkndx ;
   flags xkstatus ;
   double abarik ;
-  char *rtnnme = "dualpivrow" ;
+  const char *rtnnme = "dualpivrow" ;
 
 # ifndef NDEBUG
   pkvec_struct *ai ;
@@ -566,7 +566,7 @@ void dualdegenin (void)
   flags statj ;
   double base,perturb ;
 
-  char *rtnnme = "dualdegenin" ;
+  const char *rtnnme = "dualdegenin" ;
 
 
 # if defined(PARANOID) || defined(DYLP_STATISTICS) || !defined(NDEBUG)
@@ -576,7 +576,7 @@ void dualdegenin (void)
 /*
   Figure out the appropriate perturbation and bump the degeneracy level.
 */
-  base = pow(10,(-3-ceil(log10(dy_sys->concnt)))) ;
+  base = pow(10.0,(-3-ceil(log10(dy_sys->concnt)))) ;
   while (base <= dy_tols->pfeas) base *= 10 ;
   oldlvl = dy_lp->degen++ ;
 
@@ -792,7 +792,7 @@ static bool check_dse_update (int xkndx, double u_cbark, double u_rhok,
   double cbark,*abark,rhok,*betak ;
   flags xkstatus ;
   bool retval ;
-  char *rtnnme = "check_dse_update" ;
+  const char *rtnnme = "check_dse_update" ;
 
 /*
   Make sure we're ok as far as consistent status and values.
@@ -892,7 +892,7 @@ static void dualpricexk (int xkndx, int *xindx, double *nbbari,
 { int xkpos ;
   double deltak,nbbark ;
   flags xkstatus ;
-  char *rtnnme = "dualpricexk" ;
+  const char *rtnnme = "dualpricexk" ;
 
 /*
   Get the position and status of x<k>.
@@ -1006,7 +1006,7 @@ dyret_enum dy_dualout (int *xindx)
   double candbbari ;
   dyret_enum retval ;
   
-  char *rtnnme = "dy_dualout" ;
+  const char *rtnnme = "dy_dualout" ;
 
   retval = dyrINV ;
 
@@ -1258,7 +1258,7 @@ static dyret_enum dualin (int xindx, int outdir,
   double deltak,abarik,ratioik,deltamax,abarij,ratioij,bdotaj,bdotak ;
   bool newxj ;
   dyret_enum retval,confirm ;
-  char *rtnnme = "dualin" ;
+  const char *rtnnme = "dualin" ;
 
   retval = dyrINV ;
 
@@ -1599,7 +1599,10 @@ static dyret_enum dseupdate (int xindx, int xjndx, int *candxi, double *tau,
   flags xjstatus,xkstatus ;
   bool pivreject,recalc ;
   dyret_enum retval ;
-  char *rtnnme = "dseupdate" ;
+
+# ifdef PARANOIA
+  const char *rtnnme = "dseupdate" ;
+# endif
 
 # ifndef NDEBUG
   bool accurate,badguess ;
@@ -1919,7 +1922,7 @@ static dyret_enum dualupdate (int xjndx, int indir,
   bool swing ;
   int swingndx ;
   double swingratio,maxswing ;
-  char *rtnnme = "dualupdate" ;
+  const char *rtnnme = "dualupdate" ;
 
 # ifdef PARANOIA
   double epsl,epsu ;
@@ -2424,7 +2427,7 @@ dyret_enum dy_dualpivot (int xindx, int outdir,
   dyret_enum retval,inretval,dseretval,confirm ;
   bool validxj,reselect ;
   flags factorflgs ;
-  char *rtnnme = "dy_dualpivot" ;
+  const char *rtnnme = "dy_dualpivot" ;
 
   extern dyret_enum dualmultiin (int xindx, int outdir,
 				 int *p_xjndx, int *p_indir,

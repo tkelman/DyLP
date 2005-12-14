@@ -85,7 +85,7 @@ int dbg_scanPrimConBndAct (consys_struct *orig_sys, int act_j,
   flags statj ;
   bool activate ;
 
-  char *rtnnme = "dgb_scanPrimConBndAct" ;
+  const char *rtnnme = "dgb_scanPrimConBndAct" ;
 
 # ifdef PARANOIA
   if (orig_sys == NULL)
@@ -362,7 +362,7 @@ static int scanPrimConBndAct (consys_struct *orig_sys,
   flags statj ;
   bool activate ;
 
-  char *rtnnme = "scanPrimConBndAct" ;
+  const char *rtnnme = "scanPrimConBndAct" ;
 
 # ifdef PARANOIA
   if (orig_sys == NULL)
@@ -617,7 +617,7 @@ int dy_activateBndCons (consys_struct *orig_sys)
   flags calcflgs ;
   dyret_enum factorresult ;
 
-  char *rtnnme = "dy_activateBndCons" ;
+  const char *rtnnme = "dy_activateBndCons" ;
 
   retval = -1 ;
 
@@ -733,7 +733,7 @@ static int type1var(consys_struct *orig_sys,
 */
 
 { int xkndx ;
-  char *rtnnme = "type1var" ;
+  const char *rtnnme = "type1var" ;
 
 /*
   Will this variable be dual feasible? If not, it can't be a type 1. If it
@@ -1079,7 +1079,7 @@ static int type2activate (consys_struct *orig_sys,
   flags xjstatus ;
   dyret_enum pivresult,duennaresult ;
   int retval ;
-  char *rtnnme = "type2activate" ;
+  const char *rtnnme = "type2activate" ;
 
 # ifndef NDEBUG
   if (dy_opts->print.varmgmt >= 1)
@@ -1240,7 +1240,7 @@ static int type3activate (consys_struct *orig_sys, double *betai,
   dyret_enum duennaresult,outresult ;
   pkvec_struct *ak ;
   pkcoeff_struct *aqk ;
-  char *rtnnme = "type3activate" ;
+  const char *rtnnme = "type3activate" ;
 
 # ifndef NDEBUG
   double deltaj ;
@@ -1503,7 +1503,7 @@ int dy_dualaddvars (consys_struct *orig_sys)
   pkcoeff_struct *aqk ;
   int retval ;
 
-  char *rtnnme = "dy_dualaddvars" ;
+  const char *rtnnme = "dy_dualaddvars" ;
 
   retval = -1 ;
 

@@ -39,7 +39,7 @@ static char svnid[] UNUSED = "$Id$" ;
 
 
 
-static char *prtbnftype (bnftype_enum type)
+static const char *prtbnftype (bnftype_enum type)
 
 /*
   This routine returns a pointer to the string representation of the bnf type.
@@ -78,7 +78,7 @@ static char *prtbnftype (bnftype_enum type)
       return (badtype) ; } } }
 
 
-static char *prtbnfttype (bnfttype_enum ttype)
+static const char *prtbnfttype (bnfttype_enum ttype)
 
 /*
   This routine returns a pointer to the string representation of the terminal
@@ -164,7 +164,7 @@ static void prtrefname (ioid chn, bool echo, bnfref_struct *ref)
   return ; }
 
 
-static void prtstring (ioid chn, bool echo, char *string)
+static void prtstring (ioid chn, bool echo, const char *string)
 
 /*
   This routine prints a text string, or * if the string is null.
@@ -380,8 +380,12 @@ void prtbnfdef (ioid chn, bool echo, bnfdef_struct *bnfdef)
 { bnfdef_any def ;
   bnfref_struct ***altrefs,**comprefs ;
   int altnum,altndx,compnum,compndx ;
-  char *txm1 = "|\n\t" ;
+  const char *txm1 = "|\n\t" ;
 
+/*
+  Suppress compiler warning.
+*/
+  comprefs = NULL ;
 /*
   Check that bnfdef is non-null - print <null!> if it isn't.
 */

@@ -186,10 +186,10 @@ static int dualcand_cmp (const void *p_dualcand1, const void *p_dualcand2)
 */
 { double delta1,delta2,ratio1,ratio2 ;
   bool flip1,flip2,mad1,mad2 ;
-  dualcand_struct *dualcand1,*dualcand2 ;
+  const dualcand_struct *dualcand1,*dualcand2 ;
 
-  dualcand1 = (dualcand_struct *) p_dualcand1 ;
-  dualcand2 = (dualcand_struct *) p_dualcand2 ;
+  dualcand1 = (const dualcand_struct *) p_dualcand1 ;
+  dualcand2 = (const dualcand_struct *) p_dualcand2 ;
 
   delta1 = dualcand1->ddelta ;
   delta2 = dualcand2->ddelta ;
@@ -298,7 +298,7 @@ static void promoteSanePivot (dualcand_struct *incands)
   stepped over.
 */
   tol = log10(dy_tols->dfeas/dy_tols->cost)/2 ;
-  tol = dy_tols->cost*pow(10,tol) ;
+  tol = dy_tols->cost*pow(10.0,tol) ;
   for (ndx = firstsane ; ndx > firstnoflip ; ndx--)
   { sane = incands[ndx] ;
     insane = incands[ndx-1] ;
@@ -380,7 +380,7 @@ static dyret_enum scanForDualInCands (dualcand_struct *incands, int outdir,
   dyret_enum retval ;
 
 # ifdef PARANOIA
-  char *rtnnme = "scanForDualInCands" ;
+  const char *rtnnme = "scanForDualInCands" ;
 # endif
 
 # if !defined(NDEBUG) || defined(PARANOIA)
@@ -670,7 +670,7 @@ static int calcInfChange (dualcand_struct *candk, int i, double *xbasic)
   int l,lpos ;
   double xl,newxl,lbl,ubl,abarlk,curinf,infl ;
 
-  char *rtnnme = "calcInfChange" ;
+  const char *rtnnme = "calcInfChange" ;
 
 # ifdef DYLP_STATISTICS
   if (dy_stats != NULL) dy_stats->dmulti.evals++ ;
@@ -875,7 +875,7 @@ bool selectWithInf (int i, dualcand_struct *incands,
   bool pivEndsScan,flipEndsScan ;
   dualcand_struct *candk ;
 
-  char *rtnnme = "selectWithInf" ;
+  const char *rtnnme = "selectWithInf" ;
 
   m = dy_sys->concnt ;
   vlb = dy_sys->vlb ;
@@ -1212,7 +1212,7 @@ bool selectWithoutInf (int i, double *abari, dualcand_struct *incands,
     static int predictiter ;
     static double predictinf ;
 
-    char *rtnnme = "selectWithOutInf" ;
+    const char *rtnnme = "selectWithOutInf" ;
   # endif
 */
 
@@ -1454,7 +1454,7 @@ dyret_enum dualmultiin (int i, int outdir,
 
   dualcand_struct *incands,*candk ;
 
-  char *rtnnme = "dualmultiin" ;
+  const char *rtnnme = "dualmultiin" ;
 
   /* dy_dualpivot.c */
   dyret_enum dy_confirmDualPivot(int i, int j, double *abari,

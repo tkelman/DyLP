@@ -159,7 +159,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 		CONSYS_VTYP|CONSYS_CTYP,
 	opts = CONSYS_LVARS|CONSYS_WRNATT ;
   
-  char *rtnnme = "dy_warmstart" ;
+  const char *rtnnme = "dy_warmstart" ;
 
   extern void dy_setfinalstatus(void) ;		/* dy_hotstart.c */
 

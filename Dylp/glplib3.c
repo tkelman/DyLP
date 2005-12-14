@@ -53,7 +53,7 @@ static char svnid[] UNUSED = "$Id$" ;
 -- The routine print prints an informative message specified by the
 -- format control string fmt and optional parameter list. */
 
-void print(char *fmt, ...)
+void print(const char *fmt, ...)
 {     va_list arg;
       /* print an informative message */
       va_start(arg, fmt);
@@ -82,7 +82,7 @@ void print(char *fmt, ...)
 --
 -- The routine fault never returns. */
 
-void fault(char *fmt, ...)
+void fault(const char *fmt, ...)
 {     va_list arg;
       /* print an error message */
       va_start(arg, fmt);
@@ -117,7 +117,7 @@ void fault(char *fmt, ...)
 --
 -- This routine is a replacement of the standard function assert. */
 
-void _insist(char *expr, char *file, int line)
+void _insist(const char *expr, const char *file, int line)
 {     /* print an error message */
       fputc('\n', stdout);
       fprintf(stdout, "Assertion failed: %s, file %s, line %d\n",

@@ -155,7 +155,7 @@ char *dy_prtpivparms (int lvl)
   pivtols_struct pivtol ;
 
 # ifdef PARANOIA
-  char *rtnnme = "dy_prtpivparms" ;
+  const char *rtnnme = "dy_prtpivparms" ;
 
   if (luf_basis == NULL)
   { errmsg(2,rtnnme,"luf_basis") ;
@@ -199,7 +199,7 @@ bool dy_setpivparms (int curdelta, int mindelta)
 { bool minretval,curretval ;
 
 # ifdef PARANOIA
-  char *rtnnme = "dy_setpivparms" ;
+  const char *rtnnme = "dy_setpivparms" ;
 
   if (luf_basis == NULL)
   { errmsg(2,rtnnme,"luf_basis") ;
@@ -298,7 +298,7 @@ double dy_chkpiv (double abarij, double maxabar)
 */
 
 { double ratio,abspiv,stable ;
-  char *rtnnme = "dy_chkpiv" ;
+  const char *rtnnme = "dy_chkpiv" ;
 
 # ifdef PARANOIA
   if (luf_basis == NULL)
@@ -345,7 +345,7 @@ void dy_initbasis (int concnt, int factor, double zero_tol)
 */
 
 { int sva_size ;
-  char *rtnnme = "dy_initbasis" ;
+  const char *rtnnme = "dy_initbasis" ;
 
 /*
   Create the basis.
@@ -506,7 +506,7 @@ void dy_ftran (double *col, bool save)
   Returns: undefined
 */
 
-{ int i,isave ;
+{ int isave ;
 
   if (save == TRUE)
     isave = 1 ;
@@ -530,9 +530,7 @@ void dy_btran (double *col)
   Returns: undefined
 */
 
-{ int i ;
-
-  inv_btran(luf_basis,col) ;
+{ inv_btran(luf_basis,col) ;
 
   return ; }
 
@@ -574,7 +572,7 @@ static void adjust_basis (int *p_patchcnt, patch_struct **p_patches)
 
 
 #ifdef PARANOIA
-  char *rtnnme = "adjust_basis" ;
+  const char *rtnnme = "adjust_basis" ;
 
   if (dy_sys == NULL)
   { errmsg(2,rtnnme,"dy_sys") ;
@@ -690,7 +688,7 @@ static dyret_enum adjust_therest (int patchcnt, patch_struct *patches)
   dyphase_enum phase ;
   double valj,vali,cbarj,*vub,*vlb,*obj ;
 
-  char *rtnnme = "adjust_therest" ;
+  const char *rtnnme = "adjust_therest" ;
 
 # ifdef PARANOIA
   if (dy_sys == NULL)
@@ -960,7 +958,7 @@ static int factor_loadcol (void *p_consys, int i, int *rndx, double *coeff)
   pkvec_struct *aj ;
   consys_struct *consys ;
 
-  char *rtnnme = "factor_loadcol" ;
+  const char *rtnnme = "factor_loadcol" ;
 
 # ifdef PARANOIA
   if (p_consys == NULL)
@@ -1060,7 +1058,7 @@ dyret_enum dy_factor (flags *calcflgs)
   dyret_enum retcode ;
   patch_struct *patches ;
 
-  char *rtnnme = "dy_factor" ;
+  const char *rtnnme = "dy_factor" ;
 
 #ifdef PARANOIA
   if (dy_sys == NULL)
@@ -1216,8 +1214,12 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
   This routine handles a single pivot. It first checks that the pivot element
   satisfies a stability test, then calls inv_update to pivot the basis. We
   can still run into trouble, however, if the pivot results in a singular or
-  near-singular basis. `Near-singular' is determined by comparing the basis
-  stability measure (min_vrratio) with stableTol.
+  near-singular basis.
+  
+  If REFACTOR_WHEN_UNSTABLE is defined, the basis stability measure
+  (min_vrratio) is compared with stableTol to determine if dy_pivot should
+  return dyrSINGULAR and force a refactor. Experience says, however, that
+  it's better to leave this decision to the basis package.
 
   NOTE: There is an implicit argument here that's not immediately obvious.
 	inv_update gets the entering column from a cached result set with the
@@ -1247,10 +1249,10 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
 
 # ifdef REFACTOR_WHEN_UNSTABLE
   flags calcflgs = ladPRIMALS|ladDUALS ;
+  const double stableTol = 1.0e-7 ;
 # endif
 
-  const double stableTol = 1.0e-7 ;
-  char *rtnnme = "dy_pivot" ;
+  const char *rtnnme = "dy_pivot" ;
 
 /*
   Check that the pivot element meets the current criterion for numerical
@@ -1309,13 +1311,13 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
     { errmsg(1,rtnnme,__LINE__) ;
       retcode = dyrFATAL ;
       break ; } }
+# ifdef REFACTOR_WHEN_UNSTABLE
 /*
   The pivot succeeded, but do we want to live with the result? If the local
   stability measure for the pivot is too small, claim singularity, which will
   force a refactor and appropriate error recovery actions. Bump the pivoting
   parameters in hopes of improving stability.
 */
-# ifdef REFACTOR_WHEN_UNSTABLE
   if (luf_basis->min_vrratio*luf_basis->upd_tol < stableTol)
   {
 #   ifndef NDEBUG

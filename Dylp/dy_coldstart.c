@@ -122,9 +122,9 @@ typedef struct { int cnt ;
 
 static int near_perp_far (const void *elem1, const void *elem2)
 
-{ angle_struct *c1,*c2 ;
-  c1 = (angle_struct *) elem1 ;
-  c2 = (angle_struct *) elem2 ;
+{ const angle_struct *c1,*c2 ;
+  c1 = (const angle_struct *) elem1 ;
+  c2 = (const angle_struct *) elem2 ;
 
   if (c1->angle > c2->angle)
     return (-1) ;
@@ -175,7 +175,7 @@ static bool cold_sortcons (consys_struct *orig_sys,
 
   pkvec_struct *aj ;
 
-  char *rtnnme = "cold_sortcons" ;
+  const char *rtnnme = "cold_sortcons" ;
 
 # ifdef PARANOIA
   if (orig_sys == NULL)
@@ -275,7 +275,7 @@ static bool cold_sortcons (consys_struct *orig_sys,
     perpcnt = 0 ;
     farcnt = 0 ;
     cnorm = exvec_2norm(c,n) ;
-    pi180 = 180/acos(-1) ;
+    pi180 = 180/acos(-1.0) ;
 #   ifndef NDEBUG
     if (dy_opts->print.setup >= 4)
     { outfmt(dy_logchn,dy_gtxecho,"\n\t||c|| = %.4f",cnorm) ;
@@ -404,7 +404,7 @@ static bool cold_createdysys (consys_struct *orig_sys, int eqcnt, int ineqcnt)
 		CONSYS_VTYP|CONSYS_CTYP,
 	opts = CONSYS_LVARS|CONSYS_WRNATT ;
 
-  char *rtnnme = "cold_createdysys" ;
+  const char *rtnnme = "cold_createdysys" ;
 
 /*
   Settle the appropriate size for dy_sys, and create the consys structure.
@@ -553,7 +553,7 @@ static bool cold_loadfull (consys_struct *orig_sys,
 
   angle_struct *angles ;
 
-  char *rtnnme = "cold_loadfull" ;
+  const char *rtnnme = "cold_loadfull" ;
 
   eqcnt = eqs[0] ;
   ineqcnt = ineqs->cnt ;
@@ -644,7 +644,7 @@ static bool cold_loadpartial (consys_struct *orig_sys,
   int intcnt,intndx ;
   double albs[2],aubs[2],alb,aub,dblndx,incr ;
 
-  char *rtnnme = "cold_loadpartial" ;
+  const char *rtnnme = "cold_loadpartial" ;
 
   eqcnt = eqs[0] ;
   ineqcnt = ineqs->cnt ;
@@ -807,7 +807,7 @@ bool dy_coldstart (consys_struct *orig_sys)
 
   bool retval ;
   
-  char *rtnnme = "dy_coldstart" ;
+  const char *rtnnme = "dy_coldstart" ;
 
 /*
   To get started, sort the constraints into equalities and inequalities. If
@@ -1016,10 +1016,10 @@ static int ib_archvcomp (const void *elem1, const void *elem2)
 */
 
 
-{ ibrank_struct *v1,*v2 ;
+{ const ibrank_struct *v1,*v2 ;
 
-  v1 = (ibrank_struct *) elem1 ;
-  v2 = (ibrank_struct *) elem2 ;
+  v1 = (const ibrank_struct *) elem1 ;
+  v2 = (const ibrank_struct *) elem2 ;
 
   if (v1->bndcnt < v2->bndcnt)
   { return (-1) ; }
@@ -1066,7 +1066,7 @@ static bool ib_archvrank (int *p_cnt, ibrank_struct **p_archvars)
   ibrank_struct *archvars ;
   bool scaled,retval ;
 
-  char *rtnnme = "ib_archvrank" ;
+  const char *rtnnme = "ib_archvrank" ;
 
 # ifndef NDEBUG
 
@@ -1228,9 +1228,10 @@ static int ib_archvselect (int cnt, ibrank_struct *vars)
 
   dyret_enum retval ;
 
-  char *rtnnme = "ib_archvselect" ;
+  const char *rtnnme = "ib_archvselect" ;
 
   retval = 0 ;
+  ratio = 0 ;
 /*
   Allocate bookkeeping arrays.
 */
@@ -1437,7 +1438,7 @@ static bool ib_populatebasis (void)
 
   ibrank_struct *archvars ;
 
-  char *rtnnme = "ib_populatebasis" ;
+  const char *rtnnme = "ib_populatebasis" ;
 
 # ifndef NDEBUG
   int i,j ;
@@ -1560,7 +1561,7 @@ dyret_enum dy_crash (void)
   flags calcflgs ;
   dyret_enum retval ;
 
-  char *rtnnme = "dy_crash" ;
+  const char *rtnnme = "dy_crash" ;
 
   extern void dy_setfinalstatus(void) ;		/* dy_hotstart.c */
 

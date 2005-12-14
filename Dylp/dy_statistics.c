@@ -80,7 +80,7 @@ void dy_initstats (lpstats_struct **p_lpstats, consys_struct *orig_sys)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "dy_initstats" ;
+  const char *rtnnme = "dy_initstats" ;
 
   if (p_lpstats == NULL)
   { errmsg(2,rtnnme,"&lpstats") ;
@@ -218,7 +218,7 @@ void dy_freestats (lpstats_struct **p_lpstats)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "dy_freestats" ;
+  const char *rtnnme = "dy_freestats" ;
 
   if (p_lpstats == NULL)
   { errmsg(2,rtnnme,"&lpstats") ;
@@ -269,7 +269,7 @@ void dy_finalstats (lpstats_struct *lpstats)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "dy_finalstats" ;
+  const char *rtnnme = "dy_finalstats" ;
 
   if (lpstats == NULL)
   { errmsg(2,rtnnme,"lpstats") ;
@@ -320,7 +320,7 @@ void dy_dumpstats (ioid chn, bool echo,
   double anglei,degperbin,brklow,brkhi,temp ;
   contyp_enum ctypi ;
   bool initi,fini ;
-  char *rtnnme = "dy_dumpstats" ;
+  const char *rtnnme = "dy_dumpstats" ;
 
   double outbrks[] = { 30, 60, 85, 90, 95, 120, 150, 180 } ;
   int outbins = sizeof(outbrks)/sizeof(double) ;

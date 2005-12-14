@@ -399,7 +399,7 @@ void dy_defaults (lpopts_struct **opts, lptols_struct **tols)
 { 
 
 #ifdef PARANOIA
-  char *rtnnme = "dy_defaults" ;
+  const char *rtnnme = "dy_defaults" ;
 
   if (opts == NULL)
   { errmsg(2,rtnnme,"&opts") ;
@@ -481,12 +481,12 @@ void dy_checkdefaults (consys_struct *sys,
 */
   scalefactor = ((int) (.5 + log10((double) sys->varcnt))) - 2 ;
   if (scalefactor > 0)
-  { tols->pchk *= pow(10,(double) scalefactor) ;
-    tols->pfeas_scale *= pow(10,(double) scalefactor) ; }
+  { tols->pchk *= pow(10.0,(double) scalefactor) ;
+    tols->pfeas_scale *= pow(10.0,(double) scalefactor) ; }
   scalefactor = ((int) (.5 + log10((double) sys->concnt))) - 2 ;
   if (scalefactor > 0)
-  { tols->dchk *= pow(10,(double) scalefactor) ;
-    tols->dfeas_scale *= pow(10,(double) scalefactor) ; }
+  { tols->dchk *= pow(10.0,(double) scalefactor) ;
+    tols->dfeas_scale *= pow(10.0,(double) scalefactor) ; }
 
 /*
   XX_DEBUG_XX

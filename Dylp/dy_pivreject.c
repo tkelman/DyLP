@@ -175,8 +175,8 @@ static int int_nonincreasing (const void *p_i, const void *p_j)
 		  0	if i = j
 		> 0	if i < j
 */
-{ int i = *((int *) p_i) ;
-  int j = *((int *) p_j) ;
+{ int i = *((const int *) p_i) ;
+  int j = *((const int *) p_j) ;
 
   return ((j)-(i)) ; }
 
@@ -203,7 +203,7 @@ bool dy_clrpivrej (int *entries)
 { int n,j,ndx,last,endx,elast ;
   flags statj ;
 
-  char *rtnnme = "dy_clrpivrej" ;
+  const char *rtnnme = "dy_clrpivrej" ;
 
 # ifdef PARANOIA
   flags chkflgs ;
@@ -356,7 +356,7 @@ dyret_enum dy_addtopivrej (int j, dyret_enum why,
 
 { int n,ndx,newsze ;
   double ratio ;
-  char *rtnnme = "dy_addtopivrej" ;
+  const char *rtnnme = "dy_addtopivrej" ;
 
   n = dy_sys->varcnt ;
 
@@ -483,7 +483,7 @@ dyret_enum dy_dealWithPunt (void)
   int *old,*current ;
   pivrej_struct *pivrej ;
 
-  char *rtnnme = "dy_dealWithPunt" ;
+  const char *rtnnme = "dy_dealWithPunt" ;
 
 # ifdef DYLP_STATISTICS
   if (dy_stats != NULL) dy_stats->pivrej.puntcall++ ;

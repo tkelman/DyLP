@@ -169,7 +169,7 @@ static void strenter (int ndx, const char *txt)
   Returns: undefined
 */
 
-{ char *rtnnme = "strenter" ;
+{ const char *rtnnme = "strenter" ;
 
 /*
   Check out the parameters.
@@ -201,7 +201,7 @@ static const char *strretrv (int ndx)
 	   problem.
 */
 
-{ char *rtnnme = "strretrv" ;
+{ const char *rtnnme = "strretrv" ;
 
 /*
   Check out the parameter.
@@ -256,7 +256,7 @@ static deflbl_struct *finddlbl (deflbl_struct **lst, const char *txt)
 */
 
 { deflbl_struct *lblent ;
-  char *rtnnme = "finddlbl" ;
+  const char *rtnnme = "finddlbl" ;
 
 /*
   Check out the parameters.
@@ -295,7 +295,7 @@ static void lblresolve (udeflbl_struct **lst, deflbl_struct *dlbl)
 { udeflbl_struct **ulbl2,*ulbl1 ;
   const char *nmtxt ;
   void **socket ;
-  char *rtnnme = "lblresolve" ;
+  const char *rtnnme = "lblresolve" ;
 
 /*
   Check out the parameters.
@@ -327,7 +327,7 @@ static void lblresolve (udeflbl_struct **lst, deflbl_struct *dlbl)
 
 
 
-void rdrinit ()
+void rdrinit (void)
 
 /*
   This routine initializes the bnf reader.
@@ -356,7 +356,7 @@ void rdrinit ()
 
 
 
-void rdrclear ()
+void rdrclear (void)
 
 /*
   This routine clears the bnf reader by releasing the label lists and savedtxt
@@ -371,7 +371,7 @@ void rdrclear ()
 { int ndx ;
   deflbl_struct *dlbl,*nxtdlbl ;
   udeflbl_struct *udlbl,*nxtudlbl ;
-  char *rtnnme = "rdrclear" ;
+  const char *rtnnme = "rdrclear" ;
 
   for (dlbl = blbllst ; dlbl != NULL ; dlbl = nxtdlbl)
   { nxtdlbl = dlbl->lblnxt ;
@@ -448,7 +448,7 @@ static bool dogenerator (bnfGref_struct *ref)
   bnfref_struct **comprefs ;
   bnfref_any compref ;
   bool success ;
-  char *rtnnme = "dogenerator" ;
+  const char *rtnnme = "dogenerator" ;
 
 /*
   First test the reference to make sure that it references a generator.
@@ -620,7 +620,7 @@ static bool dononprimitive (bnfNPref_struct *ref)
   int altnum,altndx,compnum,compndx ;
   long marker ;
   bool success ;
-  char *rtnnme = "dononprimitive" ;
+  const char *rtnnme = "dononprimitive" ;
 
 /*
   First test the reference to make sure that it references a non-primitive.
@@ -820,7 +820,7 @@ static bool doprimitive (bnfNPref_struct *ref)
   int altnum,altndx,compnum,compndx ;
   long marker ;
   bool success ;
-  char *rtnnme = "doprimitive" ;
+  const char *rtnnme = "doprimitive" ;
 
 /*
   First test the reference to make sure that it references a primitive.
@@ -1046,7 +1046,7 @@ static bool doprimitive (bnfNPref_struct *ref)
 
 
 
-static int scanbinary (char *string, int *intp)
+static int scanbinary (const char *string, int *intp)
 
 /*
   Quick and dirty routine to convert a binary number from string form to
@@ -1059,7 +1059,7 @@ static int scanbinary (char *string, int *intp)
   Returns: 1 if the number is successfully converted, 0 otherwise.
 */
 
-{ char *ptr ;
+{ const char *ptr ;
   int val ;
 
   if (string == NULL) return 0 ;
@@ -1097,8 +1097,13 @@ bool doterminal (bnfTref_struct *ref)
   char *lcltxt ;
   int cnt ;
   bool success ;
-  char *rtnnme = "doterminal" ;
+  const char *rtnnme = "doterminal" ;
   static lex_struct lex_nil = {LCNIL,NULL} ;
+
+/*
+  From stdio.h
+*/
+  extern int sscanf(const char *str, const char *format, ...) ;
 
 /*
   First test the reference to make sure that it references a terminal.
@@ -1307,7 +1312,7 @@ bool doimmediate (bnfIref_struct *ref)
 
 { void **socket ;
   bnfIdef_struct *def ;
-  char *rtnnme = "doimmediate" ;
+  const char *rtnnme = "doimmediate" ;
 
 /*
   First test the reference to make sure that it references an immediate and
@@ -1368,7 +1373,7 @@ bool doliteral (bnfLref_struct *ref)
 { bnfLdef_struct *def ;
   const char *txt ;
   char *txt2 ;
-  char *rtnnme = "doliteral" ;
+  const char *rtnnme = "doliteral" ;
 
 /*
   First test the reference to make sure that it references a literal. Also
@@ -1461,7 +1466,7 @@ bool dolabel (bnfLBref_struct *ref)
   const char *nmtxt,*ndtxt ;
   deflbl_struct *lblnde ;
   void *lblval ;
-  char *rtnnme = "dolabel" ;
+  const char *rtnnme = "dolabel" ;
 
 /*
   First test the reference to make sure that it references a label definition.
@@ -1658,7 +1663,7 @@ bool doreference (bnfLBref_struct *ref)
   udeflbl_struct *ulblnde ;
   void *val,**socket ;
   bool socket_valid,val_valid ;
-  char *rtnnme = "doreference" ;
+  const char *rtnnme = "doreference" ;
 
 /*
   First test the reference to make sure that it references a label reference.
@@ -1864,7 +1869,7 @@ bool dolist (bnfref_any ref)
   char *savctxt = NULL ;
   char *lclsavtxt = NULL ;
   long marker ;
-  char *rtnnme = "dolist" ;
+  const char *rtnnme = "dolist" ;
 
 /*
   Consistency checks. First check that we're dealing with the proper bnf
@@ -2083,7 +2088,7 @@ bool parse (ioid chn, struct bnfref_type3 *bnfid, parse_any *result)
 
 { bool success ;
   bnfref_any ref ;
-  char *rtnnme = "parse" ;
+  const char *rtnnme = "parse" ;
 
 /*
   Make sure we have a valid bnf reference, and some place to put the result for

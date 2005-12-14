@@ -324,7 +324,7 @@ pkvec_struct *pkvec_new(int sze) ;
 bool pkvec_resize(pkvec_struct *pkvec, int sze) ;
 void pkvec_free(pkvec_struct *pkvec) ;
 
-bool pkvec_check(pkvec_struct *pkvec, char *caller) ;
+bool pkvec_check(pkvec_struct *pkvec, const char *caller) ;
 
 double pkvec_2norm(pkvec_struct *vec) ;
 

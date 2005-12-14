@@ -82,7 +82,7 @@ void *lookup (const char *key, hel *hashtab[], int size)
 */
 
 { hel *hshel ;
-  char *rtnnme = "lookup" ;
+  const char *rtnnme = "lookup" ;
 
   if (key == NULL)
   { fprintf(stderr,"\n%s: null key!\n", rtnnme) ;
@@ -125,7 +125,7 @@ void *search (const char *key, hel *hashtab[], int size, bool init)
 
 { static hel *hshel ;
   static bool search_hshel_is_valid = FALSE ;
-  char *rtnnme = "search" ;
+  const char *rtnnme = "search" ;
 
   if (key == NULL)
   { fprintf(stderr,"\n%s: null key!\n", rtnnme) ;
@@ -176,7 +176,7 @@ void *enter (const char *key, hel *hashtab[], int size, void *entry)
 
 { hel *new ;
   int hashval ;
-  char *rtnnme = "enter" ;
+  const char *rtnnme = "enter" ;
 
   if (key == NULL)
   { fprintf(stderr,"\n%s: null key!\n", rtnnme) ;
@@ -219,7 +219,7 @@ void *erase (const char *key, hel *hashtab[], int size)
 { int hashval ;
   hel *hshel1, **hshel2 ;
   void *entry ;
-  char *rtnnme = "erase" ;
+  const char *rtnnme = "erase" ;
 
   if (key == NULL)
   { fprintf(stderr,"\n%s: null key!\n", rtnnme) ;

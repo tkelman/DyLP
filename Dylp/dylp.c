@@ -179,7 +179,7 @@ static void updateOptsAndTols (lpopts_struct *client_opts,
   lpopts_struct lcl_opts ;
 
 # ifdef PARANOIA
-  char *rtnnme = "updateOptsAndTols" ;
+  const char *rtnnme = "updateOptsAndTols" ;
 # endif
   
 /*
@@ -241,7 +241,7 @@ static dyphase_enum addcon_nextphase (int actcnt)
 
 { dyphase_enum retval = dyINV ;
   flags chkflgs = ladPRIMFEAS|ladPFQUIET ;
-  char *rtnnme = "addcon_nextphase" ;
+  const char *rtnnme = "addcon_nextphase" ;
 
   if (actcnt < 0) return (dyINV) ;
 
@@ -382,7 +382,7 @@ static dyphase_enum addvar_nextphase (int actcnt)
 */
 { dyphase_enum retval = dyINV ;
   flags chkflgs = ladPRIMFEAS|ladPFQUIET ;
-  char *rtnnme = "addvar_nextphase" ;
+  const char *rtnnme = "addvar_nextphase" ;
 
   if (actcnt < 0) return (dyINV) ;
 
@@ -517,7 +517,7 @@ static dyphase_enum initial_activation (lpprob_struct *orig_lp)
   flags xistatus,calcflgs ;
   consys_struct *orig_sys ;
   dyret_enum retval ;
-  char *rtnnme = "initial_activation" ;
+  const char *rtnnme = "initial_activation" ;
 
   orig_sys = orig_lp->consys ;
   conresult = -1 ;
@@ -611,7 +611,7 @@ static void determineLoadable (consys_struct *orig_sys)
   flags statj ;
 
 # ifdef PARANOIA
-  char *rtnnme = "determineLoadable" ;
+  const char *rtnnme = "determineLoadable" ;
 # endif
 
 /*
@@ -685,7 +685,7 @@ static bool commonstart (start_enum start)
 	   otherwise.
 */
 
-{ char *rtnnme = "commonstart" ;
+{ const char *rtnnme = "commonstart" ;
 
 /*
   Create and attach dy_brkout and dy_degenset (primal anti-degeneracy
@@ -789,7 +789,7 @@ lpret_enum dylp (lpprob_struct *orig_lp, lpopts_struct *orig_opts,
   lpret_enum lpresult ;
   flags checks ;
   consys_struct *orig_sys ;
-  char *rtnnme = "dylp" ;
+  const char *rtnnme = "dylp" ;
 
   start_enum start ;
 

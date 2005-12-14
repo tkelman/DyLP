@@ -196,7 +196,6 @@ void dissectPath (const string fullPath, string &prefix, string &base,
 
 { bool gzSeen = false ;
   string::size_type pathpos,sfxpos,gzpos ;
-  int info ;
 
 /*
   std::cout << std::endl

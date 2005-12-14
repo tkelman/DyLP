@@ -38,7 +38,7 @@
 static char sccsid[] UNUSED = "@(#)vector_utils.c	4.5	11/06/04" ;
 static char svnid[] UNUSED = "$Id$" ;
 
-static char *noname = "<<n/a>>" ;
+static const char *noname = "<<n/a>>" ;
 
 
 
@@ -55,7 +55,7 @@ pkvec_struct *pkvec_new (int sze)
 
 { pkvec_struct *pkvec ;
 
-  char *rtnnme = "pkvec_new" ;
+  const char *rtnnme = "pkvec_new" ;
 
   if (sze < 0) sze = 0 ;
   pkvec = (pkvec_struct *) CALLOC(1,sizeof(pkvec_struct)) ;
@@ -90,7 +90,7 @@ bool pkvec_resize (pkvec_struct *pkvec, int sze)
 
 { pkcoeff_struct *coeffs ;
 
-  char *rtnnme = "pkvec_resize" ;
+  const char *rtnnme = "pkvec_resize" ;
 
 # ifdef PARANOIA
   if (pkvec == NULL)
@@ -136,7 +136,7 @@ void pkvec_free (pkvec_struct *pkvec)
 { 
 
 # ifdef PARANOIA
-  char *rtnnme = "pkvec_free" ;
+  const char *rtnnme = "pkvec_free" ;
 
   if (pkvec == NULL)
   { errmsg(2,rtnnme,"pkvec") ;
@@ -150,7 +150,7 @@ void pkvec_free (pkvec_struct *pkvec)
 
 
 
-bool pkvec_check (pkvec_struct *pkvec, char *caller)
+bool pkvec_check (pkvec_struct *pkvec, const char *caller)
 
 /*
   This routine goes over pkvec and decides if it's consistent, according to
@@ -184,7 +184,7 @@ bool pkvec_check (pkvec_struct *pkvec, char *caller)
 */
 
 { int ndx ;
-  char *rtnnme = "pkvec_check" ; 
+  const char *rtnnme = "pkvec_check" ; 
 
 # ifdef PARANOIA
   if (pkvec == NULL)
@@ -244,7 +244,7 @@ double exvec_1norm (double *vec, int len)
   double norm ;
 
 # ifdef PARANOIA
-  char *rtnnme = "exvec_1norm" ;
+  const char *rtnnme = "exvec_1norm" ;
 
   if (vec == NULL)
   { errmsg(2,rtnnme,"vec") ;
@@ -276,7 +276,7 @@ double exvec_ssq (double *vec, int len)
   double norm ;
 
 # ifdef PARANOIA
-  char *rtnnme = "exvec_ssq" ;
+  const char *rtnnme = "exvec_ssq" ;
 
   if (vec == NULL)
   { errmsg(2,rtnnme,"vec") ;
@@ -306,7 +306,7 @@ double exvec_2norm (double *vec, int len)
   double norm ;
 
 # ifdef PARANOIA
-  char *rtnnme = "exvec_2norm" ;
+  const char *rtnnme = "exvec_2norm" ;
 
   if (vec == NULL)
   { errmsg(2,rtnnme,"vec") ;
@@ -336,7 +336,7 @@ double pkvec_2norm (pkvec_struct *vec)
   double norm ;
 
 # ifdef PARANOIA
-  char *rtnnme = "pkvec_2norm" ;
+  const char *rtnnme = "pkvec_2norm" ;
 
   if (vec == NULL)
   { errmsg(2,rtnnme,"pkvec") ;
@@ -372,7 +372,7 @@ double exvec_infnorm (double *vec, int len)
   double norm ;
 
 # ifdef PARANOIA
-  char *rtnnme = "exvec_infnorm" ;
+  const char *rtnnme = "exvec_infnorm" ;
 
   if (vec == NULL)
   { errmsg(2,rtnnme,"vec") ;
@@ -404,7 +404,7 @@ double pkvec_dotexvec (pkvec_struct *pkvec, double *exvec)
   pkcoeff_struct *coeffs ;
 
 # ifdef PARANOIA
-  char *rtnnme = "pkvec_dotexvec" ;
+  const char *rtnnme = "pkvec_dotexvec" ;
 
   if (pkvec == NULL)
   { errmsg(2,rtnnme,"pkvec") ;

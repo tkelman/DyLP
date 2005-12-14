@@ -96,7 +96,7 @@ extern bool setmode(ioid id, char mode), ttyq(ioid id) ;
 
 extern bool chgerrlog(const char *path, bool echo) ;
 
-extern char *idtopath(ioid id) ;
+extern const char *idtopath(ioid id) ;
 extern ioid pathtoid(const char *path, const char *mode) ;
 
 extern long mark(ioid id) ;

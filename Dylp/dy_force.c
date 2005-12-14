@@ -130,10 +130,10 @@ static int fdcandcompare (const void *p_fdcand1, const void *p_fdcand2)
 		> 0	if i < j
 */
 { int i,j ;
-  fdcand_struct *fdcand1,*fdcand2 ;
+  const fdcand_struct *fdcand1,*fdcand2 ;
 
-  fdcand1 = (fdcand_struct *) p_fdcand1 ;
-  fdcand2 = (fdcand_struct *) p_fdcand2 ;
+  fdcand1 = (const fdcand_struct *) p_fdcand1 ;
+  fdcand2 = (const fdcand_struct *) p_fdcand2 ;
 
   i = fdcand1->ndx ;
   j = fdcand2->ndx ;
@@ -149,8 +149,8 @@ static int intcompare (const void *p_i, const void *p_j)
 		  0	if i = j
 		> 0	if i < j
 */
-{ int i = *((int *) p_i) ;
-  int j = *((int *) p_j) ;
+{ int i = *((const int *) p_i) ;
+  int j = *((const int *) p_j) ;
 
   return ((j)-(i)) ; }
 
@@ -185,7 +185,7 @@ static int scanPrimVarDualInfeas (fdcand_struct **p_fdcands)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "scanPrimVarDualInfeas" ;
+  const char *rtnnme = "scanPrimVarDualInfeas" ;
 
   if (p_fdcands == NULL)
   { errmsg(2,rtnnme,"fdcands") ;
@@ -345,7 +345,7 @@ dyphase_enum dy_forcePrimal2Dual (consys_struct *orig_sys)
   dyret_enum upd_retval ;
   dyphase_enum next_phase ;
 
-  char *rtnnme = "dy_forcePrimal2Dual" ;
+  const char *rtnnme = "dy_forcePrimal2Dual" ;
 
   next_phase = dyINV ;
 
@@ -622,7 +622,7 @@ static int scanPrimConForceDeact (int **p_acndxs)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "scanPrimConForceDeact" ;
+  const char *rtnnme = "scanPrimConForceDeact" ;
 
   if (p_acndxs == NULL)
   { errmsg(2,rtnnme,"&acndxs") ;
@@ -727,7 +727,7 @@ dyphase_enum dy_forceDual2Primal (consys_struct *orig_sys)
   bool retval ;
   dyphase_enum next_phase ;
 
-  char *rtnnme = "dy_forceDual2Primal" ;
+  const char *rtnnme = "dy_forceDual2Primal" ;
 
 # ifdef PARANOIA
   retval = FALSE ;
@@ -946,7 +946,7 @@ static int scanPrimVarForceAct (consys_struct *orig_sys, int **p_ovndxs)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "scanPrimVarForceAct" ;
+  const char *rtnnme = "scanPrimVarForceAct" ;
 
   if (orig_sys == NULL)
   { errmsg(2,rtnnme,"orig_sys") ;
@@ -1024,7 +1024,7 @@ static int scanPrimConForceAct (consys_struct *orig_sys, int **p_ocndxs)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "scanPrimConForceAct" ;
+  const char *rtnnme = "scanPrimConForceAct" ;
 
   if (orig_sys == NULL)
   { errmsg(2,rtnnme,"orig_sys") ;
@@ -1094,7 +1094,7 @@ dyphase_enum dy_forceFull (consys_struct *orig_sys)
   bool retval ;
   dyphase_enum next_phase ;
 
-  char *rtnnme = "dy_forceFull" ;
+  const char *rtnnme = "dy_forceFull" ;
 
   next_phase = dyINV ;
 

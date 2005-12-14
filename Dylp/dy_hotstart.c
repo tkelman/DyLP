@@ -95,7 +95,7 @@ void dy_setfinalstatus (void)
   double xk,lbk,ubk ;
 
 # ifdef PARANOIA
-  char *rtnnme = "dy_setfinalstatus" ;
+  const char *rtnnme = "dy_setfinalstatus" ;
 # endif
 
 # ifndef NDEBUG
@@ -224,7 +224,7 @@ static bool process_inactive (lpprob_struct *orig_lp, int oxkndx)
   pkcoeff_struct *aik ;
   consys_struct *orig_sys ;
   flags xkstatus ;
-  char *rtnnme = "process_inactive" ;
+  const char *rtnnme = "process_inactive" ;
 
   orig_sys = orig_lp->consys ;
 
@@ -364,7 +364,7 @@ static void process_active (lpprob_struct *orig_lp, int oxkndx)
   consys_struct *orig_sys ;
 
 # ifdef PARANOIA
-  char *rtnnme = "process_active" ;
+  const char *rtnnme = "process_active" ;
 # endif
 
   orig_sys = orig_lp->consys ;
@@ -502,7 +502,7 @@ dyret_enum dy_hotstart (lpprob_struct *orig_lp)
   consys_struct *orig_sys ;
   flags *ogstatus,calcflgs ;
   dyret_enum retval ;
-  char *rtnnme = "dy_hotstart" ;
+  const char *rtnnme = "dy_hotstart" ;
 
   /* dy_scaling.c */
   extern void dy_refreshlclsystem(flags what) ;

@@ -117,7 +117,7 @@ bool dy_reducerhs (double *rhs, bool init)
 
 { int vndx,pkndx,cndx ;
   pkvec_struct *pkcol ;
-  char *rtnnme = "dy_reducerhs" ;
+  const char *rtnnme = "dy_reducerhs" ;
 
 #ifdef PARANOIA
   if (rhs == NULL)
@@ -188,7 +188,7 @@ bool dy_calcprimals (void)
 { int vndx,bndx ;
   double *xvec ;
   bool degenActive ;
-  char *rtnnme = "dy_calcprimals" ;
+  const char *rtnnme = "dy_calcprimals" ;
 
 # ifndef NDEBUG
   int print ;
@@ -450,7 +450,7 @@ dyret_enum dy_updateprimals (int j, double deltaj, double *p_abarj)
 
   dyret_enum retval ;
 
-  char *rtnnme = "dy_updateprimals" ;
+  const char *rtnnme = "dy_updateprimals" ;
 
 /*
   Setup
@@ -757,7 +757,7 @@ double dy_calcobj (void)
   double z ;
 
 #ifdef PARANOIA
-  char *rtnnme = "dy_calcobj" ;
+  const char *rtnnme = "dy_calcobj" ;
 
   if (dy_x == NULL)
   { errmsg(2,rtnnme,"dy_x") ;
@@ -800,7 +800,7 @@ double dy_calcdualobj (void)
   double z,bndj,cbarj ;
   double *rhs,*vlb,*vub ;
 
-  char *rtnnme = "dy_calcdualobj" ;
+  const char *rtnnme = "dy_calcdualobj" ;
 
 #ifdef PARANOIA
   if (dy_x == NULL)
@@ -951,7 +951,7 @@ bool dy_calccbar (void)
 
 # ifdef PARANOIA
   flags xjstatus ;
-  char *rtnnme = "dy_calccbar" ;
+  const char *rtnnme = "dy_calccbar" ;
 # endif
 
 /*
@@ -1159,7 +1159,7 @@ bool dy_chkstatus (int vndx)
   double xk,xbk,ubk,lbk,normxb,tolu,bogusu,toll,bogusl ;
   bool retval,primDegen,dualDegen ;
   char *nmek,*statk,*phase ;
-  char *rtnnme = "dy_chkstatus" ;
+  const char *rtnnme = "dy_chkstatus" ;
 
   if (vndx < 0 || vndx > dy_sys->varcnt)
   { errmsg(102,rtnnme,dy_sys->nme,"variable",vndx,0,dy_sys->varcnt) ;
@@ -1499,7 +1499,7 @@ void dy_chkdual (int lvl)
 */
   const double base_tol = 1.0e-11 ;
 
-  char *rtnnme = "dy_chkdual" ;
+  const char *rtnnme = "dy_chkdual" ;
 
   if (dy_lp->degen > 0 && dy_lp->phase == dyDUAL)
   { degenActive = TRUE ; }
@@ -1684,7 +1684,7 @@ bool dy_chkdysys (consys_struct *orig_sys)
   flags vstatus ;
   bool retval ;
   char onmebuf[128],ovecnme[128] ;
-  char *rtnnme = "dy_chkdysys" ;
+  const char *rtnnme = "dy_chkdysys" ;
 
 /*
   The first thing we'll do is run through dy_origvars and dy_origcons,
@@ -1957,7 +1957,7 @@ bool dy_dupbasis (int dst_basissze, basis_struct **p_dst_basis,
 
 
 # ifdef PARANOIA
-  char *rtnnme = "dy_dupbasis" ;
+  const char *rtnnme = "dy_dupbasis" ;
 
   if (p_dst_basis == NULL && p_dst_status == NULL)
   { errmsg(2,rtnnme,"&dst_basis and &dst_status") ;
@@ -2060,7 +2060,7 @@ static void build_soln (lpprob_struct *orig_lp)
 { int ovndx,xjndx,xjpos,ubndndx,orig_ubndndx ;
   flags xjstatus ;
   consys_struct *orig_sys ;
-  char *rtnnme = "build_soln" ;
+  const char *rtnnme = "build_soln" ;
 
   /* scaling.c */
   extern void dy_unscale_soln(double *x, double *y) ;
@@ -2406,7 +2406,7 @@ bool dy_expandxopt (lpprob_struct *lp, double **p_xopt)
   flags *status,jstat ;
   double *xopt ;
 
-  char *rtnnme = "dy_expandxopt" ;
+  const char *rtnnme = "dy_expandxopt" ;
 
 # ifdef PARANOIA
   if (p_xopt == NULL)

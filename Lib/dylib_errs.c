@@ -97,7 +97,7 @@ static char warntxt[MAXERRTXT+WARNPFXLEN] = "\n%s (warning): " ;
 
 
 
-void errinit (char *emsgpath, char *elogpath, bool echo)
+void errinit (const char *emsgpath, char *elogpath, bool echo)
 
 /*
   This routine initializes the error reporting facilities. It attempts to
@@ -113,7 +113,7 @@ void errinit (char *emsgpath, char *elogpath, bool echo)
   Returns: undefined
 */
 
-{ char *rtnnme = "errinit" ;
+{ const char *rtnnme = "errinit" ;
 
 /*
   See if we can open a channel to the error message source text file. If we
@@ -221,7 +221,7 @@ bool reseterrlogchn (const char *newpath, FILE *newchn, bool echo, bool close)
 */
 
 { bool success ;
-  char *rtnnme = "reseterrlogchn" ;
+  const char *rtnnme = "reseterrlogchn" ;
 
 /*
   If newchn is NULL, try to open the specified path. Retain the previous
@@ -293,7 +293,7 @@ static char *finderrmsg (int errid, char *buffer)
 { int argcnt,chrcnt,id,id2,chr ;
   bool sync ;
   char *txtptr ;
-  char *rtnnme = "finderrmsg" ;
+  const char *rtnnme = "finderrmsg" ;
 
 /*
   Rewind to get in sync. Then scan for the '@' that introduces the message

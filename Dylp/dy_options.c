@@ -75,7 +75,7 @@ static bool string_opt (char **str)
 */
 
 { parse_any result ;
-  char *rtnnme = "string_opt" ;
+  const char *rtnnme = "string_opt" ;
 
 /*
   BNF to parse a string, returning (char *).
@@ -122,7 +122,7 @@ static bool integer_opt (int *iloc)
 */
 
 { parse_any result ;
-  char *rtnnme = "integer_opt" ;
+  const char *rtnnme = "integer_opt" ;
 
 /*
   BNF to parse an integer, returning (int *).
@@ -169,7 +169,7 @@ static bool double_opt (double *rloc)
 */
 
 { parse_any result ;
-  char *rtnnme = "double_opt" ;
+  const char *rtnnme = "double_opt" ;
 
 /*
   BNF to parse a real, returning (double *).
@@ -216,7 +216,7 @@ static bool real_opt (float *rloc)
 */
 
 { parse_any result ;
-  char *rtnnme = "real_opt" ;
+  const char *rtnnme = "real_opt" ;
 
 /*
   BNF to parse a real, returning (float *).
@@ -270,7 +270,7 @@ static bool bool_opt (bool *bloc)
 { struct boolopt_struct { char *str ;
 			  int val ; } *boolopt ;
   parse_any result ;
-  char *rtnnme = "bool_opt" ;
+  const char *rtnnme = "bool_opt" ;
 
 /*
   BNF to parse a boolean, returning the string.
@@ -355,7 +355,7 @@ cmd_retval dy_printopt (const char *keywd)
 { char *what,cmdstr[50] ;
   int code,dflt,lb,ub,*opt ;
   lpopts_struct *opts_lb,*opts_dflt,*opts_ub ;
-  char *rtnnme = "dy_printopt" ;
+  const char *rtnnme = "dy_printopt" ;
 
 /*
   A lookup table with the various <what> keywords recognised by the print
@@ -539,7 +539,7 @@ static bool lpctl_active (void)
   lpopts_struct *opts_lb,*opts_dflt,*opts_ub ;
   parse_any result ;
 
-  char *rtnnme = "lpctl_active" ;
+  const char *rtnnme = "lpctl_active" ;
 
 /*
   BNF for the active command.
@@ -650,7 +650,7 @@ static bool lpctl_finpurge (void)
 
   parse_any result ;
 
-  char *rtnnme = "lpctl_finpurge" ;
+  const char *rtnnme = "lpctl_finpurge" ;
 
 
 /*
@@ -791,7 +791,7 @@ static bool lpctl_load  (void)
 
   parse_any result ;
 
-  char *rtnnme = "lpctl_load" ;
+  const char *rtnnme = "lpctl_load" ;
 
 
 /*
@@ -1026,7 +1026,7 @@ static bool lpctl_infinity (void)
 
   parse_any result ;
 
-  char *rtnnme = "lpctl_infinity" ;
+  const char *rtnnme = "lpctl_infinity" ;
 
 
 /*
@@ -1163,7 +1163,7 @@ cmd_retval dy_ctlopt (const char *keywd)
   cmd_retval retval ;
   lpopts_struct *opts_lb,*opts_dflt,*opts_ub ;
   lptols_struct *tols_dflt ;
-  char *rtnnme = "dy_ctlopt" ;
+  const char *rtnnme = "dy_ctlopt" ;
 
 /*
   A lookup table with the various <what> keywords recognised by the control

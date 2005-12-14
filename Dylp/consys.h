@@ -579,9 +579,9 @@ extern bool consys_geomscale(consys_struct *consys,
   consys_io.c
 */
 
-extern char *consys_prtvartyp(vartyp_enum vartyp),
-	    *consys_prtcontyp(contyp_enum contyp),
-	    *consys_assocnme(consys_struct *consys, flags which),
+extern const char *consys_prtvartyp(vartyp_enum vartyp),
+		  *consys_prtcontyp(contyp_enum contyp) ;
+extern char *consys_assocnme(consys_struct *consys, flags which),
 	    *consys_conbndnme(char bndlett, int cndx, conbnd_struct *bnd),
 	    *consys_conbndval(conbnd_struct *bnd) ;
 
@@ -591,7 +591,7 @@ extern char *consys_prtvartyp(vartyp_enum vartyp),
 #include "dylib_std.h"
 
 extern void consys_prtcon(ioid chn, bool echo,
-			  consys_struct *consys, int i, char *pfx) ;
+			  consys_struct *consys, int i, const char *pfx) ;
 # endif
 
 /*
@@ -615,8 +615,8 @@ extern void consys_prtcon(ioid chn, bool echo,
 */
 
 #define CONSYS_MAXBUFLEN 32
-extern char *consys_nme(consys_struct *consys,
-			char cv, int ndx, bool pfx, char *clientbuf) ;
+extern const char *consys_nme(consys_struct *consys,
+			      char cv, int ndx, bool pfx, char *clientbuf) ;
 
 
 #endif /* _CONSYS_H */

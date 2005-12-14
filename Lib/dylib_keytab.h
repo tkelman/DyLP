@@ -42,7 +42,7 @@
   token		Value returned when the keyword is matched.
 */
 
-typedef struct keytab_entry_internal { char *keyword ;
+typedef struct keytab_entry_internal { const char *keyword ;
 				       int min ;
 				       int token ; } keytab_entry ;
 

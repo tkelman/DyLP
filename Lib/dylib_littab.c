@@ -84,7 +84,7 @@ const char *stralloc (const char *string)
 */
 
 { litent *lit ;
-  char *rtnnme = "stralloc" ;
+  const char *rtnnme = "stralloc" ;
 
   if (string == NULL)
   { fprintf(stderr,"\n%s: null string parameter!\n",rtnnme) ;
@@ -127,7 +127,7 @@ bool strfree (const char *string)
 */
 
 { litent *lit ;
-  char *rtnnme = "strfree" ;
+  const char *rtnnme = "strfree" ;
 
   if (string == NULL)
   { fprintf(stderr,"\n%s: null string parameter!\n",rtnnme) ;

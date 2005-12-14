@@ -40,7 +40,7 @@ static char svnid[] UNUSED = "$Id$" ;
 
 
 
-char *consys_prtcontyp (contyp_enum contyp)
+const char *consys_prtcontyp (contyp_enum contyp)
 
 /*
   Utility to print a readable string for a constraint type.
@@ -51,7 +51,7 @@ char *consys_prtcontyp (contyp_enum contyp)
   Returns: appropriate string for the type, or an error string.
 */
 
-{ char *rtnnme = "consys_prtcontyp" ;
+{ const char *rtnnme = "consys_prtcontyp" ;
 
   switch (contyp)
   { case contypLE:
@@ -71,7 +71,7 @@ char *consys_prtcontyp (contyp_enum contyp)
       return ("unrecognised") ; } } }
 
 
-char *consys_prtvartyp (vartyp_enum vartyp)
+const char *consys_prtvartyp (vartyp_enum vartyp)
 
 /*
   Utility to print a readable string for a variable type.
@@ -82,7 +82,7 @@ char *consys_prtvartyp (vartyp_enum vartyp)
   Returns: appropriate string for the type, or an error string.
 */
 
-{ char *rtnnme = "consys_prtvartyp" ;
+{ const char *rtnnme = "consys_prtvartyp" ;
 
   switch (vartyp)
   { case vartypCON:
@@ -209,7 +209,7 @@ char *consys_lognme (consys_struct *consys, int rowndx, char *clientbuf)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "consys_lognme" ;
+  const char *rtnnme = "consys_lognme" ;
 /*
   The usual, and checks that some necessary associated arrays are present.
   This is an internal routine, so index bounds checks are dropped unless
@@ -266,8 +266,8 @@ char *consys_lognme (consys_struct *consys, int rowndx, char *clientbuf)
   return (nmebuf) ; }
 
 
-char *consys_nme (consys_struct *consys,
-		  char cv, int ndx, bool pfx, char *clientbuf)
+const char *consys_nme (consys_struct *consys,
+			char cv, int ndx, bool pfx, char *clientbuf)
 
 /*
   Utility routine to retrieve the name of a constraint or variable. If pfx is
@@ -305,12 +305,13 @@ char *consys_nme (consys_struct *consys,
 
 { static char ourbuf[CONSYS_MAXBUFLEN],ourbuftoo[CONSYS_MAXBUFLEN] ;
   char *nmbuf ;
+  const char *rtnbuf ;
   int nmlen,partlen ;
 
 #ifdef PARANOIA
 
-  char *rtnnme = "consys_nme",
-       *errname = "<<error>>" ;
+  const char *rtnnme = "consys_nme",
+	     *errname = "<<error>>" ;
 
   if (consys == NULL)
   { errmsg(2,rtnnme,"consys") ;
@@ -353,16 +354,16 @@ char *consys_nme (consys_struct *consys,
 */
   if (pfx == FALSE && (cv == 'c' || (cv == 'v' && ndx <= consys->varcnt)))
   { if (cv == 'c')
-      nmbuf = (char *) consys->mtx.rows[ndx]->nme ;
+      rtnbuf = consys->mtx.rows[ndx]->nme ;
     else
-      nmbuf = (char *) consys->mtx.cols[ndx]->nme ;
+      rtnbuf = consys->mtx.cols[ndx]->nme ;
     if (clientbuf != NULL)
-    { if (strlen(nmbuf) < CONSYS_MAXBUFLEN)
-	strcpy(clientbuf,nmbuf) ;
+    { if (strlen(rtnbuf) < CONSYS_MAXBUFLEN)
+	strcpy(clientbuf,rtnbuf) ;
       else
-      { strncpy(clientbuf,nmbuf,CONSYS_MAXBUFLEN-1) ;
+      { strncpy(clientbuf,rtnbuf,CONSYS_MAXBUFLEN-1) ;
 	clientbuf[CONSYS_MAXBUFLEN-1] = '\0' ; }
-      nmbuf = clientbuf ; } }
+      rtnbuf = clientbuf ; } }
 /*
   We have to build the name. Not quite so bad as it seems at first glance.
   Figure out what buffer to use, then dump in the prefix, the dump in the
@@ -421,9 +422,10 @@ char *consys_nme (consys_struct *consys,
 	  nmlen += partlen ;
 	  nmbuf[nmlen] = '\0' ; }
 
-	break ; } } }
+	break ; } }
+    rtnbuf = nmbuf ; }
   
-  return (nmbuf) ; }
+  return (rtnbuf) ; }
 
 
 
@@ -500,7 +502,7 @@ char *consys_conbndval (conbnd_struct *bnd)
 
 
 void consys_prtcon (ioid chn, bool echo,
-		    consys_struct *consys, int i, char *pfx)
+		    consys_struct *consys, int i, const char *pfx)
 
 /*
   This routine prints a constraint. Since this could be a lengthy string in
@@ -528,9 +530,9 @@ void consys_prtcon (ioid chn, bool echo,
   pkvec_struct *coni ;
   pkcoeff_struct *ai ;
   char buf[64] ;
-  char *rtnnme = "consys_prtcon",
-       *errstring = "<< !consys_prtcon print error! >>",
-       *dfltpfx = "" ;
+  const char *rtnnme = "consys_prtcon",
+	     *errstring = "<< !consys_prtcon print error! >>",
+	     *dfltpfx = "" ;
 
 
 # ifdef PARANOIA

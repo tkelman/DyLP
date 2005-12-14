@@ -36,7 +36,7 @@ static char svnid[] UNUSED = "$Id$" ;
 
 
 
-char *dy_prtlpret (lpret_enum lpret)
+const char *dy_prtlpret (lpret_enum lpret)
 
 /*
   Generates a print string corresponding to the dylp return codes.
@@ -47,7 +47,7 @@ char *dy_prtlpret (lpret_enum lpret)
   Returns: print string
 */
 
-{ char *rtnnme = "dy_prtlpret" ;
+{ const char *rtnnme = "dy_prtlpret" ;
 
   switch (lpret)
   { case lpINV:
@@ -100,7 +100,7 @@ char *dy_prtvstat (flags status)
 
 { flags mystatus ;
   static char buffer[100] ;
-  char *rtnnme = "dy_prtvstat" ;
+  const char *rtnnme = "dy_prtvstat" ;
 
 /*
   If we've been passed a completely empty status, return invalid. But we could
@@ -158,7 +158,8 @@ char *dy_prtvstat (flags status)
 	break ; }
       default:
       { errmsg(6,rtnnme,"status",(int) status) ;
-	return ("nonsense") ; } }
+        strcpy(buffer,"NONSENSE") ;
+	return (buffer) ; } }
 /*
   Add any qualifiers.
 */
@@ -172,7 +173,7 @@ char *dy_prtvstat (flags status)
 
 
 
-char *dy_prtlpphase (dyphase_enum phase, bool abbrv)
+const char *dy_prtlpphase (dyphase_enum phase, bool abbrv)
 
 /*
   This routine returns a print representation of the lp phase passed as a 
@@ -186,7 +187,7 @@ char *dy_prtlpphase (dyphase_enum phase, bool abbrv)
   Returns: print string
 */
 
-{ char *rtnnme = "dy_prtlpphase" ;
+{ const char *rtnnme = "dy_prtlpphase" ;
 
   switch (phase)
   { case dyINIT:
@@ -225,7 +226,7 @@ char *dy_prtlpphase (dyphase_enum phase, bool abbrv)
 
 
 
-char *dy_prtdyret (dyret_enum retcode)
+const char *dy_prtdyret (dyret_enum retcode)
 
 /*
   This routine returns a print representation of the dyret_enum code passed
@@ -237,7 +238,7 @@ char *dy_prtdyret (dyret_enum retcode)
   Returns: print string
 */
 
-{ char *rtnnme = "dy_prtdyret" ;
+{ const char *rtnnme = "dy_prtdyret" ;
 
   switch (retcode)
   { case dyrOK:
@@ -311,7 +312,7 @@ void dy_logpivot (dyret_enum result, int xjndx, int indir, double cbarj,
 */
 
 { bool validin,validout ;
-  char *resstr ;
+  const char *resstr ;
 
 /*
   logpivot is called from within the dual simplex routine, so we have to
@@ -469,7 +470,7 @@ bool dy_dumpcompact (ioid chn, bool echo, lpprob_struct *soln, bool nbzeros)
   bool nononbasic ;
   consys_struct *sys ;
   basis_struct *basis ;
-  char *rtnnme = "dy_dumpcompact" ;
+  const char *rtnnme = "dy_dumpcompact" ;
 
 # ifdef PARANOIA
   if (soln == NULL)

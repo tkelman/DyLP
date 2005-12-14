@@ -138,7 +138,7 @@ static cmd_retval docmd (lex_struct *txt)
   const char *keywd ;
   int cmd ;
   cmd_retval retval ;
-  char *rtnnme = "docmd" ;
+  const char *rtnnme = "docmd" ;
 
 /* dy_setup.c */
 
@@ -279,7 +279,7 @@ static cmd_retval indcmd (bool silent)
 */
 
 { lex_struct *file ;
-  char *rtnnme = "indcmd" ;
+  const char *rtnnme = "indcmd" ;
 
 /*
   Get the file name.
@@ -341,7 +341,7 @@ static cmd_retval dobuiltin (lex_struct *txt, bool silent)
 
 { lex_struct *lex ;
   cmd_retval retval ;
-  char *rtnnme = "dobuiltin" ;
+  const char *rtnnme = "dobuiltin" ;
 
   if (txt == NULL)
   { errmsg(2,rtnnme,"txt") ;
@@ -391,7 +391,7 @@ cmd_retval process_cmds (bool silent)
 
 { lex_struct *txt ;
   cmd_retval retval ;
-  char *rtnnme = "process_cmds" ; 
+  const char *rtnnme = "process_cmds" ; 
 
 /*
   Initialise to level 0 and begin the command interpretation loop. We need to
@@ -401,6 +401,7 @@ cmd_retval process_cmds (bool silent)
   text if the user wants it.
 */
   level = 0 ;
+  txt = NULL ;
   retval = cmdOK ;
   if (ttyq(dy_cmdchn) == TRUE || silent == FALSE)
     prompt = TRUE ;

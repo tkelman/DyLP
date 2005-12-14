@@ -139,12 +139,12 @@
 
 /*
   We need to provide a definition for mipopts_struct in the OsiDylp
-  configuration. Usually this comes in with milp.h.
+  configuration. Usually this comes in with bonsaiG's milp.h.
 */
 
 typedef struct { int minmax ;
 		 int objcon ;
-		 int zinit ;
+		 double zinit ;
 		 const char *objnme ; } mipopts_struct ;
 #else
 # include "milp.h"
@@ -162,7 +162,7 @@ static char svnid[] UNUSED = "$Id$" ;
   They just shouldn't show up in a valid mps file.
 */
 
-static char *sepchars = " \t" ;
+static const char *sepchars = " \t" ;
 
 /*
   State codes -- these define where we're at in processing the mps input file.
@@ -266,8 +266,8 @@ static mpsinstate_enum mpsin_name (ioid mpschn, consys_struct **consys,
 { lex_struct *lex ;
   char *tok ;
 
-  char *rtnnme = "mpsin_name",
-       *mysection = "name" ;
+  const char *rtnnme = "mpsin_name",
+	     *mysection = "name" ;
 
 # ifndef NDEBUG
 /*
@@ -369,8 +369,8 @@ static mpsinstate_enum mpsin_rows (ioid mpschn, consys_struct *consys)
   bool seen_cols,keep_row ;
   pkvec_struct *pkrow ;
 
-  char *rtnnme = "mpsin_rows",
-       *mysection = "rows" ;
+  const char *rtnnme = "mpsin_rows",
+	     *mysection = "rows" ;
 
 /*
   Set up to process the rows. Create a hash table for the row names,
@@ -528,8 +528,8 @@ static mpsinstate_enum mpsin_columns (ioid mpschn, consys_struct *consys)
   char *rownam,*tok,*chkptr ;
   char colnam[50] ;		/* grossly oversized, but safe */
 
-  char *rtnnme = "mpsin_columns",
-       *mysection = "columns" ;
+  const char *rtnnme = "mpsin_columns",
+	     *mysection = "columns" ;
 
 /*
   Set up to process the columns. Create a hash table for the variable names,
@@ -778,10 +778,11 @@ static mpsinstate_enum mpsin_rhs (ioid mpschn, consys_struct *consys)
   bool named_vec ;
   mpsinstate_enum nxtstate ;
   lex_struct *lex ;
-  char *tok,*rhsnme,*rownme,*chkptr ;
+  char *tok,*rownme,*chkptr ;
+  const char *rhsnme ;
 
-  char *rtnnme = "mpsin_rhs",
-       *mysection = "rhs" ;
+  const char *rtnnme = "mpsin_rhs",
+	     *mysection = "rhs" ;
 
 /*
   Associate a rhs vector with the constraint system.
@@ -913,10 +914,11 @@ static mpsinstate_enum mpsin_ranges (ioid mpschn, consys_struct *consys)
   contyp_enum *contyp ;
   mpsinstate_enum nxtstate ;
   lex_struct *lex ;
-  char *rngnme,*rownme,*tok,*chkptr ;
+  const char *rngnme ;
+  char *rownme,*tok,*chkptr ;
 
-  char *rtnnme = "mpsin_ranges",
-       *mysection = "ranges" ;
+  const char *rtnnme = "mpsin_ranges",
+	     *mysection = "ranges" ;
 
 /*
   Associate a rhslow vector with the constraint system. Pick up the rhs and
@@ -1090,10 +1092,11 @@ static mpsinstate_enum mpsin_bounds (ioid mpschn, consys_struct *consys)
   vartyp_enum *vartyp ;
   bool seen_end,named_vec ;
   lex_struct *lex ;
-  char *bndnme,*varnme,*bndcode,*tok,*chkptr ;
+  const char *bndnme ;
+  char *varnme,*bndcode,*tok,*chkptr ;
 
-  char *rtnnme = "mpsin_bounds",
-       *mysection = "bounds" ;
+  const char *rtnnme = "mpsin_bounds",
+	     *mysection = "bounds" ;
 
 /*
   Associate upper and lower bound vectors with the constraint system. These
@@ -1295,7 +1298,7 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
   hel *entry ;
   lex_struct *lex ;
 
-  char *rtnnme = "mpsin_enddata" ;
+  const char *rtnnme = "mpsin_enddata" ;
 
 #ifdef BONSAIG
 
@@ -1341,7 +1344,7 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
     return (mpsinINV) ; }
   setflg(consys->parts,CONSYS_OBJ) ;
   if (mipopts->minmax == -1)
-  { if (consys_mulrow(consys,consys->objndx,-1) == FALSE)
+  { if (consys_mulrow(consys,consys->objndx,-1.0) == FALSE)
     { errmsg(173,rtnnme,consys->nme,
 	     consys_nme(consys,'c',consys->objndx,FALSE,NULL),consys->objndx) ;
       return (mpsinINV) ; } }
@@ -1421,7 +1424,7 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
     continue ; }
       
     if (consys->ctyp[ndx] == contypGE)
-    { if (consys_mulrow(consys,ndx,-1) == FALSE)
+    { if (consys_mulrow(consys,ndx,-1.0) == FALSE)
       { errmsg(112,rtnnme,consys->nme,"scalar multiply","row",
 	       consys_nme(consys,'c',ndx,FALSE,NULL),ndx) ;
 	return (mpsinINV) ; } } }
@@ -1508,7 +1511,7 @@ static mpsinstate_enum mpsin_force (consys_struct *consys,
   Returns: tostate, or mpsinINV if something goes wrong.
 */
 
-{ char *rtnnme = "mpsin_force" ;
+{ const char *rtnnme = "mpsin_force" ;
 
 /*
   The strategy here is that fromstate takes us to the appropriate starting
@@ -1546,7 +1549,7 @@ static mpsinstate_enum mpsin_force (consys_struct *consys,
 
 
 
-bool mpsin (char *mpspath, consys_struct **consys,
+bool mpsin (const char *mpspath, consys_struct **consys,
 	    mipopts_struct *mipopts, double infinity)
 
 /*
@@ -1573,7 +1576,7 @@ bool mpsin (char *mpspath, consys_struct **consys,
 { ioid mpschn ;
   mpsinstate_enum nxtstate ;
 
-  char *rtnnme = "mpsin" ;
+  const char *rtnnme = "mpsin" ;
 
 /*
   Paranoia & initialisation.
@@ -1650,7 +1653,7 @@ bool mpsin (char *mpspath, consys_struct **consys,
 
 #ifndef BONSAIG
 
-bool dy_mpsin (char *mpspath, consys_struct **consys, double infinity)
+bool dy_mpsin (const char *mpspath, consys_struct **consys, double infinity)
 /*
   A wrapper routine to get from OsiDylp to mpsin. No need to bother OsiDylp
   with the bits of information that need to be present in mipopts.

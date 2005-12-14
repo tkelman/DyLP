@@ -202,7 +202,7 @@ static bool empty_col (consys_struct *consys, int colndx, bool *rescan)
 
 
 # if defined(PARANOIA) || !defined(NDEBUG)
-  char *rtnnme = "empty_column" ;
+  const char *rtnnme = "empty_column" ;
 # endif
 
 # ifdef PARANOIA
@@ -306,7 +306,7 @@ static bool empty_row (consys_struct *consys, int rowndx, bool *rescan)
   colhdr_struct *colhdr ;
   rowhdr_struct *rowhdr ;
   coeff_struct *ccoeff,*rcoeff ;
-  char *rtnnme = "empty_row" ;
+  const char *rtnnme = "empty_row" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -410,7 +410,7 @@ static bool move_col (consys_struct *consys, int fndx, int tndx)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "move_col" ;
+  const char *rtnnme = "move_col" ;
 
   if (consys == NULL)
   { errmsg(2,rtnnme,"consys") ;
@@ -482,7 +482,7 @@ static bool move_row (consys_struct *consys, int fndx, int tndx)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "move_row" ;
+  const char *rtnnme = "move_row" ;
 
   if (consys == NULL)
   { errmsg(2,rtnnme,"consys") ;
@@ -546,7 +546,7 @@ static bool find_maxes (consys_struct *consys, bool scan_cols, bool scan_rows)
 */
 
 { int colndx,rowndx ;
-  char *rtnnme = "find_maxes" ;
+  const char *rtnnme = "find_maxes" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -638,7 +638,7 @@ static bool add_logical (consys_struct *consys, int rowndx)
   contyp_enum contyp ;
   double val, lb, ub ;
   char *nme ;
-  char *rtnnme = "add_logical" ;
+  const char *rtnnme = "add_logical" ;
 
   /* consys_io.c */
 
@@ -783,7 +783,7 @@ consys_struct *consys_create (const char *nme, flags parts, flags opts,
 
 { int colsze,rowsze ;
   consys_struct *consys ;
-  char *rtnnme = "consys_create" ;
+  const char *rtnnme = "consys_create" ;
 
 /*
   Set the row and column sizes.
@@ -884,7 +884,7 @@ bool consys_dupsys (consys_struct *src, consys_struct **p_dst, flags dstvecs)
 
   consys_struct *dst ;
 
-  char *rtnnme = "consys_dupsys" ;
+  const char *rtnnme = "consys_dupsys" ;
 
 # ifdef PARANOIA
   if (src == NULL)
@@ -1035,7 +1035,7 @@ void consys_free (consys_struct *consys)
 
 # ifdef PARANOIA
 
-  char *rtnnme = "consys_free" ;
+  const char *rtnnme = "consys_free" ;
 
   if (consys == NULL)
   { errmsg(2,rtnnme,"consys") ;
@@ -1127,7 +1127,7 @@ bool consys_attach (consys_struct *consys, flags what, int elsze, void **pvec)
   attvhdr_struct *attvhdr ;
   lnk_struct *lnk ;
   double *dvec ;
-  char *rtnnme = "consys_attach" ;
+  const char *rtnnme = "consys_attach" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -1232,7 +1232,7 @@ bool consys_update (consys_struct *consys, void *old, void *new)
 
 { attvhdr_struct *attvhdr ;
   lnk_struct *lnk ;
-  char *rtnnme = "consys_update" ;
+  const char *rtnnme = "consys_update" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -1298,7 +1298,7 @@ bool consys_detach (consys_struct *consys, void **pvec, bool all)
   lnk_struct *lnk,**plnk ;
   bool pvec_seen ;
   void *vec ;
-  char *rtnnme = "consys_detach" ;
+  const char *rtnnme = "consys_detach" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -1401,7 +1401,7 @@ bool consys_realloc (consys_struct *consys, char rowcol, int incr)
   double *dvec ;
   attvhdr_struct *attvhdr ;
   lnk_struct *lnk ;
-  char *rtnnme = "consys_realloc" ;
+  const char *rtnnme = "consys_realloc" ;
 
 /*
   Suppress `might be used uninitialized' from gcc.
@@ -1600,7 +1600,7 @@ bool consys_addcol_pk (consys_struct *consys,
   coeff_struct *coeff ;
   pkcoeff_struct *pkcoeff ;
   char nmebuf[20] ;
-  char *rtnnme = "consys_addcol_pk" ;
+  const char *rtnnme = "consys_addcol_pk" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -1764,7 +1764,7 @@ bool consys_addcol_ex (consys_struct *consys,
   rowhdr_struct *rowhdr ;
   coeff_struct *coeff ;
   char nmebuf[20] ;
-  char *rtnnme = "consys_addcol_ex" ;
+  const char *rtnnme = "consys_addcol_ex" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -1915,7 +1915,7 @@ bool consys_addrow_pk (consys_struct *consys, char class,
   pkcoeff_struct *pkcoeff ;
   char nmebuf[20] ;
 
-  char *rtnnme = "consys_addrow_pk" ;
+  const char *rtnnme = "consys_addrow_pk" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2110,7 +2110,7 @@ bool consys_getcol_pk (consys_struct *consys, int colndx, pkvec_struct **pkvec)
   coeff_struct *coeff ;
   pkcoeff_struct *pkcoeff ;
 
-  char *rtnnme = "consys_getcol_pk" ;
+  const char *rtnnme = "consys_getcol_pk" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2202,7 +2202,7 @@ bool consys_getcol_ex (consys_struct *consys, int colndx, double **vec)
 { colhdr_struct *colhdr ;
   coeff_struct *coeff ;
 
-  char *rtnnme = "consys_getcol_ex" ;
+  const char *rtnnme = "consys_getcol_ex" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2278,7 +2278,7 @@ bool consys_getrow_pk (consys_struct *consys, int rowndx, pkvec_struct **pkvec)
   coeff_struct *coeff ;
   pkcoeff_struct *pkcoeff ;
 
-  char *rtnnme = "consys_getrow_pk" ;
+  const char *rtnnme = "consys_getrow_pk" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2370,7 +2370,7 @@ bool consys_getrow_ex (consys_struct *consys, int rowndx, double **vec)
 { rowhdr_struct *rowhdr ;
   coeff_struct *coeff ;
 
-  char *rtnnme = "consys_getrow_ex" ;
+  const char *rtnnme = "consys_getrow_ex" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2440,7 +2440,7 @@ bool consys_delcol (consys_struct *consys, int colndx)
 { colhdr_struct *colhdr ;
   vartyp_enum vartyp ;
   bool rescan_rows,rescan_cols ;
-  char *rtnnme = "consys_delcol" ;
+  const char *rtnnme = "consys_delcol" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2542,7 +2542,7 @@ bool consys_delrow (consys_struct *consys, int rowndx)
   colhdr_struct *colhdr ;
   rowhdr_struct *rowhdr ;
   bool rescan_rows,rescan_cols ;
-  char *rtnnme = "consys_delrow" ;
+  const char *rtnnme = "consys_delrow" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2686,7 +2686,7 @@ bool consys_delrow_stable (consys_struct *consys, int rowndx)
   colhdr_struct *colhdr ;
   rowhdr_struct *rowhdr ;
   bool rescan_rows,rescan_cols ;
-  char *rtnnme = "consys_delrow" ;
+  const char *rtnnme = "consys_delrow" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2841,7 +2841,7 @@ double consys_getcoeff (consys_struct *consys, int rowndx, int colndx)
   colhdr_struct *colhdr ;
   rowhdr_struct *rowhdr ;
 
-  char *rtnnme = "consys_getcoeff" ;
+  const char *rtnnme = "consys_getcoeff" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2947,7 +2947,7 @@ bool consys_setcoeff (consys_struct *consys,
   colhdr_struct *colhdr ;
   rowhdr_struct *rowhdr ;
 
-  char *rtnnme = "consys_chgcoeff" ;
+  const char *rtnnme = "consys_chgcoeff" ;
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -3124,7 +3124,7 @@ bool consys_logicals (consys_struct *consys)
 */
 
 { int ndx ;
-  char *rtnnme = "consys_logicals" ;
+  const char *rtnnme = "consys_logicals" ;
 
 # ifdef PARANOIA
   if (consys == NULL)

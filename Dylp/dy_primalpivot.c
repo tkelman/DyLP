@@ -184,7 +184,7 @@ dyret_enum dy_degenout (int level)
   dyret_enum retval ;
 
 # ifdef PARANOIA
-  char *rtnnme = "dy_degenout" ;
+  const char *rtnnme = "dy_degenout" ;
 # endif
 
 # ifdef DYLP_STATISTICS
@@ -373,7 +373,7 @@ static void dy_degenin (void)
   Balance that against the notion that if the perturbation is too small
   (less than pfeas), we simply can't see it.
 */
-  base = pow(10,(-3-ceil(log10(dy_sys->concnt))-degen_cyclecnt)) ;
+  base = pow(10.0,(-3-ceil(log10(dy_sys->concnt))-degen_cyclecnt)) ;
   while (base <= dy_tols->pfeas) base *= 10 ;
   oldlvl = dy_lp->degen++ ;
 
@@ -686,7 +686,7 @@ dyret_enum dy_primalin (int startcol, int scan, int *xjndx, int *nextcol)
   double ncbarj ;
   dyret_enum retval ;
 
-  char *rtnnme = "dy_primalin" ;
+  const char *rtnnme = "dy_primalin" ;
 
 # ifdef PARANOIA
   if (dy_cbar == NULL)
@@ -933,7 +933,7 @@ static double pdirdothyper (int xjndx, double *abarj, int dirj,
   pkvec_struct *ak ;
   pkcoeff_struct *akq ;
 
-  char *rtnnme = "pdirdothyper" ;
+  const char *rtnnme = "pdirdothyper" ;
 # endif
 
   abarkj = abarj[dy_var2basis[xkndx]] ;
@@ -1072,7 +1072,7 @@ static dyret_enum primalout (int xjndx, int indir,
   double abarij,ratioij,aligni,deltak,abarkj,ratiokj,bndk,alignk ;
   bool newxi ;
   dyret_enum retval ;
-  char *rtnnme = "primalout" ;
+  const char *rtnnme = "primalout" ;
 
   retval = dyrINV ;
 # ifndef NDEBUG
@@ -1504,11 +1504,11 @@ static dyret_enum primalupdate (int xjndx, int indir,
 { int xkpos,xkndx,xipos ;
   flags xkstatus,quals ;
   dyret_enum retval ;
-  double val,deltak,ubk,lbk,eps0,epsu,epsl,cbarj,abarij,deltaj ;
+  double val,deltak,ubk,lbk,eps0,epsu,epsl,cbarj,abarij ;
   bool dirtyz,swing ;
   double swingratio,maxswing ;
   int swingndx ;
-  char *rtnnme = "primalupdate" ;
+  const char *rtnnme = "primalupdate" ;
 
 # ifndef NDEBUG
   int print ;
@@ -2079,7 +2079,7 @@ static bool check_pse_update (int xkndx, double u_cbark, double u_gammak)
   double *abark,cbark,gammak ;
   bool retval ;
 
-  char *rtnnme = "check_pse_update" ;
+  const char *rtnnme = "check_pse_update" ;
 
 /*
   Make sure we're ok with the status of the variable.
@@ -2216,7 +2216,7 @@ static dyret_enum pseupdate (int xjndx, int xindx, int *candxj,
   flags xkstatus ;
   bool reset,pivreject ;
   dyret_enum retval ;
-  char *rtnnme = "pseupdate" ;
+  const char *rtnnme = "pseupdate" ;
 
 /*
   Do a little prep, pulling out common values and setting initial values.
@@ -2502,7 +2502,7 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
   double *abarj,*v,*betai,maxabarj,abarij,delta ;
   dyret_enum retval,outretval,pseretval ;
   bool reselect ;
-  char *rtnnme = "dy_primalpivot" ;
+  const char *rtnnme = "dy_primalpivot" ;
 
   extern dyret_enum primmultiout(int j, int indir, double *abarj,
 				 double maxabarj, int *p_xindx,

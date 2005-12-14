@@ -114,7 +114,7 @@ bool dy_pricenbvars (lpprob_struct *orig_lp, flags priceme,
   pkvec_struct *aj ;
   pkcoeff_struct *aij ;
 
-  char *rtnnme = "dy_pricenbvars" ;
+  const char *rtnnme = "dy_pricenbvars" ;
 
   /* dy_scaling.c */
   extern void dy_unscale_cbar (int nbcnt, double *cbar, int *vndx) ;
@@ -340,7 +340,7 @@ static bool pricedualpiv (consys_struct *orig_sys, double *betai, double *ai,
   pkcoeff_struct *aij ;
   bool activexi,retval ;
 
-  char *rtnnme = "pricedualpiv" ;
+  const char *rtnnme = "pricedualpiv" ;
 
 # ifdef PARANOIA
   int i,ipos ;
@@ -599,7 +599,7 @@ bool dy_pricedualpiv (lpprob_struct *orig_lp, int oxindx,
   consys_struct *orig_sys ;
   bool retval ;
 
-  char *rtnnme = "dy_pricedualpiv" ;
+  const char *rtnnme = "dy_pricedualpiv" ;
 
   /* dy_scaling.c */
   extern bool dy_unscale_betai(consys_struct *orig_sys, int oxindx,

@@ -259,9 +259,9 @@ typedef enum {bnfncBNF,bnfncS,bnfncC,bnfncN} bnflblsrc_enum ;
 */
 
 #define bnfdef_common bnftype_enum type ; \
-		      char *name ;
+		      const char *name ;
 
-typedef struct {bnfdef_common} bnfdef_struct ;
+typedef struct { bnfdef_common } bnfdef_struct ;
 
 
 /*
@@ -337,7 +337,7 @@ typedef struct { bnfdef_common
 		 char qschr ;
 		 char qechr ;
 		 int parm1 ;
-		 char *val ; } bnfTdef_struct ;
+		 const char *val ; } bnfTdef_struct ;
 
 
 /*
@@ -455,7 +455,7 @@ typedef union { bnfdef_struct *com ;
 */
 
 #define bnfref_common bnftype_enum type ; \
-		      char *name ; \
+		      const char *name ; \
 		      bnfdef_struct *defn ; \
 		      flags uflgs ;
 
@@ -592,7 +592,7 @@ bnfPdef_struct qqnme = { bnfP, #qqnme, (bnfref_struct ***) qqalts }
 
 #define tdef(qqnme,qqttype,qqparm,qqval) \
 bnfTdef_struct qqnme = { bnfT, #qqnme, qqttype, '\0', '\0', \
-			 (int) (qqparm), (char *) (qqval) }
+			 (int) (qqparm), (const char *) (qqval) }
 
 #define tqdef(qqnme,qqschr,qqechr,qqval) \
 bnfTdef_struct qqnme = { bnfT, #qqnme, bnfttQ, (char) qqschr, (char) qqechr,\
@@ -709,7 +709,7 @@ bnfLref_struct qqnme = { bnfL, #qqnme, (bnfdef_struct *) &qqref, \
 typedef union { void *g ;
 		char *c ; } parse_any ;
 
-extern void rdrinit(),rdrclear() ;
+extern void rdrinit(void),rdrclear(void) ;
 extern bool parse(ioid chn, struct bnfref_type3 *bnfid, parse_any *result) ;
 
 #ifndef NDEBUG

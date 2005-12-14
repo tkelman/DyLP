@@ -239,7 +239,7 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
 { flags checkflags ;
   dyret_enum retval ;
 
-  char *rtnnme = "preoptimality" ;
+  const char *rtnnme = "preoptimality" ;
 
 # ifndef NDEBUG
   int print ;
@@ -376,7 +376,7 @@ bool dy_swapobjs (dyphase_enum phase)
   Returns: TRUE if the swap goes ok, FALSE otherwise
 */
 
-{ char *rtnnme = "dy_swapobjs" ;
+{ const char *rtnnme = "dy_swapobjs" ;
 
 # ifdef PARANOIA
 /*
@@ -489,7 +489,7 @@ bool dy_initp1obj (void)
 
 { int *infvars,infcnt,xipos,xindx ;
   double *p1obj ;
-  char *rtnnme = "dy_initp1obj" ;
+  const char *rtnnme = "dy_initp1obj" ;
 
 # ifndef NDEBUG
   if (dy_opts->print.phase1 >= 2)
@@ -644,7 +644,7 @@ static dyret_enum tweakp1obj (bool *reselect, int candxj)
 { int *infvars,ndx,maxndx,newfeas,xkndx ;
   flags statk ;
   bool recalccbar ;
-  char *rtnnme = "tweakp1obj" ;
+  const char *rtnnme = "tweakp1obj" ;
 
 # ifndef NDEBUG
   int xkpos ;
@@ -985,7 +985,7 @@ static dyret_enum primal1 (void)
   double cbarj,abarij,delta ;
   bool do_pivots,reselect ;
   flags xjstatus,checks ;
-  char *rtnnme = "primal1" ;
+  const char *rtnnme = "primal1" ;
 
 # ifndef NDEBUG
   bool uxpfeas,uxnpfeas,uxdfeas,uxndfeas ;
@@ -1495,7 +1495,7 @@ static dyret_enum primal2 (void)
   double cbarj,abarij,delta ;
   bool do_pivots ;
   flags xjstatus,checks ;
-  char *rtnnme = "primal2" ;
+  const char *rtnnme = "primal2" ;
 
 # ifndef NDEBUG
   bool uxnpfeas,uxdfeas,uxndfeas ;
@@ -1857,7 +1857,7 @@ lpret_enum dy_primal (void)
 { lpret_enum retval ;
   dyret_enum dyret ;
   int lostfeascnt ;
-  char *rtnnme = "dy_primal" ;
+  const char *rtnnme = "dy_primal" ;
 
   retval = lpINV ;
   dy_lp->lpret = lpINV ;

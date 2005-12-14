@@ -79,8 +79,8 @@
 static char sccsid[] UNUSED = "@(#)osi_dylp.c	1.10	09/25/04" ;
 static char svnid[] UNUSED = "$Id$" ;
 
-char *osidylp_version = "1.10" ;			/* sccs! */
-char *osidylp_time ;
+const char *osidylp_version = "1.10" ;			/* sccs! */
+const char *osidylp_time ;
 
 /*
   Macro cleverness to specify a default error message file. Depends on ANSI
@@ -119,7 +119,7 @@ bool dy_cmdecho, dy_gtxecho ;
 		in fathom:check_incumbent
 */
 
-char *outpath ;
+const char *outpath ;
 
 consys_struct *main_sys ;
 lpprob_struct *main_lp ;
@@ -133,15 +133,16 @@ lptols_struct *main_lptols ;
   if these are off to the side.
 */
 
-void print_version (ioid chn, bool echo, char *cmd, char *nme, char *ver)
+static void print_version (ioid chn, bool echo,
+			   const char *cmd, const char *nme, const char *ver)
 /*
   Print version, copyright, and free software disclaimer.
 */
 
-{ char *disc1 = "This is free software; see the source for copying"
-		" conditions. There is NO" ;
-  char *disc2 = "warranty; not even for MERCHANTABILITY or FITNESS FOR A"
-  	        " PARTICULAR PURPOSE." ;
+{ const char *disc1 = "This is free software; see the source for copying"
+		      " conditions. There is NO" ;
+  const char *disc2 = "warranty; not even for MERCHANTABILITY or FITNESS FOR A"
+		      " PARTICULAR PURPOSE." ;
 
   outfmt(dy_logchn,dy_gtxecho,"\n%s (%s) V %s",cmd,nme,ver) ;
   outfmt(dy_logchn,dy_gtxecho,"\nCopyright (C) 2004 Lou Hafer") ;
@@ -149,7 +150,7 @@ void print_version (ioid chn, bool echo, char *cmd, char *nme, char *ver)
 
   return ; }
 
-void print_help (ioid chn, bool echo)
+static void print_help (ioid chn, bool echo)
 /*
   Print help message.
 */
@@ -325,8 +326,8 @@ static void prt_timeval (ioid chn, bool echo, struct timeval *tv)
 
 
 
-void stats_lp (char *outpath, bool echo, lpprob_struct *lp,
-	       struct timeval *lptime, lpstats_struct *lpstats)
+static void stats_lp (const char *outpath, bool echo, lpprob_struct *lp,
+		      struct timeval *lptime, lpstats_struct *lpstats)
 
 /*
   A little shell routine to handle writing detailed statistics on an LP to
@@ -344,7 +345,7 @@ void stats_lp (char *outpath, bool echo, lpprob_struct *lp,
 
 { ioid chn ;
   int vndx,bpos ;
-  char *rtnnme = "stats_lp" ;
+  const char *rtnnme = "stats_lp" ;
 
 /*
   Set up the output. Don't echo this to stdout twice.
@@ -408,7 +409,7 @@ void stats_lp (char *outpath, bool echo, lpprob_struct *lp,
 
 
 
-lpret_enum do_lp_all (struct timeval *elapsed, int printlvl)
+static lpret_enum do_lp_all (struct timeval *elapsed, int printlvl)
 
 /*
   This routine is a wrapper which makes up the difference between the
@@ -432,7 +433,7 @@ lpret_enum do_lp_all (struct timeval *elapsed, int printlvl)
 
   struct timeval diff,before,after ;
 
-  char *rtnnme = "do_lp_all" ;
+  const char *rtnnme = "do_lp_all" ;
 
   lpret = lpINV ;
 
@@ -456,7 +457,7 @@ lpret_enum do_lp_all (struct timeval *elapsed, int printlvl)
   flips = 0 ;
   for (ndx = main_sys->concnt ; ndx > 0 ; ndx--)
   { if (main_sys->ctyp[ndx] == contypGE)
-    { if (consys_mulrow(main_sys,ndx,-1) == FALSE)
+    { if (consys_mulrow(main_sys,ndx,-1.0) == FALSE)
       { errmsg(112,rtnnme,main_sys->nme,"scalar multiply","row",
 	       consys_nme(main_sys,'c',ndx,FALSE,NULL),ndx) ;
 	FREE(flipped) ;
@@ -502,7 +503,7 @@ lpret_enum do_lp_all (struct timeval *elapsed, int printlvl)
   if (flips > 0)
   { for (ndx = main_sys->concnt ; ndx > 0 ; ndx--)
     { if (flipped[ndx] == TRUE)
-      { if (consys_mulrow(main_sys,ndx,-1) == FALSE)
+      { if (consys_mulrow(main_sys,ndx,-1.0) == FALSE)
 	{ errmsg(112,rtnnme,main_sys->nme,"scalar multiply","row",
 		 consys_nme(main_sys,'c',ndx,FALSE,NULL),ndx) ;
 	  FREE(flipped) ;
@@ -529,11 +530,11 @@ int main (int argc, char *argv[])
   ioid ttyin,ttyout,outchn ;
   int optlett,printlvl ;
   bool silent,terse,swaperrs,errecho,doversion,dohelp ;
-  char *errmsgpath,*errlogpath,*optpath,*mpspath,*logpath ;
+  const char *errmsgpath,*errlogpath,*optpath,*mpspath,*logpath ;
 
   struct timeval lptime ;
   
-  char *rtnnme = "dylp" ;
+  const char *rtnnme = "dylp" ;
 
 /*
   getopt() --- we need explicit declarations under strict ANSI compliance
@@ -549,7 +550,8 @@ int main (int argc, char *argv[])
 
   /* mpsio.c */
 
-  extern bool dy_mpsin(char *mpspath, consys_struct **consys, double infinity);
+  extern bool dy_mpsin(const char *mpspath,
+  		       consys_struct **consys, double infinity);
 
   /* dy_basis.c */
 
@@ -794,7 +796,7 @@ int main (int argc, char *argv[])
   many basis updates the basis can hold before it requires refactoring.
   Adding 5 to dylp's refactor interval should give a safety margin.
 */
-  dy_initbasis(2*main_sys->concnt,main_lpopts->factor+5,0) ;
+  dy_initbasis(2*main_sys->concnt,main_lpopts->factor+5,0.0) ;
 /*
   Run the lp.
 */

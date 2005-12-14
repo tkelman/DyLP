@@ -93,8 +93,8 @@ static char svnid[] UNUSED = "$Id$" ;
 typedef struct { FILE *stream ;
                  flags modes ;
 		 int refcnt ;
-                 char *dname ;
-                 char *fname ; } filblk_struct ;
+                 const char *dname ;
+                 const char *fname ; } filblk_struct ;
 
 static filblk_struct *filblks ;
 static ioid maxfiles ;
@@ -336,8 +336,8 @@ bool ioinit (void)
 
 { int len ;
   filblk_struct *filblk ;
-  char *fname,*errlogpath ;
-  char *rtnnme = "ioinit" ;
+  char *fname,*errlogpath,*tmp ;
+  const char *rtnnme = "ioinit" ;
 
   extern FILE *errlogq(char **elogpath) ;
 
@@ -384,12 +384,14 @@ bool ioinit (void)
       fname = errlogpath ; }
     else
     { len = fname-errlogpath ;
-      filblk->dname = (char *) MALLOC(len+1) ;
-      (void) strncpy(filblk->dname,errlogpath,len) ;
-      filblk->dname[len] = '\0' ;
+      tmp = (char *) MALLOC(len+1) ;
+      (void) strncpy(tmp,errlogpath,len) ;
+      tmp[len] = '\0' ;
+      filblk->dname = tmp ;
       fname++ ; }
-  filblk->fname = (char *) MALLOC(strlen(fname)+1) ;
-  (void) strcpy(filblk->fname,fname) ;
+  tmp = (char *) MALLOC(strlen(fname)+1) ;
+  (void) strcpy(tmp,fname) ;
+  filblk->fname = tmp ;
   setflg(filblk->modes,io_active|io_write) ;
   filblk->refcnt = 1 ; }
 
@@ -435,7 +437,7 @@ static bool rwmodecmp (filblk_struct *filblk, const char *mode)
   Returns: TRUE if the r/w mode information matches, FALSE otherwise.
 */
 
-{ char *rtnnme = "rwmodecmp" ;
+{ const char *rtnnme = "rwmodecmp" ;
   flags modes ;
   bool rw ;
 
@@ -476,7 +478,7 @@ static bool setrwmode (filblk_struct *filblk, char *mode)
   Returns: TRUE if the mode is set successfully, FALSE otherwise.
 */
 
-{ char *rtnnme = "setrwmode" ;
+{ const char *rtnnme = "setrwmode" ;
   bool rw ;
 
   if (mode == NULL)
@@ -521,7 +523,7 @@ bool setmode (ioid id, char mode)
 */
 
 { filblk_struct *filblk ;
-  char *rtnnme = "setmode" ;
+  const char *rtnnme = "setmode" ;
 /*
   Check to make sure the stream ID is OK.
 */
@@ -557,7 +559,7 @@ bool setmode (ioid id, char mode)
 
 
 
-char *idtopath (ioid id)
+const char *idtopath (ioid id)
 
 /*
   This routine returns the file name associated with the specified stream.
@@ -570,9 +572,9 @@ char *idtopath (ioid id)
 */
 
 { static char fullpath[MAXPATH] ;
-  static char *badid = "!invalid id!" ;
+  static const char *badid = "!invalid id!" ;
   filblk_struct *filblk ;
-  char *rtnnme = "idtopath" ;
+  const char *rtnnme = "idtopath" ;
 /*
   Check to make sure the stream ID is OK.
 */
@@ -611,10 +613,10 @@ ioid pathtoid (const char *path, const char *mode)
 	   nothing matched.
 */
 
-{ char *fname ;
+{ const char *fname ;
   int ndx,dlen ;
   filblk_struct *filblk ;
-  char *rtnnme = "pathtoid" ;
+  const char *rtnnme = "pathtoid" ;
 
   if (path == NULL)
   { errmsg(2,rtnnme,"path") ;
@@ -623,7 +625,7 @@ ioid pathtoid (const char *path, const char *mode)
   fname = strrchr(path,'/') ;
   if (fname == NULL)
   { dlen = 0 ;
-    fname = (char *) path ; }
+    fname = path ; }
   else
   { dlen = fname-path ;
     fname++ ; }
@@ -661,7 +663,7 @@ bool ttyq (ioid id)
 */
 
 { filblk_struct *filblk ;
-  char *rtnnme = "ttyq" ;
+  const char *rtnnme = "ttyq" ;
 
   extern int isatty(int fildes) ;
   extern int fileno(FILE *stream) ;
@@ -717,12 +719,13 @@ ioid openfile (const char *path, const char *mode)
 
 { FILE *handle ;
   filblk_struct *filblk ;
-  char *fname ;
+  const char *fname ;
+  char *tmp ;
   char mode_var[3] ;
   int len ;
   ioid id ;
   bool mustexist,totop ;
-  char *rtnnme = "openfile" ;
+  const char *rtnnme = "openfile" ;
 /*
   Make sure the parameters are ok.
 */
@@ -831,15 +834,17 @@ ioid openfile (const char *path, const char *mode)
   fname = strrchr(path,'/') ;
   if (fname == NULL)
   { filblk->dname = NULL ;
-    fname = (char *) path ; }
+    fname = path ; }
   else
   { fname++ ;
     len = fname-path ;
-    filblk->dname = (char *) MALLOC(len+1) ;
-    (void) strncpy(filblk->dname,path,len) ;
-    filblk->dname[len] = '\0' ; }
-  filblk->fname = (char *) MALLOC(strlen(fname)+1) ;
-  (void) strcpy(filblk->fname,fname) ;
+    tmp = (char *) MALLOC(len+1) ;
+    (void) strncpy(tmp,path,len) ;
+    tmp[len] = '\0' ;
+    filblk->dname = tmp ; }
+  tmp = (char *) MALLOC(strlen(fname)+1) ;
+  (void) strcpy(tmp,fname) ;
+  filblk->fname = tmp ;
   setflg(filblk->modes,io_active|io_free) ;
   filblk->refcnt = 1 ;
 
@@ -858,7 +863,7 @@ bool isactive (ioid id)
   Returns: TRUE if the stream is active, FALSE otherwise
 */
 
-{ char *rtnnme = "isactive" ;
+{ const char *rtnnme = "isactive" ;
 /*
   We'll still complain if the id isn't valid.
 */
@@ -886,7 +891,7 @@ bool closefile (ioid id)
 
 { filblk_struct *filblk ;
   bool retval ;
-  char *rtnnme = "closefile" ;
+  const char *rtnnme = "closefile" ;
 /*
   Make sure the id is valid.
 */
@@ -954,7 +959,7 @@ bool chgerrlog (const char *newerrpath, bool echo)
   char *olderrpath ;
   FILE *newerrchn ;
 
-  char *rtnnme = "chgerrlog" ;
+  const char *rtnnme = "chgerrlog" ;
 
   extern FILE *errlogq(char **elogpath) ;
   extern bool reseterrlogchn(const char *elogpath, FILE *elogchn,
@@ -1023,7 +1028,7 @@ long mark (ioid id)
 
 { filblk_struct *filblk ;
   long here ;
-  char *rtnnme = "mark" ;
+  const char *rtnnme = "mark" ;
 /*
   Check to make sure the stream ID is OK.
 */
@@ -1060,7 +1065,7 @@ bool backup (ioid id, long there)
 */
 
 { filblk_struct *filblk ;
-  char *rtnnme = "backup" ;
+  const char *rtnnme = "backup" ;
 /*
   Check to make sure the stream ID is OK.
 */
@@ -1097,7 +1102,7 @@ static chartab_struct *nxtchar (FILE *stream, flags modes)
 	   and '\n' receive special handling.
 */
 
-{ char *rtnnme = "nxtchar" ;
+{ const char *rtnnme = "nxtchar" ;
   int nxt,id ;
 /*
   Read characters until not class CCIG or until EOF.
@@ -1172,7 +1177,7 @@ bool scan (ioid id, const char pattern[], bool rwnd, bool wrap)
   filblk_struct *filblk ;
   FILE *stream ;
   flags mode ;
-  char *rtnnme = "scan" ;
+  const char *rtnnme = "scan" ;
 /*
   Check to make sure the stream ID is OK and lex points to a string.
 */
@@ -1301,7 +1306,7 @@ lex_struct *scanlex (ioid id)
   flags mode ;
   static char stringspace[MAXLEXLEN+1] ;
   static lex_struct lex = {LCNIL,stringspace} ;
-  char *rtnnme = "scanlex" ;
+  const char *rtnnme = "scanlex" ;
 /*
   Check to make sure that the stream id is OK.
 */
@@ -1457,7 +1462,7 @@ lex_struct *scanstr (ioid id,
   FILE *stream ;
   flags mode ;
   static lex_struct lex = {LCNIL,NULL} ;
-  char *rtnnme = "scanstr" ;
+  const char *rtnnme = "scanstr" ;
 /*
   Release the previous lex space, if necessary.
 */
@@ -1628,7 +1633,7 @@ void flushio (ioid id, bool echo)
 
 { FILE *strmid ;
   filblk_struct *filblk ;
-  char *rtnnme = "flushio" ;
+  const char *rtnnme = "flushio" ;
 
 /*
   Check for sane id.
@@ -1684,7 +1689,7 @@ void outfmt (ioid id, bool echo, const char *pattern, ... )
 { va_list parms ;
 
   filblk_struct *filblk ;
-  char *rtnnme = "outfmt" ;
+  const char *rtnnme = "outfmt" ;
 /*
   Sanity checks on i/o id and pattern.
 */
@@ -1740,7 +1745,7 @@ void outchr (ioid id, bool echo, char chr)
 
 { FILE *strmid ;
   filblk_struct *filblk ;
-  char *rtnnme = "outchr" ;
+  const char *rtnnme = "outchr" ;
 
 /*
   Sanity checks on the parameters.
@@ -1811,7 +1816,7 @@ int outfxd (char *buffer, int fldsze, char lcr, const char *pattern, ... )
   int tlen,hlen ;
   bool pad ;
   static bool frstflg = TRUE ;
-  char *rtnnme = "outfxd" ;
+  const char *rtnnme = "outfxd" ;
 
 /*
   Load the spaces array just once.
@@ -1930,7 +1935,7 @@ void outfmt_ (integer *ftnid, logical *ftnecho, char *pattern, ... )
   double dblarg ;
   char *chararg ;
 
-  char *rtnnme = "outfmt_" ;
+  const char *rtnnme = "outfmt_" ;
 
 /*
   Convert the stream id and echo values.

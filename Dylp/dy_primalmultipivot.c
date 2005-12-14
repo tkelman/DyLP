@@ -92,10 +92,10 @@ static int primcand_cmp (const void *p_primcand1, const void *p_primcand2)
 	    1 if primcand1 > primcand2
 */
 { double delta1,delta2,ratio1,ratio2 ;
-  primcand_struct *primcand1,*primcand2 ;
+  const primcand_struct *primcand1,*primcand2 ;
 
-  primcand1 = (primcand_struct *) p_primcand1 ;
-  primcand2 = (primcand_struct *) p_primcand2 ;
+  primcand1 = (const primcand_struct *) p_primcand1 ;
+  primcand2 = (const primcand_struct *) p_primcand2 ;
 
 /*
   The primary criterion is nondecreasing delta. See promoteSanePivot for
@@ -195,7 +195,7 @@ static void promoteSanePivot (primcand_struct *outcands)
   front of the list.
 */
   tol = log10(dy_tols->pfeas/dy_tols->zero)/2 ;
-  tol = dy_tols->zero*pow(10,tol) ;
+  tol = dy_tols->zero*pow(10.0,tol) ;
   if (firsthardsane > 1)
   { for (ndx = firsthardsane ; ndx > 1 ; ndx--)
     { sane = outcands[ndx] ;
@@ -302,7 +302,7 @@ static dyret_enum scanForPrimOutCands (primcand_struct *outcands,
   const bool allowsoftdegen = FALSE ;
 
 # ifdef PARANOIA
-  char *rtnnme = "scanForPrimOutCands" ;
+  const char *rtnnme = "scanForPrimOutCands" ;
 # endif
 
 # if !defined(NDEBUG) || defined(PARANOIA)

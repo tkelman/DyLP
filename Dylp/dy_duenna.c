@@ -97,7 +97,7 @@ static bool groombasis ()
   char statbuf[32] ;
   bool retval,statok,backout ;
   
-  char *rtnnme = "groombasis" ;
+  const char *rtnnme = "groombasis" ;
 
 # ifndef NDEBUG
   int print ;
@@ -488,7 +488,7 @@ dyret_enum dy_accchk (flags *checks)
   flags results,vstat,factorflags ;
   bool dorefactor,tryagain,dualDegen ;
   dyret_enum factorresult ;
-  char *rtnnme = "dy_accchk" ;
+  const char *rtnnme = "dy_accchk" ;
 
 # ifndef NDEBUG
   int print,dfeascnt ;
@@ -1073,7 +1073,7 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
   double cbarcand ;
   bool pivok ;
   flags checkflags,outflags,statcand ;
-  char *rtnnme = "La Duenna" ;
+  const char *rtnnme = "La Duenna" ;
 
 # ifndef NDEBUG
   int print ;
@@ -1242,9 +1242,9 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
 	outfmt(dy_logchn,dy_gtxecho,"singular basis; attempting recovery.") ; }
 #     endif
       if (dy_lp->phase == dyDUAL)
-	retval = dy_addtopivrej(xindx,dyrSINGULAR,0,0) ;
+	retval = dy_addtopivrej(xindx,dyrSINGULAR,0.0,0.0) ;
       else
-	retval = dy_addtopivrej(xjndx,dyrSINGULAR,0,0) ;
+	retval = dy_addtopivrej(xjndx,dyrSINGULAR,0.0,0.0) ;
       if (retval != dyrOK) return (retval) ;
       retval = dyrRESELECT ;
       break ; }

@@ -1712,7 +1712,7 @@ extern void dy_initpivrej(int sze), dy_freepivrej(void) ;
   dy_primal.c
 */
 
-extern lpret_enum dy_primal() ;
+extern lpret_enum dy_primal(void) ;
 extern bool dy_initp1obj(void),dy_swapobjs(dyphase_enum phase) ; 
 
 /*
@@ -1730,7 +1730,7 @@ extern dyret_enum
   dy_dual.c
 */
 
-extern lpret_enum dy_dual() ;
+extern lpret_enum dy_dual(void) ;
 
 #endif /* DYLP_INTERNAL */
 
@@ -1804,13 +1804,13 @@ extern bool dy_pricenbvars(lpprob_struct *orig_lp, flags priceme,
 
 extern void dy_logpivot(dyret_enum result, int xjndx, int indir, double cbarj,
 			int xindx, int outdir, double abarij, double delta) ;
-extern char *dy_prtdyret(dyret_enum retcode) ;
+extern const char *dy_prtdyret(dyret_enum retcode) ;
 
 #endif /* DYLP_INTERNAL */
 
-extern char *dy_prtlpret(lpret_enum lpret),
-	    *dy_prtlpphase(dyphase_enum phase, bool abbrv),
-	    *dy_prtvstat(flags status) ;
+extern const char *dy_prtlpret(lpret_enum lpret),
+		  *dy_prtlpphase(dyphase_enum phase, bool abbrv) ;
+extern char *dy_prtvstat(flags status) ;
 extern bool dy_dumpcompact(ioid chn, bool echo, lpprob_struct *soln,
 			   bool nbzeros) ;
 

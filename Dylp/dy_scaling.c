@@ -120,7 +120,7 @@ bool dy_initlclsystem (lpprob_struct *orig_lp, bool hotstart)
 
   consys_struct *orig_sys ;
 
-  char *rtnnme = "dy_initlclsystem" ;
+  const char *rtnnme = "dy_initlclsystem" ;
 
 # ifdef PARANOIA
   if (orig_lp == NULL)
@@ -286,8 +286,8 @@ bool dy_initlclsystem (lpprob_struct *orig_lp, bool hotstart)
 */
   scalefactor = ((int)(log10(orig_scm/scaled_scm)+.5)-1) ;
   if (scalefactor > 1)
-  { dy_tols->pfeas_scale *= pow(10,(double) scalefactor) ;
-    dy_tols->dfeas_scale *= pow(10,(double) scalefactor) ;
+  { dy_tols->pfeas_scale *= pow(10.0,(double) scalefactor) ;
+    dy_tols->dfeas_scale *= pow(10.0,(double) scalefactor) ;
 #   ifndef NDEBUG
     if (dy_opts->print.scaling >= 2)
     { outfmt(dy_logchn,dy_gtxecho,
@@ -300,8 +300,8 @@ bool dy_initlclsystem (lpprob_struct *orig_lp, bool hotstart)
   }
   if (scalefactor > 2)
   { scalefactor -= 2 ;
-    dy_tols->zero /= pow(10,(double) scalefactor) ;
-    dy_tols->cost /= pow(10,(double) scalefactor) ;
+    dy_tols->zero /= pow(10.0,(double) scalefactor) ;
+    dy_tols->cost /= pow(10.0,(double) scalefactor) ;
 #   ifndef NDEBUG
     if (dy_opts->print.scaling >= 2)
     { outfmt(dy_logchn,dy_gtxecho,
@@ -334,7 +334,7 @@ void dy_refreshlclsystem (flags what)
   double infinity ;
 
 # ifdef PARANOIA
-  char *rtnnme = "dy_refreshlclsystem" ;
+  const char *rtnnme = "dy_refreshlclsystem" ;
 # endif
 
 /*
@@ -515,7 +515,7 @@ static bool check_unscalebetai (consys_struct *orig_sys,
   bool retval ;
   pkvec_struct *aj_pk ;
 
-  char *rtnnme = "check_unscalebetai" ;
+  const char *rtnnme = "check_unscalebetai" ;
 
   retval = TRUE ;
 
@@ -688,7 +688,7 @@ bool dy_unscale_betai (consys_struct *orig_sys, int j_orig,
   double *betai,*ai,sign ;
   bool inbasis,retval ;
 
-  char *rtnnme = "dy_unscale_betai" ;
+  const char *rtnnme = "dy_unscale_betai" ;
 
 # ifdef PARANOIA
   if (j_orig == 0)
@@ -928,7 +928,7 @@ bool dy_unscaleabarj (consys_struct *orig_sys, int j_orig, double **p_abarj)
   double *abarj ;
   pkvec_struct *aj_pk ;
 
-  char *rtnnme = "dy_unscaleabarj" ;
+  const char *rtnnme = "dy_unscaleabarj" ;
 
 /*
   Acquire the unscaled column.
