@@ -355,7 +355,7 @@ double pkvec_2norm (pkvec_struct *vec)
 
 
 
-double exvec_infnorm (double *vec, int len)
+double exvec_infnorm (double *vec, int len, int *p_jmax)
 
 /*
   Simple utility routine to calculate the infinity-norm MAX{j} |vec<j>| of
@@ -364,11 +364,12 @@ double exvec_infnorm (double *vec, int len)
   Parameters:
     vec:	expanded vector
     len:	length of the vector
+    p_jmax:	(o) if non-null, will be set to index of max value
 
   Returns: the inf-norm (max) of the vector, or NaN if there's a problem.
 */
 
-{ int ndx ;
+{ int j,jmax ;
   double norm ;
 
 # ifdef PARANOIA
@@ -376,11 +377,25 @@ double exvec_infnorm (double *vec, int len)
 
   if (vec == NULL)
   { errmsg(2,rtnnme,"vec") ;
+    if (p_jmax != NULL) *p_jmax = -1 ;
     return (quiet_nan(0)) ; }
 # endif
 
-  norm = 0 ;
-  for (ndx = 1 ; ndx <= len ; ndx++) norm = maxx(fabs(vec[ndx]),norm) ;
+/*
+  Initialising (norm, jmax) to (0.0, len) will give the proper result for
+  a vector of length 0, and also suppresses a compiler `possible rui' warning
+  for jmax.
+*/
+  norm = 0.0 ;
+  if (p_jmax != NULL)
+  { jmax = len ;
+    for (j = 1 ; j <= len ; j++)
+    { if (fabs(vec[j]) > norm)
+      { norm = fabs(vec[j]) ;
+	jmax = j ; } }
+    *p_jmax = jmax ; }
+  else
+  { for (j = 1 ; j <= len ; j++) norm = maxx(fabs(vec[j]),norm) ; }
 
   return (norm) ; }
 

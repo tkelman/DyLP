@@ -306,7 +306,11 @@ static bool empty_row (consys_struct *consys, int rowndx, bool *rescan)
   colhdr_struct *colhdr ;
   rowhdr_struct *rowhdr ;
   coeff_struct *ccoeff,*rcoeff ;
+
+
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "empty_row" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -546,7 +550,10 @@ static bool find_maxes (consys_struct *consys, bool scan_cols, bool scan_rows)
 */
 
 { int colndx,rowndx ;
+
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "find_maxes" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -1127,7 +1134,10 @@ bool consys_attach (consys_struct *consys, flags what, int elsze, void **pvec)
   attvhdr_struct *attvhdr ;
   lnk_struct *lnk ;
   double *dvec ;
+
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_attach" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2110,7 +2120,9 @@ bool consys_getcol_pk (consys_struct *consys, int colndx, pkvec_struct **pkvec)
   coeff_struct *coeff ;
   pkcoeff_struct *pkcoeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_getcol_pk" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2202,7 +2214,9 @@ bool consys_getcol_ex (consys_struct *consys, int colndx, double **vec)
 { colhdr_struct *colhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_getcol_ex" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2278,7 +2292,9 @@ bool consys_getrow_pk (consys_struct *consys, int rowndx, pkvec_struct **pkvec)
   coeff_struct *coeff ;
   pkcoeff_struct *pkcoeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_getrow_pk" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2370,7 +2386,9 @@ bool consys_getrow_ex (consys_struct *consys, int rowndx, double **vec)
 { rowhdr_struct *rowhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_getrow_ex" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -2841,7 +2859,9 @@ double consys_getcoeff (consys_struct *consys, int rowndx, int colndx)
   colhdr_struct *colhdr ;
   rowhdr_struct *rowhdr ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_getcoeff" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)

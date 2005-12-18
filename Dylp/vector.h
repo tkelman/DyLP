@@ -331,7 +331,7 @@ double pkvec_2norm(pkvec_struct *vec) ;
 double exvec_1norm(double *vec, int len),
        exvec_ssq(double *vec, int len),
        exvec_2norm(double *vec, int len),
-       exvec_infnorm(double *vec, int len) ;
+       exvec_infnorm(double *vec, int len, int *p_jmax) ;
 
 double pkvec_dotexvec(pkvec_struct *pkvec, double *exvec) ;
 

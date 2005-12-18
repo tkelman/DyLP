@@ -163,7 +163,7 @@ static bool cold_sortcons (consys_struct *orig_sys,
   Return value: TRUE if all goes as planned, FALSE on error.
 */
 
-{ int i,k,ndx,m,n,eqcnt,ineqcnt,nearcnt,perpcnt,farcnt ;
+{ int i,ndx,m,n,eqcnt,ineqcnt,nearcnt,perpcnt,farcnt ;
   double cnorm,ainorm,aidotc,pi180,anglei ;
   double *c ;
   int *eqs ;
@@ -176,6 +176,10 @@ static bool cold_sortcons (consys_struct *orig_sys,
   pkvec_struct *aj ;
 
   const char *rtnnme = "cold_sortcons" ;
+
+# ifdef DYLP_STATISTICS
+  int k ;
+# endif
 
 # ifdef PARANOIA
   if (orig_sys == NULL)
@@ -1419,14 +1423,15 @@ static bool ib_populatebasis (void)
 /*
   This routine is responsible for populating the basis (i.e., selecting basic
   variables for each basis position) using a mixture of architectural and
-  logical variables. The type of basis is determined by the initbasis option,
+  logical variables. The type of basis is determined by the coldbasis option,
   as follows:
-    1: (logical) uses only logical variables (slacks and artificials).
-    2: (slack) uses slacks for inequalities, then covers as many equalities
-       as possible with architecturals before falling back on artificials.
-    3: (architectural) uses architecturals first, trying to cover equalities
-       before inequalities, and falling back on logicals for uncovered
-       positions.
+    ibLOGICAL:	(logical) uses only logical variables (slacks and artificials).
+    ibSLACK:	(slack) uses slacks for inequalities, then covers as many
+		equalities as possible with architecturals before falling back
+		on artificials.
+    ibARCH:	(architectural) uses architecturals first, trying to cover
+		equalities before inequalities, and falling back on logicals
+		for uncovered positions.
 
   Parameters: none
 
@@ -1444,27 +1449,41 @@ static bool ib_populatebasis (void)
   int i,j ;
 # endif
 
+# ifdef PARANOIA
+  if (!(dy_opts->coldbasis >= ibLOGICAL && dy_opts->coldbasis <= ibARCH))
+  { errmsg(5,rtnnme,"initial basis type",dy_opts->coldbasis) ;
+    return (FALSE) ; }
+# endif
+
   m = dy_sys->concnt ;
 
 # ifndef NDEBUG
   if (dy_opts->print.crash >= 1)
-    outfmt(dy_logchn,dy_gtxecho,
-	   "\n  crashing a basis for system %s, %d constraints.",
-	   dy_sys->nme,m) ;
+  { outfmt(dy_logchn,dy_gtxecho,"\n  constructing ") ;
+    switch (dy_opts->coldbasis)
+    { case ibLOGICAL:
+      { outfmt(dy_logchn,dy_gtxecho,"logical") ;
+	break ; }
+      case ibSLACK:
+      { outfmt(dy_logchn,dy_gtxecho,"slack") ;
+	break ; }
+      case ibARCH:
+      { outfmt(dy_logchn,dy_gtxecho,"architectural") ;
+	break ; }
+      default:
+      { errmsg(1,rtnnme,__LINE__) ;
+	return (FALSE) ; } }
+    outfmt(dy_logchn,dy_gtxecho," basis for system %s, %d constraints.",
+	   dy_sys->nme,m) ; }
 # endif
 
-# ifdef PARANOIA
-  if (!(dy_opts->initbasis >= 1 && dy_opts->initbasis <= 3))
-  { errmsg(5,rtnnme,"initial basis type",dy_opts->initbasis) ;
-    return (FALSE) ; }
-# endif
 
   basiscnt = 0 ;
 
 /*
   Logical and slack basis types will use slacks to cover off inequalities.
 */
-  if (dy_opts->initbasis == 1 || dy_opts->initbasis == 2)
+  if (dy_opts->coldbasis == ibLOGICAL || dy_opts->coldbasis == ibSLACK)
   { slkcnt = ib_slackselect() ;
     basiscnt += slkcnt ; }
 /*
@@ -1482,7 +1501,7 @@ static bool ib_populatebasis (void)
   all we need, as dy_coldstart has already groomed the bounds.
 */
   if (basiscnt < m &&
-      (dy_opts->initbasis == 2 || dy_opts->initbasis == 3))
+      (dy_opts->coldbasis == ibSLACK || dy_opts->coldbasis == ibARCH))
   { archvars = NULL ;
     bretval = ib_archvrank(&archvcnt,&archvars) ;
     if (bretval == FALSE)
@@ -1502,7 +1521,7 @@ static bool ib_populatebasis (void)
 /*
   Use logicals for any uncovered inequalities in an architectural basis.
 */
-  if (basiscnt < m && dy_opts->initbasis == 3)
+  if (basiscnt < m && dy_opts->coldbasis == ibARCH)
   { slkcnt = ib_slackselect() ;
     basiscnt += slkcnt ; }
 /*
@@ -1556,7 +1575,7 @@ dyret_enum dy_crash (void)
 	   dy_factor.
 */
 
-{ int cndx,vndx ;
+{ int vndx ;
   double *vub,*vlb,*obj ;
   flags calcflgs ;
   dyret_enum retval ;
@@ -1564,6 +1583,10 @@ dyret_enum dy_crash (void)
   const char *rtnnme = "dy_crash" ;
 
   extern void dy_setfinalstatus(void) ;		/* dy_hotstart.c */
+
+# ifndef NDEBUG
+  int cndx ;
+# endif
 
 # ifdef PARANOIA
   if (dy_lp == NULL)

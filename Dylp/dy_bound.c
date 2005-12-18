@@ -1076,12 +1076,13 @@ static int type2activate (consys_struct *orig_sys,
 { int xjndx,xkndx ;
   double abarij,deltaj ;
   bool pivoted ;
-  flags xjstatus ;
   dyret_enum pivresult,duennaresult ;
   int retval ;
   const char *rtnnme = "type2activate" ;
 
 # ifndef NDEBUG
+  flags xjstatus ;
+
   if (dy_opts->print.varmgmt >= 1)
   { xjstatus = (flags) -dy_origvars[oxjndx] ;
     outfmt(dy_logchn,dy_gtxecho,"\n    activating and pivoting %s %s (%d), ",
@@ -1554,6 +1555,8 @@ int dy_dualaddvars (consys_struct *orig_sys)
   Now open up a loop to walk the variables in orig_sys and check the inactive
   ones for activation. If we're here as part of initialisation, we're only
   interested in type 1 activations.
+
+  (This routine not currently used in initialisation. --lh, 051203 --)
 */
   if (dy_lp->phase == dyINIT)
   { acttype = 1 ; }

@@ -330,6 +330,11 @@ bool dy_actNBPrimArch (consys_struct *orig_sys, int ovndx)
 */
   dy_frame[j] = TRUE ;
   dy_gamma[j] = 1 ;
+/*
+  And finally, a little bookkeeping.
+*/
+  if (dy_sys->archvcnt >= dy_lp->sys.maxvars)
+    dy_lp->sys.loadablevars = FALSE ;
 
 # ifndef NDEBUG
   if (dy_opts->print.varmgmt >= 3)
@@ -974,6 +979,9 @@ static int scanPrimVarStdAct (consys_struct *orig_sys,
   if (orig_sys->obj == NULL)
   { errmsg(101,rtnnme,orig_sys->nme,consys_assocnme(NULL,CONSYS_OBJ)) ;
     return (-1) ; }
+# endif
+# ifndef NDEBUG
+  cbarj = -1 ;		/* Suppress a compiler warning. */
 # endif
 
   fatal = FALSE ;

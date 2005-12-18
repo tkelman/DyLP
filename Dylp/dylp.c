@@ -615,10 +615,12 @@ static void determineLoadable (consys_struct *orig_sys)
 # endif
 
 /*
-  If the fullsys option is specified, this is all trivial.
+  If the fullsys option is specified, this is all trivial. Note that forcedfull
+  should still be FALSE here --- it indicates traversal of the dyFORCEFULL
+  state.
 */
   if (dy_opts->fullsys == TRUE)
-  { dy_lp->sys.forcedfull = TRUE ;
+  { dy_lp->sys.forcedfull = FALSE ;
     dy_lp->sys.maxcons = dy_sys->concnt ;
     dy_lp->sys.loadablecons = FALSE ;
     dy_lp->sys.maxvars = dy_sys->archvcnt ;
@@ -653,9 +655,13 @@ static void determineLoadable (consys_struct *orig_sys)
   dy_lp->sys.maxcons = orig_sys->concnt ;
   if (dy_sys->concnt < dy_lp->sys.maxcons)
     dy_lp->sys.loadablecons = TRUE ;
+  else
+    dy_lp->sys.loadablecons = FALSE ;
   dy_lp->sys.maxvars = orig_sys->varcnt-fixcnt ;
   if (dy_sys->archvcnt < dy_lp->sys.maxvars)
     dy_lp->sys.loadablevars = TRUE ;
+  else
+    dy_lp->sys.loadablevars = FALSE ;
 # ifndef NDEBUG
   if (dy_opts->print.setup >= 2 || dy_opts->print.varmgmt >= 1)
   { outfmt(dy_logchn,dy_gtxecho,
@@ -1510,7 +1516,8 @@ lpret_enum dylp (lpprob_struct *orig_lp, lpopts_struct *orig_opts,
       { if (dy_lp->sys.forcedfull == TRUE ||
 	    (dy_lp->sys.loadablecons == FALSE &&
 	     dy_lp->sys.loadablevars == FALSE))
-	{ phase = dyDONE ; }
+	{ dy_lp->lpret = lpFORCEFULL ;
+	  phase = dyDONE ; }
 	else
 	{ phase = dy_forceFull(orig_sys) ;
 	  dy_lp->sys.forcedfull = TRUE ; }

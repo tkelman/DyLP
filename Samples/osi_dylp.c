@@ -764,7 +764,7 @@ int main (int argc, char *argv[])
   dy_defaults(&main_lpopts,&main_lptols) ;
   main_lpopts->forcecold = TRUE ;
   main_lpopts->fullsys = TRUE ;
-  main_lpopts->initbasis = 1 ;
+  main_lpopts->coldbasis = ibLOGICAL ;
   if (optpath != NULL)
   { dy_cmdchn = openfile(optpath,"r") ;
     if (dy_cmdchn == IOID_INV) exit (1) ;

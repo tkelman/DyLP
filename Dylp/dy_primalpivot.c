@@ -686,7 +686,9 @@ dyret_enum dy_primalin (int startcol, int scan, int *xjndx, int *nextcol)
   double ncbarj ;
   dyret_enum retval ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "dy_primalin" ;
+# endif
 
 # ifdef PARANOIA
   if (dy_cbar == NULL)
@@ -701,7 +703,7 @@ dyret_enum dy_primalin (int startcol, int scan, int *xjndx, int *nextcol)
   |cbar<j>|/||abar<j>|| over nonbasic columns k, so 0 is bad.
 */
   *xjndx = 0 ;
-  ncbarj = 0 ;
+  ncbarj = -dy_tols->inf ;
   xkndx = startcol ;
   scan_blk = minn(scan,dy_sys->varcnt) ;
   retval = dyrINV ;
@@ -740,9 +742,10 @@ dyret_enum dy_primalin (int startcol, int scan, int *xjndx, int *nextcol)
       { 
 #       ifndef NDEBUG
 	if (dy_opts->print.pricing >= 3)
-	{ outfmt(dy_logchn,dy_gtxecho,"\n\tpricing %s (%d), status %s; << status >>",
-		   consys_nme(dy_sys,'v',xkndx,TRUE,NULL),xkndx,
-		   dy_prtvstat(xkstatus)) ; }
+	{ outfmt(dy_logchn,dy_gtxecho,
+		 "\n\tpricing %s (%d), status %s; << status >>",
+		 consys_nme(dy_sys,'v',xkndx,TRUE,NULL),xkndx,
+		 dy_prtvstat(xkstatus)) ; }
 #       endif
 	continue ; }
 /*
@@ -2216,7 +2219,10 @@ static dyret_enum pseupdate (int xjndx, int xindx, int *candxj,
   flags xkstatus ;
   bool reset,pivreject ;
   dyret_enum retval ;
+
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "pseupdate" ;
+# endif
 
 /*
   Do a little prep, pulling out common values and setting initial values.
@@ -2228,7 +2234,7 @@ static dyret_enum pseupdate (int xjndx, int xindx, int *candxj,
   cbarj = dy_cbar[xjndx] ;
   dy_cbar[xjndx] = 0 ;
   retval = dyrINV ;
-  candcbarj = 0 ;
+  candcbarj = -dy_tols->inf ;
   *candxj = 0 ;
 /*
   Do we need to reset the frame of reference? The test is that the iteratively
@@ -2555,7 +2561,7 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
 # endif
 
   dy_ftran(abarj,TRUE) ;
-  maxabarj = exvec_infnorm(abarj,dy_sys->concnt) ;
+  maxabarj = exvec_infnorm(abarj,dy_sys->concnt,NULL) ;
 
 # ifndef NDEBUG
 /*
@@ -2804,6 +2810,10 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
   if (!(outretval == dyrOK || outretval == dyrDEGEN))
   { FREE(abarj) ;
     return (outretval) ; }
+/*
+  The notion is that BFX will never reenter and NBFR will never leave, once the
+  pivot is complete. So we're in no danger of cycling.
+*/
   if (outretval == dyrOK)
   { dy_lp->degenpivcnt = 0 ; }
   else
@@ -2823,6 +2833,12 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
   can fail for three reasons: the pivot element didn't meet the numerical
   stability criteria (but we've checked this already), the pivot produced a
   singular basis, or the basis package ran out of space.
+
+  On the dual side, it was a big win, computationally, to attempt to salvage
+  the pivot at this point with a refactor if dy_pivot reported dyrNUMERIC
+  (near singularity). It's not clear that this is a problem on the primal side,
+  but if I find myself staring at this bit of code, it's worth a shot. All this
+  code should be pulled out to a small subroutine if I add recovery.
 */
   if (xjndx != xindx)
   { for (xkpos = 1 ; xkpos <= dy_sys->concnt ; xkpos++)
@@ -2873,6 +2889,9 @@ dyret_enum dy_primalpivot (int xjndx, int indir,
     else
     if (retval == dyrOK)
     { if (outretval == dyrDEGEN) retval = dyrDEGEN ; } }
+  else
+  if (retval == dyrNUMERIC)
+  { retval = dyrSINGULAR ; }
 /*
   Tidy up and return.
 */

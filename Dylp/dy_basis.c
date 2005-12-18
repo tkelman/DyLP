@@ -280,7 +280,8 @@ double dy_chkpiv (double abarij, double maxabar)
 
 /*
   This routine checks that the pivot element satisfies a stability test. The
-  stability test is |abarij/maxabar| > dy_tols->pivot*piv_tol
+  stability test is
+    |abarij/maxabar| > dy_tols->pivot*piv_tol
 
   The motivation for the check is to try and choose reasonably stable pivots
   --- inv_update will do what we tell it, might as well try to choose half
@@ -298,7 +299,10 @@ double dy_chkpiv (double abarij, double maxabar)
 */
 
 { double ratio,abspiv,stable ;
+  
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "dy_chkpiv" ;
+# endif
 
 # ifdef PARANOIA
   if (luf_basis == NULL)
@@ -306,18 +310,32 @@ double dy_chkpiv (double abarij, double maxabar)
     return (dyrFATAL) ; }
 # endif
 
+/*
+  ZZ_DEBUG_ZZ
+
+  In grow22, we run into trouble because column coefficients inflate to
+  outrageous values --- 1.0e18, for example. I'm thinking that any pivot
+  s.t. |abar<ij> > 1.0| should be accepted.
+*/
+  abspiv = fabs(abarij) ;
   ratio = dy_tols->pivot*luf_basis->luf->piv_tol ;
   stable = ratio*maxabar ;
-  abspiv = fabs(abarij) ;
 # ifndef NDEBUG
-  if (abspiv/stable < 1.0)
-  { if (dy_opts->print.pivoting >= 1)
+  if (dy_opts->print.pivoting >= 1)
+  { if (abspiv/stable < 1.0)
       outfmt(dy_logchn,dy_gtxecho,
-	     "\n%s: rejecting pivot = %g < %g; column max = %g, ratio = %g.",
-	     rtnnme,abarij,stable,maxabar,ratio) ; }
+	     "\n%s: %s pivot = %g < %g; column max = %g, ratio = %g.",
+	     rtnnme,(abspiv < 1.0)?"rejecting":"tolerating",
+	     abarij,stable,maxabar,ratio) ; }
 # endif
   
-  return (abspiv/stable) ; }
+  if (abspiv/stable >= 1.0)
+    return (abspiv/stable) ;
+  else
+  if (abspiv >= 1.0)
+    return (1.0) ;
+  else
+    return (abspiv/stable) ; }
 
 
 
@@ -683,12 +701,17 @@ static dyret_enum adjust_therest (int patchcnt, patch_struct *patches)
 
 { int i,j,pndx ;
   pkvec_struct *aj ;
-  flags statj,stati ;
+  flags statj ;
   dyret_enum retval ;
   dyphase_enum phase ;
-  double valj,vali,cbarj,*vub,*vlb,*obj ;
+  double valj,cbarj,*vub,*vlb,*obj ;
 
   const char *rtnnme = "adjust_therest" ;
+
+# ifndef NDEBUG
+  flags stati ;
+  double vali ;
+# endif
 
 # ifdef PARANOIA
   if (dy_sys == NULL)
@@ -1216,11 +1239,6 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
   can still run into trouble, however, if the pivot results in a singular or
   near-singular basis.
   
-  If REFACTOR_WHEN_UNSTABLE is defined, the basis stability measure
-  (min_vrratio) is compared with stableTol to determine if dy_pivot should
-  return dyrSINGULAR and force a refactor. Experience says, however, that
-  it's better to leave this decision to the basis package.
-
   NOTE: There is an implicit argument here that's not immediately obvious.
 	inv_update gets the entering column from a cached result set with the
 	most recent call to inv_ftran(*,1) (dy_ftran(*,true), if you prefer).
@@ -1237,7 +1255,11 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
     dyrOK:	the pivot was accomplished without incident (inv_update)
     dyrMADPIV:	the pivot element abar<i,j> was rejected as numerically
 		unstable (dy_chkpiv)
-    dyrSINGULAR: the pivot attempt resulted in a singular basis (inv_update)
+    dyrSINGULAR: the pivot attempt resulted in a structurally singular basis
+		(i.e., some diagonal element is zero) (inv_update)
+    dyrNUMERIC:	the pivot attempt resulted in a numerically singular (unstable)
+		basis (i.e, some diagonal element is too small compared to
+		other elements in the associated row and column) (inv_update)
     dyrBSPACE:	glpinv/glpluf ran out of space for the basis representation
 		(inv_update)
     dyrFATAL:	internal confusion
@@ -1246,11 +1268,6 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
 { int retval ;
   double ratio ;
   dyret_enum retcode ;
-
-# ifdef REFACTOR_WHEN_UNSTABLE
-  flags calcflgs = ladPRIMALS|ladDUALS ;
-  const double stableTol = 1.0e-7 ;
-# endif
 
   const char *rtnnme = "dy_pivot" ;
 
@@ -1287,14 +1304,21 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
     { retcode = dyrOK ;
       break ; }
     case 1:
-    case 2:
     { retcode = dyrSINGULAR ;
 #     ifndef NDEBUG
       if (dy_opts->print.basis >= 2)
       { outfmt(dy_logchn,dy_gtxecho,
-	       "\n    %s(%d) singular basis (%s) after pivot.",
-	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	       (retval == 1)?"structural":"numeric") ; }
+	       "\n    %s(%d) singular basis (structural) after pivot.",
+	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
+#     endif
+      break ; }
+    case 2:
+    { retcode = dyrNUMERIC ;
+#     ifndef NDEBUG
+      if (dy_opts->print.basis >= 2)
+      { outfmt(dy_logchn,dy_gtxecho,
+	       "\n    %s(%d) singular basis (numeric) after pivot.",
+	       dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters) ; }
 #     endif
       break ; }
     case 3:
@@ -1311,26 +1335,6 @@ dyret_enum dy_pivot (int xipos, double abarij, double maxabarj)
     { errmsg(1,rtnnme,__LINE__) ;
       retcode = dyrFATAL ;
       break ; } }
-# ifdef REFACTOR_WHEN_UNSTABLE
-/*
-  The pivot succeeded, but do we want to live with the result? If the local
-  stability measure for the pivot is too small, claim singularity, which will
-  force a refactor and appropriate error recovery actions. Bump the pivoting
-  parameters in hopes of improving stability.
-*/
-  if (luf_basis->min_vrratio*luf_basis->upd_tol < stableTol)
-  {
-#   ifndef NDEBUG
-    if (dy_opts->print.basis >= 3)
-    { outfmt(dy_logchn,dy_gtxecho,
-	     "\n      %s(%d) estimated stability after pivot %g < tol = %g;",
-	     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
-	     luf_basis->min_vrratio*luf_basis->upd_tol ) ;
-      outfmt(dy_logchn,dy_gtxecho," forcing singularity.") ; }
-#   endif
-    (void) dy_setpivparms(+1,0) ;
-    retcode = dyrSINGULAR ; }
-# endif
   
   return (retcode) ; }
 

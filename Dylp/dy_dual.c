@@ -160,7 +160,9 @@ static dyret_enum preoptimality (dyret_enum lpretval, flags *result)
 { flags checkflags ;
   dyret_enum retval ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "preoptimality" ;
+# endif
 
 # ifdef PARANOIA
   if (!(lpretval == dyrOPTIMAL || lpretval == dyrUNBOUND ||
@@ -692,7 +694,10 @@ lpret_enum dy_dual (void)
 
 { lpret_enum retval ;
   dyret_enum dyret ;
+
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "dy_dual" ;
+# endif
 
   retval = lpINV ;
   dy_lp->phase = dyDUAL ;

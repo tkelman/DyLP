@@ -57,7 +57,9 @@ double consys_dotrow (consys_struct *consys, int rowndx, double *vec)
   rowhdr_struct *rowhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_dotrow" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -126,7 +128,9 @@ double consys_dotcol (consys_struct *consys, int colndx, double *vec)
   colhdr_struct *colhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_dotcol" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -193,7 +197,9 @@ double consys_1normrow (consys_struct *consys, int rowndx)
   rowhdr_struct *rowhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_1normrow" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -257,7 +263,9 @@ double consys_ssqrow (consys_struct *consys, int rowndx)
   rowhdr_struct *rowhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_ssqrow" ;
+# endif
 
 /*
   The usual paranoia, plus an honest index check.
@@ -323,7 +331,9 @@ double consys_2normrow (consys_struct *consys, int rowndx)
   rowhdr_struct *rowhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_2normrow" ;
+# endif
 
 /*
   The usual paranoia, plus an honest index check.
@@ -389,7 +399,9 @@ double consys_infnormrow (consys_struct *consys, int rowndx)
   rowhdr_struct *rowhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_infnormrow" ;
+# endif
 
 /*
   The usual paranoia, plus an honest index check.
@@ -456,7 +468,9 @@ double consys_1normcol (consys_struct *consys, int colndx)
   colhdr_struct *colhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_1normcol" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -520,7 +534,9 @@ double consys_ssqcol (consys_struct *consys, int colndx)
   colhdr_struct *colhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_ssqcol" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -583,7 +599,9 @@ double consys_2normcol (consys_struct *consys, int colndx)
   colhdr_struct *colhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_2normcol" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -646,7 +664,9 @@ double consys_infnormcol (consys_struct *consys, int colndx)
   colhdr_struct *colhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_infnormcol" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -1000,7 +1020,9 @@ int consys_gcdrow (consys_struct *consys, int rowndx)
   rowhdr_struct *rowhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_gcdrow" ;
+# endif
 
 /*
   The usual paranoia, plus an honest index check.
@@ -1116,7 +1138,9 @@ bool consys_accumcol (consys_struct *consys, int colndx, double *vec)
 { colhdr_struct *colhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_accumcol" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)
@@ -1186,7 +1210,9 @@ bool consys_mulaccumcol (consys_struct *consys, int colndx,
 { colhdr_struct *colhdr ;
   coeff_struct *coeff ;
 
+# if defined(PARANOIA) || !defined(NDEBUG)
   const char *rtnnme = "consys_accumcol" ;
+# endif
 
 # ifdef PARANOIA
   if (consys == NULL)

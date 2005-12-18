@@ -1360,11 +1360,17 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
     if (pivresult != dyrSINGULAR)
       if (dy_clrpivrej(NULL) != TRUE) return (dyrFATAL) ;
 /*
+  ZZ_DEBUG_ZZ
+
+  Looks like the current dual simplex is actually robust enough to deal with
+  this --- on grow22, actually recovered from prim.max = 1e31.
+
   If the primal variables are spiralling out of control, and we're running dual
   simplex, bail out now.
-*/
     if (dy_lp->phase == dyDUAL && dy_lp->prim.max > dy_tols->toobig)
-      return (dyrSWING) ;
+    { dy_lp->ubnd.ndx = dy_lp->prim.maxndx ;
+      return (dyrSWING) ; }
+*/
 /*
   If the return code is dyrPATCHED, we'll want to select a new pivot
   candidate before attempting another simplex iteration. If we refactored,

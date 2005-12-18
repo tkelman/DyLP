@@ -249,7 +249,7 @@ bool dy_calcprimals (void)
   { degenActive = FALSE ; }
 
 /*
-  For the normal case of a non-zero basis ...
+  For the normal case of a non-empty basis ...
 */
   if (dy_sys->concnt > 0)
   {
@@ -275,7 +275,7 @@ bool dy_calcprimals (void)
 
     dy_lp->prim.norm1 = exvec_1norm(xvec,dy_sys->concnt) ;
     dy_lp->prim.norm2 = exvec_2norm(xvec,dy_sys->concnt) ;
-    dy_lp->prim.max = exvec_infnorm(xvec,dy_sys->concnt) ;
+    dy_lp->prim.max = exvec_infnorm(xvec,dy_sys->concnt,&dy_lp->prim.maxndx) ;
     dy_tols->pfeas = dy_lp->prim.max ;
     if (dy_tols->pfeas < 10.0)
       dy_tols->pfeas = dy_tols->zero ;
@@ -323,7 +323,8 @@ bool dy_calcprimals (void)
   { dy_tols->pfeas = dy_tols->pfeas_scale*dy_tols->zero ;
     dy_lp->prim.norm1 = 1 ;
     dy_lp->prim.norm2 = 1 ;
-    dy_lp->prim.max = 1 ; }
+    dy_lp->prim.max = 1 ;
+    dy_lp->prim.maxndx = -1 ; }
 
 # ifndef NDEBUG
   if (print >= 3)
@@ -699,7 +700,7 @@ void dy_calcduals (void)
 
     dy_lp->dual.norm1 = exvec_1norm(yvec,dy_sys->concnt) ;
     dy_lp->dual.norm2 = exvec_2norm(yvec,dy_sys->concnt) ;
-    dy_lp->dual.max = exvec_infnorm(yvec,dy_sys->concnt) ;
+    dy_lp->dual.max = exvec_infnorm(yvec,dy_sys->concnt,&dy_lp->dual.maxndx) ;
 
     dy_tols->dfeas = dy_lp->dual.max ;
     if (dy_tols->dfeas < 10.0)

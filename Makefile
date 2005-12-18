@@ -43,7 +43,7 @@ export OptLevel := -O
 # systems. Informational printing is relatively inexpensive, but will produce
 # annoying warnings about numerical problems for some lps.
 
-export DYLP_OPTIONS := stats info
+export DYLP_OPTIONS :=
 
 # NOTE: Assignments to LibType, OptLevel, and DYLP_OPTIONS in subsidiary
 # makefiles are conditional (`?='), so that any definition here (including an

@@ -532,6 +532,12 @@ bool dy_actBLogPrimCon (consys_struct *orig_sys, int origi, int *inactvars)
     { dy_status[i] = vstatBUB ; }
     else
     { dy_status[i] = vstatB ; } }
+/*
+  And finally, a little bookkeeping.
+*/
+  if (dy_sys->concnt >= dy_lp->sys.maxcons)
+    dy_lp->sys.loadablecons = FALSE ;
+
 
 # ifdef PARANOIA
   if (dy_lp->phase != dyFORCEFULL)
@@ -849,9 +855,10 @@ bool dy_deactBLogPrimCon (consys_struct *orig_sys, int i)
   arrays dy_basis and dy_var2basis, as well as dy_origcons and dy_origvars.
 
   It's entirely possible to find that there are no constraints left after
-  removing loose constraints. It's conceivable that there will be no variables
-  left, and it's also conceivable the constraint system will be entirely
-  empty.
+  removing loose constraints. It follows that there will be no variables, and
+  in fact we can end up with a completely empty constraint system. This is
+  not uncommon deep in a branch-and-bound search tree, when dylp can be handed
+  a system with many fixed variables.
 
   If we delete a logical that's part of the current PSE index, we need to
   correct the projected column norms. But ... in the context of dylp, there's
@@ -928,14 +935,12 @@ bool dy_deactBLogPrimCon (consys_struct *orig_sys, int i)
   if (bposi != i)
   { k = dy_basis[i] ;
     dy_basis[bposi] = k ;
-    dy_var2basis[k] = bposi ;
-    /* dy_basis[i] = i ; */
-    /* dy_var2basis[i] = i ; */ }
+    dy_var2basis[k] = bposi ; }
 /*
-  In a similar vein, if x<m> is basic, and we will shift a<m>, do a swap to
-  ensure x<m> is basic in pos'n m. Then the automatic compression of basis and
-  var2basis will move them in tandem. One less complication to deal with after
-  the fact.
+  In a similar vein, if x<m> is basic, and we will shift a<m> to fill the
+  hole left by deleting a<i>, do a swap to ensure x<m> is basic in pos'n m.
+  Then the automatic compression of basis and var2basis will move them in
+  tandem. One less complication to deal with after the fact.
 */
   if (i < m)
   { k = dy_var2basis[m] ;
@@ -1029,6 +1034,11 @@ bool dy_deactBLogPrimCon (consys_struct *orig_sys, int i)
 	dy_var2basis[m] = i ; }
       else
       { dy_basis[bposi] = m ; } } }
+/*
+  And finally, a little bookkeeping.
+*/
+  dy_lp->sys.loadablecons = TRUE ;
+
 /*
   We're done. Do some printing, if requested, then return.
 */
@@ -1520,8 +1530,7 @@ int dy_deactivateCons (consys_struct *orig_sys)
 #           endif
 	    break ; } } }
       else
-      { retval = cand_cnt ; }
-    if (retval > 0) dy_lp->sys.loadablecons = TRUE ; }
+      { retval = cand_cnt ; } }
     else
     { retval = -1 ; } }
   else
