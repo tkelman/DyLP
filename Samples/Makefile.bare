@@ -1,0 +1,38 @@
+# A bare bones makefile to illustrate building a program with libOsiDylp
+# outside of the COIN environment. Copy this makefile and odsi+dylp.cpp to
+# some random test directory and type `make'.
+
+# svn/cvs: $Id$
+
+# The COIN installation directory and Dylp installation directory. Adjust to
+# fit your installation.
+
+CoinDir := ${HOME}/COIN
+DylpDir := $(CoinDir)/Dylp
+
+# Tell the compiler where to find include files.
+
+CXXFLAGS += -I. -I$(CoinDir)/include
+CXXFLAGS += -I$(DylpDir)/Dylp
+CXXFLAGS += -I$(DylpDir)/Lib
+
+# This symbol guards all text in OsiDylpSolverInterface.hpp. It must be
+# defined to include OsiDylp definitions. (If undefined, OsiDylp effectively
+# vanishes.)
+
+CXXFLAGS += -DCOIN_USE_DYLP
+
+# Given the settings for CXXFLAGS above, this rule is sufficient to build
+# the program (remove the `@' to echo the expanded command to the terminal).
+# `-Wl,-rpath,$(CoinDir)/lib' tells the GNU loader to add $(CoinDir)/lib to
+# the execution time search list for shared libraries. This form is specific
+# to GNU ld; consult your doc'n or COIN/Makefile.<your o/s> for the form
+# appropriate to your system.
+
+odsi+dylp: odsi+dylp.o
+	@ echo -n "Building $@ ..."
+	@ $(LINK.cc) -L$(CoinDir)/lib -Wl,-rpath,$(CoinDir)/lib \
+	      -o $@ $@.o \
+	      -lDylp -lOsiDylp -lOsi -lCoin -lz -lm
+	@ echo " done."
+

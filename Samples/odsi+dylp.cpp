@@ -113,13 +113,13 @@ void print_version (const char *cmd, const char *nme, const char *ver)
 
 /*! \brief Print the help message */
 
-void print_help ()
+void print_help (const char *pgm)
 
 /*
   Print help message.
 */
 
-{ std::cout << "\nusage: dylp [<options>] [<problem-file>]" ;
+{ std::cout << "\nusage: " << pgm << " [<options>] [<problem-file>]" ;
 
   std::cout << "\n\nThe options presently in place are:\n" ;
 
@@ -443,7 +443,7 @@ int main (int argc, const char* argv[])
       default:
       { std::cout << argv[0] << ": unrecognized option \"-" << argLett
 		  << "\"." << std::endl ;
-	print_help() ;
+	print_help(argv[0]) ;
 	exit (1) ; } }
 
   if (doversion == true || dohelp == true) break ; }
@@ -463,7 +463,7 @@ int main (int argc, const char* argv[])
 */
   if (doversion == true || dohelp == true)
   { if (doversion == true) print_version(argv[0],rtnnme,osidylp_version) ;
-    if (dohelp == true) print_help() ;
+    if (dohelp == true) print_help(argv[0]) ;
     exit (0) ; }
 /*
   What's our output level? If the user has specified a print level, go with it.

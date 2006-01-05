@@ -44,7 +44,6 @@
   how long to wait.
 
   ---------------------------
-
   Note 1: Compressed (.gz) files will be unzipped into this directory. Dylp's
 	  native mps reader doesn't support compressed files, nor does it
 	  support files that take full advantage of MPS fixed format and use
@@ -54,3 +53,9 @@
 	  motivation to upgrade dylp's mps reader.  Dylp's MPS reader, on the
 	  other hand, does support some extensions that may be useful in
 	  other contexts.
+  ---------------------------
+
+  The file Makefile.bare is a bare-bones makefile which illustrates how to
+  build a simple (one file) application using OsiDylp outside of the COIN
+  build environment. It uses the odsi+dylp main program as the application.
+
