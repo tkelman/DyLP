@@ -25,11 +25,13 @@
 
 /*
   There are two conditional compilation symbols in this file, BONSAIG and
-  COIN_USE_DYLP. BONSAIG should be defined only if you're building BonsaiG.
-  COIN_USE_DYLP should be defined only if you're trying to use this MPS
+  COIN_HAS_DYLP. BONSAIG should be defined only if you're building BonsaiG.
+  COIN_HAS_DYLP should be defined only if you're trying to use this MPS
   reader instead of the COIN MPS i/o routines. In general, you don't want to
   define either one.
 */
+
+#define COIN_HAS_DYLP
 
 /*
   This file contains C subroutines to parse MPS format problem files. The
@@ -1358,7 +1360,7 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
   to fill a hole.
 */
   if (mipopts->objcon == FALSE)
-#ifdef COIN_USE_DYLP
+#ifdef COIN_HAS_DYLP
   { if (consys_delrow_stable(consys,consys->objndx) == FALSE)
 #else
   { if (consys_delrow(consys,consys->objndx) == FALSE)
@@ -1400,7 +1402,7 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
 #   endif
     consys->rhs[ndx] = 1.0 ; }
 
-#ifndef COIN_USE_DYLP
+#ifndef COIN_HAS_DYLP
 /*
   Step through the constraints and replace ax >= b constraints with
   (-a)x <= -b constraints. consys_mulrow will take care of the necessary
@@ -1428,7 +1430,7 @@ static mpsinstate_enum mpsin_enddata (ioid mpschn, consys_struct *consys,
       { errmsg(112,rtnnme,consys->nme,"scalar multiply","row",
 	       consys_nme(consys,'c',ndx,FALSE,NULL),ndx) ;
 	return (mpsinINV) ; } } }
-#endif /* !COIN_USE_DYLP */
+#endif /* !COIN_HAS_DYLP */
 #ifdef BONSAIG
 /*
   Convert the temporary data structure from the parse of tour class
