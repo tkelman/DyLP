@@ -63,7 +63,7 @@ dylplibdepend:
 odsilibdepend:
 	@ cd $(CoinDir)/Osi/OsiDylp ; $(MAKE) -f Makefile
 
-# We need to set BOOLTYPE nd FPCONFIGFLAGS in order to suppress execution of
+# We need to set BOOLTYPE and FPCONFIGFLAGS in order to suppress execution of
 # the configuration programs, which may not exist when we're just doing a
 # clean.
 

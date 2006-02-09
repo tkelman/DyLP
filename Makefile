@@ -24,6 +24,7 @@ export LibType := SHARED
 # the highest level of optimisation the compiler supports. If want something in
 # between then specify the exact level you want, e.g., -O1, -O2, etc.
 
+#export OptLevel := -g
 export OptLevel := -O
 
 # Additional dylp compile-time options.
@@ -35,13 +36,15 @@ export OptLevel := -O
 # binaries, then rebuild.
 
 # To enable all three, you would say
-#   DYLP_OPTIONS := stats paranoia info
+#   export DYLP_OPTIONS := stats paranoia info
+# To disable all three, you would say
+#   export DYLP_OPTIONS :=
 # A build which is optimised for speed disables all three.  Subsidiary
 # makefiles test for the relevant strings and use them to set compilation
 # flags. Informational printing and statistics are relatively cheap,
 # computationally. Paranoia is expensive, particularly for large constraint
-# systems. Informational printing is relatively inexpensive, but will produce
-# annoying warnings about numerical problems for some lps.
+# systems. Informational printing will produce annoying warnings about
+# numerical problems for some lps.
 
 export DYLP_OPTIONS :=
 
