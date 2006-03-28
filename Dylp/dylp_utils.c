@@ -1159,7 +1159,8 @@ bool dy_chkstatus (int vndx)
   flags xkstatus ;
   double xk,xbk,ubk,lbk,normxb,tolu,bogusu,toll,bogusl ;
   bool retval,primDegen,dualDegen ;
-  char *nmek,*statk,*phase ;
+  char *statk ;
+  const char *nmek,*phase ;
   const char *rtnnme = "dy_chkstatus" ;
 
   if (vndx < 0 || vndx > dy_sys->varcnt)
