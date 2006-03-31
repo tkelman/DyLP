@@ -1098,7 +1098,6 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
   retval = dyrINV ;
   outflags = 0 ;
   checkflags = 0 ;
-
 /*
   Bump the various pivot and iteration counts, and see if we're in trouble
   because of the total pivot limit. It's important to get basis.etas and
@@ -1129,13 +1128,15 @@ dyret_enum dy_duenna (dyret_enum pivresult, int xjndx, int xindx,
     if (dy_opts->iterlim > 0 && dy_lp->d2.pivs > dy_opts->iterlim)
       retval = dyrITERLIM ; }
   if (retval == dyrITERLIM)
-  { errmsg(328,rtnnme,dy_sys->nme,dy_opts->iterlim) ;
+  { if (dy_opts->context != cxBANDC)
+    { errmsg(328,rtnnme,dy_sys->nme,dy_opts->iterlim) ; }
     return (retval) ; }
   dy_lp->tot.iters++ ;
   if (pivok == TRUE) dy_lp->tot.pivs++ ;
   if (dy_opts->iterlim > 0 && dy_lp->tot.pivs > 3*dy_opts->iterlim)
   { retval = dyrITERLIM ;
-    errmsg(328,rtnnme,dy_sys->nme,3*dy_opts->iterlim) ;
+    if (dy_opts->context != cxBANDC)
+    { errmsg(328,rtnnme,dy_sys->nme,3*dy_opts->iterlim) ; }
     return (retval) ; }
 /*
   Deal with the result returned by the pivoting routine. If there's a problem

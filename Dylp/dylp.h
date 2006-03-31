@@ -507,9 +507,9 @@ typedef struct
 #define lpctlINITACTVAR	1<<7
 #define lpctlINITACTCON	1<<8
 
-#define lpctlACTVARSOUT	1<<9
+#define lpctlACTVARSOUT	1<<10
 
-#define lpctlDYVALID	1<<10
+#define lpctlDYVALID	1<<11
 
 /*
   lpprob_struct
@@ -765,6 +765,22 @@ typedef struct
 typedef enum { ibINV = 0, ibLOGICAL, ibSLACK, ibARCH } ibtype_enum ;
 
 /*
+  Enum for calling context.
+
+  As dylp evolves, it may well prove useful to know the context of the
+  call. Consider this an experiment. The default context is INITIALLP.
+
+  cxINV		invalid (context is unknown)
+  cxSINGLELP	This is a one-off call to solve a single LP from scratch.
+  cxINITIALLP	This is a call to solve a single LP from scratch, but will
+		likely be followed by calls to reoptimise.
+  cxBANDC	This call is made in the context of a branch-and-cut
+		algorithm.
+*/
+
+typedef enum { cxINV = 0, cxSINGLELP, cxINITIALLP, cxBANDC } cxtype_enum ;
+
+/*
   lpopts_struct
 
   This structure is used to pass option settings to dylp. Default values are
@@ -772,6 +788,8 @@ typedef enum { ibINV = 0, ibLOGICAL, ibSLACK, ibARCH } ibtype_enum ;
 
   Field		Definition
   -----		----------
+  context	The context in which dylp is being called. See comments
+		above for cxtype_enum.
   forcecold	TRUE to force a cold start, FALSE otherwise. If set to TRUE,
 		dominates warm and hot start.
   forcewarm	TRUE to force a warm start, FALSE otherwise. If set to TRUE,
@@ -1062,7 +1080,8 @@ typedef enum { ibINV = 0, ibLOGICAL, ibSLACK, ibARCH } ibtype_enum ;
 */
 
 typedef struct
-{ int scan ;
+{ cxtype_enum context ;
+  int scan ;
   int iterlim ;
   int idlelim ;
   struct { int strat ;

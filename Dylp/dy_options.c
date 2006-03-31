@@ -1181,7 +1181,7 @@ cmd_retval dy_ctlopt (const char *keywd)
   enum ctlcodes { ctlINV = 0, ctlACTIVESZE, ctlADDVARLIM,
 		  ctlBOGUS,
 		  ctlCHECK, ctlCOLD, ctlCOLDBASIS, ctlCOLDVARS,
-		  ctlCONACTLIM, ctlCONACTLVL, ctlCONDEACTLVL,
+		  ctlCONACTLIM, ctlCONACTLVL, ctlCONDEACTLVL, ctlCONTEXT,
 		  ctlCPYORIG, ctlCOSTZ,
 		  ctlDCHK, ctlDEGEN, ctlDEGENLITE, ctlDEGENPIVS, ctlDFEAS,
 		  ctlDUALADD, ctlDUALMULTIPIV,
@@ -1203,6 +1203,7 @@ cmd_retval dy_ctlopt (const char *keywd)
 				    { "cold", 5, (int) ctlCOLD },
 				    { "coldbasis", 5, (int) ctlCOLDBASIS },
 				    { "coldvars", 5, (int) ctlCOLDVARS },
+				    { "context", 3, (int) ctlCONTEXT },
 				    { "costz", 3, (int) ctlCOSTZ },
 				    { "dchk", 2, (int) ctlDCHK },
 				    { "deactconlvl", 3, (int) ctlCONDEACTLVL },
@@ -1260,6 +1261,16 @@ cmd_retval dy_ctlopt (const char *keywd)
 				      { "slack", 1, ibSLACK } } ;
 
   static int numbasiskwds = (sizeof basiskwds/sizeof (keytab_entry)) ;
+
+/*
+  Keywords used by the context option
+*/
+
+  static keytab_entry contextkwds[] = { { "single", 1, cxSINGLELP },
+					{ "initial", 1, cxINITIALLP },
+					{ "bandc", 1, cxBANDC } } ;
+
+  static int numcontextkwds = (sizeof contextkwds/sizeof (keytab_entry)) ;
 
 /*
   Keywords used by the degenlite option; the option value is used only by
@@ -1369,6 +1380,14 @@ cmd_retval dy_ctlopt (const char *keywd)
       intdflt = opts_dflt->con.actlvl ;
       intlb = opts_lb->con.actlvl ;
       intub = opts_ub->con.actlvl ;
+      break ; }
+    case ctlCONTEXT:
+    { intopt = (int *) &main_lpopts->context ;
+      intdflt = opts_dflt->context ;
+      intlb = opts_lb->context ;
+      intub = opts_ub->context ;
+      numkwds = numcontextkwds ;
+      kwds = contextkwds ;
       break ; }
     case ctlCOSTZ:
     { toler = &main_lptols->cost ;
@@ -1559,9 +1578,13 @@ cmd_retval dy_ctlopt (const char *keywd)
     case ctlCHECK:
     case ctlCONACTLIM:
     case ctlCONACTLVL:
+    case ctlCONTEXT:
     case ctlDEGENPIVS:
+    case ctlDUALADD:
+    case ctlDUALMULTIPIV:
     case ctlITER:
     case ctlIDLE:
+    case ctlPRIMMULTIPIV:
     case ctlSCALING:
     case ctlSCAN:
     { if (integer_opt(intopt) == TRUE)
@@ -1576,10 +1599,7 @@ cmd_retval dy_ctlopt (const char *keywd)
       { errmsg(236,rtnnme,"<integer>","parameter",keywd) ; }
       break ; }
     case ctlCOLDVARS:
-    case ctlDUALADD:
     case ctlFACTOR:
-    case ctlDUALMULTIPIV:
-    case ctlPRIMMULTIPIV:
     { if (integer_opt(intopt) == TRUE)
       { if (*intopt >= 0)
 	{ if (intub > 0 && *intopt > intub)

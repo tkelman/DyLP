@@ -1190,7 +1190,9 @@ lpret_enum dylp (lpprob_struct *orig_lp, lpopts_struct *orig_opts,
 	  { phase = dyFORCEFULL ;
 	    break ; }
 	  default:
-	  { errmsg(353,rtnnme,orig_sys->nme,"primal",dy_prtlpret(lpresult)) ;
+	  { if (!(dy_opts->context == cxBANDC && lpresult == lpITERLIM))
+	    { errmsg(353,rtnnme,orig_sys->nme,"primal",
+		     dy_prtlpret(lpresult)) ; }
 	    phase = dyDONE ;
 	    break ; } }
 	break ; }
@@ -1502,7 +1504,9 @@ lpret_enum dylp (lpprob_struct *orig_lp, lpopts_struct *orig_opts,
 	  { phase = dyFORCEFULL ;
 	    break ; }
 	  default:
-	  { errmsg(353,rtnnme,orig_sys->nme,"dual",dy_prtlpret(lpresult)) ;
+	  { if (!(dy_opts->context == cxBANDC && lpresult == lpITERLIM))
+	    { errmsg(353,rtnnme,orig_sys->nme,"dual",
+		     dy_prtlpret(lpresult)) ; }
 	    phase = dyDONE ;
 	    break ; } }
 	break ; }

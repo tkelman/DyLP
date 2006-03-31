@@ -82,7 +82,8 @@ static char svnid[] UNUSED = "$Id$" ;
 */
 
 static
-lpopts_struct dyopts_dflt = { -1,	/* scan */
+lpopts_struct dyopts_dflt = { cxINITIALLP, /* context */
+			      -1,	/* scan */
 			      -1,	/* iterlim */
 			      -1,	/* idlelim */
 			    { -1,	/* dpsel.strat */
@@ -145,7 +146,8 @@ lpopts_struct dyopts_dflt = { -1,	/* scan */
 			    } ;
 
 static
-lpopts_struct dyopts_lb = { 200,	/* scan */
+lpopts_struct dyopts_lb = { cxSINGLELP,	/* context */
+			    200,	/* scan */
 			    0,		/* iterlim */
 			    0,		/* idlelim */
 			    { 0,	/* dpsel.strat */
@@ -215,7 +217,8 @@ lpopts_struct dyopts_lb = { 200,	/* scan */
 #define MAXITERLIM (int) (((unsigned) 1<<(sizeof(dyopts_ub.iterlim)*8-3))-1)
 
 static
-lpopts_struct dyopts_ub = { 1000,	/* scan */
+lpopts_struct dyopts_ub = { cxBANDC,	/* context */
+			    1000,	/* scan */
 			    MAXITERLIM,	/* iterlim */
 			    MAXITERLIM,	/* idlelim */
 			    { 3,	/* dpsel.strat */
