@@ -311,11 +311,11 @@ double dy_chkpiv (double abarij, double maxabar)
 # endif
 
 /*
-  ZZ_DEBUG_ZZ
-
-  In grow22, we run into trouble because column coefficients inflate to
-  outrageous values --- 1.0e18, for example. I'm thinking that any pivot
-  s.t. |abar<ij> > 1.0| should be accepted.
+  In some instances (for example, netlib/grow22), we run into trouble because
+  column coefficients inflate to outrageous values --- 1.0e18, for example.
+  Take the attitude that any pivot s.t. |abar<ij> > 1.0| should be accepted,
+  to give a bit more choice in pivot selection. To do this, lie about the
+  stability ratio,
 */
   abspiv = fabs(abarij) ;
   ratio = dy_tols->pivot*luf_basis->luf->piv_tol ;

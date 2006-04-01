@@ -1176,10 +1176,6 @@ static dyret_enum primal1 (void)
   To attempt to end phase I, lpretval must be properly set as well.
 */
       duennaresult = dy_duenna(pivresult,xjndx,xindx,candxj,-1) ;
-
-/* ZZ_DEBUG_ZZ */
-  if (dy_lp->tot.iters > 5465) dy_opts->print.pricing = 3 ;
-
       switch (duennaresult)
       { case dyrOK:
 	case dyrOPTIMAL:

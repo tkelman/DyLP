@@ -530,19 +530,6 @@ static dyret_enum scanForDualInCands (dualcand_struct *incands, int outdir,
     else
     { incands[candcnt].madpiv = FALSE ; }
     deltak = fabs(cbark/abarik) ;
-/* ZZ_DEBUG_ZZ
-
-   We're seeing a sort of false degeneracy --- we're running a perturbed
-   subproblem, with a very small perturbation, and that's giving deltak = 0
-   from the setcleanzero. But cbar<k> isn't 0, so the entries are not getting
-   swept up into the degenerate subproblem.
-   
-   Try removing it and see what happens.
-
-   And it seems to deal with the problem.
-
-    setcleanzero(deltak,dy_tols->cost) ;
-*/
     if (rev == TRUE)
     { incands[candcnt].rev = TRUE ;
       incands[candcnt].ddelta = -deltak ;
