@@ -146,7 +146,7 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
 */
 
 { int vndx,dyvndx,bpos,cndx,dycndx,dycsze,dyvsze,nbfxcnt ;
-  double *vlb,*vub,obj ;
+  double *vlb,*vub,vlbj,vubj,obj ;
   consys_struct *orig_sys ;
   flags *orig_status,vstat,calcflgs ;
   dyret_enum retval ;
@@ -210,43 +210,58 @@ dyret_enum dy_warmstart (lpprob_struct *orig_lp)
   if (noactvarspec == FALSE)
   { dyvsze = 0 ;
     for (vndx = 1 ; vndx <= orig_sys->varcnt ; vndx++)
-    { if (atbnd(vlb[vndx],vub[vndx]))
-      { if (vlb[vndx] != vub[vndx])
+    { vlbj = vlb[vndx] ;
+      vubj = vub[vndx] ;
+      if (atbnd(vlbj,vubj))
+      { if (vlbj != vubj)
 	{ 
 #	  ifndef NDEBUG
 	  if (dy_opts->print.setup >= 3)
-	  { outfmt(dy_logchn,dy_gtxecho,"\n\tForcing equal bound %g for %s (%d)",
-		   (vlb[vndx]+vub[vndx])/2,
-		   consys_nme(orig_sys,'v',vndx,0,0),vndx) ;
+	  { outfmt(dy_logchn,dy_gtxecho,
+		   "\n\tForcing equal bound %g for %s (%d)",
+		   (vlbj+vubj)/2,consys_nme(orig_sys,'v',vndx,0,0),vndx) ;
 	    outfmt(dy_logchn,dy_gtxecho,
 		   "\n\t  original lb = %g, ub = %g, diff = %g, tol = %g",
-		   vlb[vndx],vub[vndx],vub[vndx]-vlb[vndx],dy_tols->pfeas) ; }
+		   vlbj,vubj,vubj-vlbj,dy_tols->pfeas) ; }
 #	  endif
-	  vlb[vndx] = (vlb[vndx]+vub[vndx])/2 ;
+	  vlb[vndx] = (vlbj+vubj)/2 ;
 	  vub[vndx] = vlb[vndx] ; }
 	if (((int) orig_status[vndx]) > 0)
 	{ orig_status[vndx] = vstatNBFX ;
 	  orig_actvars[vndx] = FALSE ; } }
+      if (vlb[vndx] > vub[vndx])
+      { dy_lp->lpret = lpINFEAS ;
+#     ifndef NDEBUG
+      if (dy_opts->print.setup >= 1)
+      { outfmt(dy_logchn,dy_gtxecho,
+	       "\n\tTrivial infeasibility for %s (%d), lb = %g > ub = %g.",
+	       consys_nme(orig_sys,'v',vndx,0,0),vndx,vlb[vndx],vub[vndx]) ; }
+#     endif
+      }
       if (orig_actvars[vndx] == TRUE) dyvsze++ ; } }
   else
   { nbfxcnt = 0 ;
     for (vndx = 1 ; vndx <= orig_sys->varcnt ; vndx++)
-    { if (atbnd(vlb[vndx],vub[vndx]))
-      { if (vlb[vndx] != vub[vndx])
+    { vlbj = vlb[vndx] ;
+      vubj = vub[vndx] ;
+      if (atbnd(vlbj,vubj))
+      { if (vlbj != vubj)
 	{ 
 #	  ifndef NDEBUG
 	  if (dy_opts->print.setup >= 3)
 	  { outfmt(dy_logchn,dy_gtxecho,"\n\tForcing equal bound %g for %s (g)",
-		   (vlb[vndx]+vub[vndx])/2,
+		   (vlbj+vubj)/2,
 		   consys_nme(orig_sys,'v',vndx,0,0),vndx) ;
 	    outfmt(dy_logchn,dy_gtxecho,
 		   "\n\t  original lb = %g, ub = %g, diff = %g, tol = %g",
-		   vlb[vndx],vub[vndx],vub[vndx]-vlb[vndx],dy_tols->pfeas) ; }
+		   vlbj,vubj,vubj-vlbj,dy_tols->pfeas) ; }
 #	  endif
-	  vlb[vndx] = (vlb[vndx]+vub[vndx])/2 ;
+	  vlb[vndx] = (vlbj+vubj)/2 ;
 	  vub[vndx] = vlb[vndx] ; }
 	if (((int) orig_status[vndx]) > 0)
 	{ orig_status[vndx] = vstatNBFX ; } }
+      if (vlb[vndx] > vub[vndx])
+      { dy_lp->lpret = lpINFEAS ; }
       if ((((int) orig_status[vndx]) > 0) &&
 	  flgon(orig_status[vndx],vstatNBFX))
       { nbfxcnt++ ; } }

@@ -178,7 +178,7 @@ void dy_setfinalstatus (void)
 
 
 
-static void hot_updateMiscState (void)
+static void hot_updateMiscState (lpret_enum lpret)
 /*
   Reset various bits of miscellaneous state before we resume simplex pivoting.
 
@@ -189,7 +189,7 @@ static void hot_updateMiscState (void)
   Returns: undefined
 */
 
-{ dy_lp->lpret = lpINV ;
+{ dy_lp->lpret = lpret ;
   dy_lp->tot.iters = 0 ;
   dy_lp->tot.pivs = 0 ;
   dy_lp->prev_pivok = dy_lp->pivok ;
@@ -502,6 +502,7 @@ dyret_enum dy_hotstart (lpprob_struct *orig_lp)
   consys_struct *orig_sys ;
   flags *ogstatus,calcflgs ;
   dyret_enum retval ;
+  lpret_enum lpret ;
   const char *rtnnme = "dy_hotstart" ;
 
   /* dy_scaling.c */
@@ -518,7 +519,7 @@ dyret_enum dy_hotstart (lpprob_struct *orig_lp)
     if (dy_opts->print.crash >= 1)
       outfmt(dy_logchn,dy_gtxecho,"\n  no data structure changes at hot start.") ;
 #   endif
-    hot_updateMiscState() ;
+    hot_updateMiscState(lpINV) ;
     return (dyrOK) ; }
 /*
   But it's far more likely there are changes, and we need to get on with them.
@@ -585,10 +586,12 @@ dyret_enum dy_hotstart (lpprob_struct *orig_lp)
   equal. This simplifies the handling of fixed variables.
 */
   dy_lp->inactzcorr = 0 ;
+  lpret = lpINV ;
   for (oxkndx = 1 ; oxkndx <= orig_sys->varcnt ; oxkndx++)
   { xkndx = dy_origvars[oxkndx] ;
 /*
   Force equality for bounds within the feasibility tolerance of one another.
+  Then check for infeasibility (crossed bounds).
 */
     if (atbnd(ogvlb[oxkndx],ogvub[oxkndx]) && ogvlb[oxkndx] != ogvub[oxkndx])
     { 
@@ -604,6 +607,16 @@ dyret_enum dy_hotstart (lpprob_struct *orig_lp)
 #     endif
       ogvlb[oxkndx] = (ogvlb[oxkndx]+ogvub[oxkndx])/2 ;
       ogvub[oxkndx] = ogvlb[oxkndx] ; }
+    if (ogvlb[oxkndx] > ogvub[oxkndx])
+    { lpret = lpINFEAS ;
+#     ifndef NDEBUG
+      if (dy_opts->print.setup >= 1)
+      { outfmt(dy_logchn,dy_gtxecho,
+	       "\n\tTrivial infeasibility for %s (%d), lb = %g > ub = %g.",
+	       consys_nme(orig_sys,'v',oxkndx,0,0),oxkndx,
+	       ogvlb[oxkndx],ogvub[oxkndx]) ; }
+#     endif
+    }
 /*
   Inactive variables: update the status in dy_origvars and calculate the
   contribution to inactzcorr. If we've reloaded rhs and rhslow, correct
@@ -672,7 +685,7 @@ dyret_enum dy_hotstart (lpprob_struct *orig_lp)
 /*
   Reset a few control variables and counts in dy_lp.
 */
-  hot_updateMiscState() ;
+  hot_updateMiscState(lpret) ;
 /*
   And that should do it. Let's make a paranoid check or two, then we're
   off and running.

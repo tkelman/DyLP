@@ -402,6 +402,7 @@ static bool cold_createdysys (consys_struct *orig_sys, int eqcnt, int ineqcnt)
 { int j,m_sze,n_sze,flippable ;
   double vlbj,vubj ;
   double *vlb,*vub,*obj ;
+  bool infeas ;
   char nmebuf[50] ;
 
   flags parts = CONSYS_OBJ|CONSYS_VUB|CONSYS_VLB|CONSYS_RHS|CONSYS_RHSLOW|
@@ -468,7 +469,10 @@ static bool cold_createdysys (consys_struct *orig_sys, int eqcnt, int ineqcnt)
       bounds on a regular basis. This can result in bounds which are not
       precisely equal, but are within the primal feasibility tolerance of one
       another. This is a bad situation all around, and needs to be fixed on
-      input.
+      input. Even worse, it's possible we'll be handed bounds which are prima
+      facie infeasible --- lower and upper bounds are crossed. This is really
+      bad, and dylp does not react well. In this case we need to detect
+      infeasibility and report it back to dylp().
     * We can use origvars == 0 as a paranoid check from here on out.
     * If there are no variables with upper and lower bounds (`flippable', in
       dual multipivot) then we might as well turn multipivot off.
@@ -511,7 +515,16 @@ static bool cold_createdysys (consys_struct *orig_sys, int eqcnt, int ineqcnt)
     if (vubj < dy_tols->inf)
     { dy_origvars[j] = -((int) vstatNBUB) ; }
     else
-    { dy_origvars[j] = -((int) vstatNBFR) ; } }
+    { dy_origvars[j] = -((int) vstatNBFR) ; }
+    if (vub[j] < vlb[j])
+    { dy_lp->lpret = lpINFEAS ;
+#     ifndef NDEBUG
+      if (dy_opts->print.setup >= 1)
+      { outfmt(dy_logchn,dy_gtxecho,
+	       "\n\tTrivial infeasibility for %s (%d), lb = %g > ub = %g.",
+	       consys_nme(orig_sys,'v',j,0,0),j,vlb[j],vub[j]) ; }
+#     endif
+    } }
 /*
   Disable dual multipivoting? Fairly arbitrarily, give 25% flippable variables
   as the criterion.
@@ -785,7 +798,7 @@ static bool cold_loadpartial (consys_struct *orig_sys,
 
 
 
-bool dy_coldstart (consys_struct *orig_sys)
+dyret_enum dy_coldstart (consys_struct *orig_sys)
 
 /*
   This routine is responsible for setting up the lp problem that'll be solved
@@ -795,7 +808,7 @@ bool dy_coldstart (consys_struct *orig_sys)
   Parameters:
     orig_sys:	The original constraint system
 
-  Returns: TRUE if the setup completes without error, FALSE otherwise.
+  Returns: dyrOK if the setup completes without error, dyrFATAL otherwise.
 */
 
 { int j,n,eqcnt,ineqcnt ;
@@ -828,7 +841,7 @@ bool dy_coldstart (consys_struct *orig_sys)
     if (ineqs != NULL)
     { if (ineqs->angles != NULL) FREE(ineqs->angles) ;
       FREE(ineqs) ; }
-    return (FALSE) ; }
+    return (dyrFATAL) ; }
   eqcnt = eqs[0] ;
   ineqcnt = ineqs->cnt ;
 /*
@@ -841,7 +854,7 @@ bool dy_coldstart (consys_struct *orig_sys)
     if (ineqs != NULL)
     { if (ineqs->angles != NULL) FREE(ineqs->angles) ;
       FREE(ineqs) ; }
-    return (FALSE) ; }
+    return (dyrFATAL) ; }
 /*
   Transfer the required constraints. Once this is done,  we're finished with
   the lists of equalities and inequalities.
@@ -858,7 +871,7 @@ bool dy_coldstart (consys_struct *orig_sys)
   { errmsg(313,rtnnme,
 	    dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 	    orig_sys->nme) ;
-    return (FALSE) ; }
+    return (dyrFATAL) ; }
 /*
   Scan the variables in orig_sys once again and calculate the correction to
   the objective function. (loadcon handled any rhs adjustments for the
@@ -892,7 +905,7 @@ bool dy_coldstart (consys_struct *orig_sys)
   previously declared variables for the print loop.
 */
 # ifdef PARANOIA
-  if (dy_chkdysys(orig_sys) == FALSE) return (FALSE) ;
+  if (dy_chkdysys(orig_sys) == FALSE) return (dyrFATAL) ;
 # endif
 # ifndef NDEBUG
   if (dy_opts->print.setup >= 1)
@@ -925,7 +938,7 @@ bool dy_coldstart (consys_struct *orig_sys)
 		     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 		     "inactive",consys_nme(orig_sys,'v',j,TRUE,NULL),
 		     j,dy_prtvstat(statj)) ;
-	      return (FALSE) ; } }
+	      return (dyrFATAL) ; } }
 	  if (vlbj != 0)
 	  { if (vubj == 0)
 	      outfmt(dy_logchn,dy_gtxecho,
@@ -938,7 +951,7 @@ bool dy_coldstart (consys_struct *orig_sys)
 	outfmt(dy_logchn,dy_gtxecho,"\n\tall inactive variables are zero.") ; } }
 # endif
 
-  return (TRUE) ; }
+  return (dyrOK) ; }
 
 
 

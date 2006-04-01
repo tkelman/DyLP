@@ -790,6 +790,7 @@ lpret_enum dylp (lpprob_struct *orig_lp, lpopts_struct *orig_opts,
 */
 
 { int cnt ;
+  dyret_enum retval ;
   dyphase_enum phase ;
   double tol ;
   lpret_enum lpresult ;
@@ -981,6 +982,10 @@ lpret_enum dylp (lpprob_struct *orig_lp, lpopts_struct *orig_opts,
   will be built, a basis will be established and factored, the status vector
   will be valid, and values of the primal and dual variables and reduced costs
   will be valid.
+
+  If the problem is prima facie infeasibile (lower and upper bounds cross for
+  some variable) this is reported via dy_lp->lpret, and we are immediately
+  done.
 */
   switch (start)
   { case startHOT:
@@ -996,7 +1001,7 @@ lpret_enum dylp (lpprob_struct *orig_lp, lpopts_struct *orig_opts,
 	dy_lp->lpret = lpFATAL ; }
       break ; }
     case startCOLD:
-    { if (dy_coldstart(orig_sys) == FALSE)
+    { if (dy_coldstart(orig_sys) != dyrOK)
       { errmsg(371,rtnnme,
 	       orig_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),0,"cold start") ;
 	dy_lp->lpret = lpFATAL ; }
@@ -1007,9 +1012,17 @@ lpret_enum dylp (lpprob_struct *orig_lp, lpopts_struct *orig_opts,
 	dy_lp->lpret = lpFATAL ; }
       break ; } }
   if (dy_lp->lpret != lpINV)
-  { orig_lp->lpret = lpFATAL ;
+  { orig_lp->lpret = dy_lp->lpret ;
+    if (orig_lp->lpret == lpINFEAS)
+    { dy_lp->phase = dyDONE ;
+#ifndef NDEBUG
+      if (dy_opts->print.major >= 1)
+      { outfmt(dy_logchn,dy_gtxecho,"\n\n%s (%s): prima facie infeasibility.",
+	       rtnnme,dy_sys->nme) ; }
+#   endif
+    }
     dy_finishup(orig_lp,dy_lp->phase) ;
-    return (lpFATAL) ; }
+    return (orig_lp->lpret) ; }
 /*
   Make a final scan of orig_sys to determine the maximum number of loadable
   constraints and variables and set up dy_lp.sys.

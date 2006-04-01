@@ -1664,8 +1664,8 @@ extern bool dy_isscaled(void) ;
   dy_coldstart.c
 */
 
-extern bool dy_coldstart(consys_struct *orig_sys) ;
-extern dyret_enum dy_crash(void) ;
+extern dyret_enum dy_coldstart(consys_struct *orig_sys),
+		  dy_crash(void) ;
 
 /*
   dy_warmstart.c
