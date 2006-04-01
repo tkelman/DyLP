@@ -378,17 +378,23 @@ static bool check_dualpivrow (int xipos, const double *abari, double maxabari)
   abark = (double *) MALLOC((dy_sys->concnt+1)*sizeof(double)) ;
 /*
   Open a loop to do the scan. The first order of business is a consistency
-  check on x<k>'s status. In primal terms, we're not interested in pursuing
-  basic or nonbasic fixed variables any further. These correspond to nonbasic
-  duals and basic free duals, respectively. We just want to check
-  coefficients corresponding to basic duals that can be pivoted out.
+  check on x<k>'s status. Then decide whether we need to pursue the check.
+  In primal terms, we're not interested in basic variables or nonbasic fixed
+  variables. These correspond to nonbasic duals and basic free duals,
+  respectively. We only need to check coefficients corresponding to basic
+  duals that can be pivoted out.  But if we're paranoid, check them anyway
+  for consistency with other paranoid checks.
 */
   for (k = 1 ; k <= dy_sys->varcnt ; k++)
   { statk = dy_status[k] ;
     if (dy_chkstatus(k) == FALSE)
     { retval = CHECK_DUAL_PIVROW ;
       continue ; }
+#   ifdef PARANOIA
+    if (flgon(statk,vstatBASIC)) continue ;
+#   else
     if (flgon(statk,vstatBASIC|vstatNBFX)) continue ;
+#   endif
 /*
   Acquire column a<k> and calculate abar<k> = inv(B)a<k>.
 */
@@ -517,12 +523,17 @@ bool dualpivrow (int xipos, double *betai, double *abari, double *maxabari)
   We also want maxabar<i> = MAX{j}(abar<i>) so that we can check a potential
   pivot for numerical stability. Open a loop to walk the columns, doing the
   necessary calculations for each nonbasic column which is eligible for
-  entry.
+  entry (i.e., we can skip basic variables and NBFX variables). When we're
+  paranoid, process NBFX columns for consistency with other paranoid checks.
 */
   *maxabari = 0 ;
   for (xkndx = 1 ; xkndx <= dy_sys->varcnt ; xkndx++)
   { xkstatus = dy_status[xkndx] ;
+#   ifdef PARANOIA
+    if (flgon(xkstatus,vstatBASIC)) continue ;
+#   else
     if (flgon(xkstatus,vstatBASIC|vstatNBFX)) continue ;
+#   endif
     abarik = consys_dotcol(dy_sys,xkndx,betai) ;
     if (!withintol(abarik,0,dy_tols->zero))
     { abari[xkndx] = abarik ;
@@ -1852,7 +1863,7 @@ static dyret_enum dseupdate (int xindx, int xjndx, int *candxi, double *tau,
 #   ifdef CHECK_DSE_UPDATES
     else
     { cbark = dy_cbar[xkndx] ; }
-    if (check_dse_update(xkndx,cbark,0.0) == FALSE) return (dyrFATAL) ;
+    if (check_dse_update(xkndx,cbark,0.0,FALSE) == FALSE) return (dyrFATAL) ;
 #   endif
   }
 /*
@@ -2258,10 +2269,7 @@ static dyret_enum dualupdate (int xjndx, int indir,
 /*
   Update the dual variables.  The derivation of these formulas is
   straightforward once you've seen it, but more than can be explained here.
-  See the technical documentation or a text. The dual variables themselves
-  are snapped to zero with the cost zero tolerance (typically stricter than
-  the reduced cost tolerance, which is more designed to winnow the candidates
-  to enter the basis), scaled by the amount of the change.
+  See the technical documentation or a text.
 
   If antidegeneracy is active, we want to be careful to only update duals
   associated with the restricted subproblem. These will be duals for
@@ -2283,20 +2291,6 @@ static dyret_enum dualupdate (int xjndx, int indir,
       deltak = cbarj*betai[xkpos] ;
       deltak = deltak/abarij ;
       yk = dy_y[xkpos]+deltak ;
-/* ZZ_DEBUG_ZZ
-      setcleanzero(yk,dy_tols->cost) ;
-      if (yk != 0.0 &&
-	  dy_lp->basis.etas > 1 && fabs(yk) < dy_tols->cost*dy_tols->bogus)
-      { retval = dyrREQCHK ;
-#       ifndef NDEBUG
-	if (dy_opts->print.pivoting >= 1)
-	  warn(374,rtnnme,dy_sys->nme,dy_prtlpphase(dy_lp->phase,TRUE),
-	       dy_lp->tot.iters,"y",xkpos,fabs(yk),
-	       dy_tols->cost*dy_tols->bogus,
-	       dy_tols->cost*dy_tols->bogus-yk) ;
-#       endif
-      }
-*/
       dy_y[xkpos] = yk ; } }
 /*
   Decide on a return value. Swing overrides the others, as it'll cause us to
