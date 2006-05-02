@@ -124,9 +124,7 @@
   failed.
 
   lpINV         The code is not valid (i.e., not set by an execution of
-		dy_primal or dy_dual); can indicate an error in a bonsai
-		routine that handles dy_primal/dy_dual and passes on the
-		termination code.
+		dy_primal or dy_dual).
 
   lpOPTIMAL	The problem has an optimal solution.
 
@@ -607,7 +605,7 @@ typedef struct
   This structure contains phase and tolerance information for the lp algorithm.
 
   The philosophy with respect to the separate zero and feasibility tolerances
-  for primal and dual variables is that bonsai uses the zero tolerance when
+  for primal and dual variables is that dylp uses the zero tolerance when
   calculating primal or dual variables, and the feasibility tolerance when
   checking for feasibility. This allows us to keep small values for accuracy
   in computation, but not be so fussy when it comes to feasibility.
@@ -696,7 +694,7 @@ typedef struct
 #endif
 
 #define withintol(zz_val_zz,zz_tgt_zz,zz_tol_zz) \
-  (fabs((zz_val_zz)-(zz_tgt_zz)) < zz_tol_zz)
+  (fabs((zz_val_zz)-(zz_tgt_zz)) <= zz_tol_zz)
 
 #define setcleanzero(zz_val_zz,zz_tol_zz) \
   if (fabs(zz_val_zz) < zz_tol_zz) zz_val_zz = 0

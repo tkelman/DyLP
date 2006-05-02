@@ -819,7 +819,6 @@ lpret_enum dylp (lpprob_struct *orig_lp, lpopts_struct *orig_opts,
   { errmsg(2,rtnnme,"orig_sys") ;
     return (lpINV) ; }
 #endif
-
 /*
   The first possibility is that this call is solely for the purpose of
   freeing the problem data structures. The indication is a phase of dyDONE.
@@ -832,6 +831,19 @@ lpret_enum dylp (lpprob_struct *orig_lp, lpopts_struct *orig_opts,
   { if (dy_retained == TRUE)
     { dy_finishup(orig_lp,dyINV) ; }
     return (orig_lp->lpret) ; }
+/*
+  We're here to do actual work. If the constraint system is marked as corrupt,
+  free any retained structures, signal an error, and bail out immediately.
+  Attempting cleanup is risky, but the alternative is to leak a lot of
+  allocated space.
+*/
+  if (flgon(orig_sys->opts,CONSYS_CORRUPT))
+  { if (dy_retained == TRUE)
+    { orig_lp->phase = dyDONE ;
+      setflg(orig_lp->ctlopts,lpctlONLYFREE) ;
+      dy_finishup(orig_lp,dyINV) ; }
+    errmsg(115,rtnnme,orig_sys->nme) ;
+    return (lpFATAL) ; }
 /*
   Next we need to check the forcewarm and forcecold options, and set start
   accordingly. Cold dominates warm dominates hot, for convenience of use and

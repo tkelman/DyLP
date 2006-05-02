@@ -788,6 +788,10 @@ dyret_enum primmultiout (int j, int indir,
   *p_deltaj = -1 ;
   m = dy_sys->concnt ;
   outcands = (primcand_struct *) MALLOC((2*m+1+1)*sizeof(primcand_struct)) ;
+# ifdef DYLP_ZEROFAULT
+  /* Alignment padding. */
+  memset(outcands,0,(2*m+1+1)*sizeof(primcand_struct)) ;
+# endif
 # ifdef DYLP_STATISTICS
   if (dy_stats != NULL) dy_stats->pmulti.cnt++ ;
 # endif

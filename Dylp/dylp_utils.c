@@ -298,15 +298,15 @@ bool dy_calcprimals (void)
 		     dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 		     consys_nme(dy_sys,'v',vndx,FALSE,NULL),vndx,
 		     dy_prtvstat(dy_status[vndx]),xvec[bndx],
-		     dy_x[vndx],"fix",fabs(dy_x[vndx]-xvec[bndx]),
-		     dy_tols->pfeas) ; }
+		     dy_x[vndx],"fix",fabs(dy_sys->vub[vndx]-xvec[bndx]),
+		     dy_tols->pfeas*100) ; }
 	    else
 	    { warn(333,rtnnme,dy_sys->nme,
 		   dy_prtlpphase(dy_lp->phase,TRUE),dy_lp->tot.iters,
 		   consys_nme(dy_sys,'v',vndx,FALSE,NULL),vndx,
 		   dy_prtvstat(dy_status[vndx]),xvec[bndx],
-		   dy_x[vndx],"fix",fabs(dy_x[vndx]-xvec[bndx]),
-		   dy_tols->pfeas) ; } }
+		   dy_x[vndx],"fix",fabs(dy_sys->vub[vndx]-xvec[bndx]),
+		   dy_tols->zero) ; } }
 #	  endif
 	  dy_x[vndx] = xvec[bndx] ; }
 	else
@@ -2296,11 +2296,13 @@ void dy_finishup (lpprob_struct *orig_lp, dyphase_enum phase)
 
   The exception is if we see the lpctlNOFREE flag and we've come to one of
   the mathematically valid results --- optimal, unbounded, or infeasible.
-  In this case, we can support reoptimisation with a hot start.
+  In this case, we can support reoptimisation with a hot start. Add to these
+  the case of lpITERLIM, which is a valid state of affairs and occurs fairly
+  commonly in branch & cut applications (e.g., strong branching).
 */
   if (flgoff(orig_lp->ctlopts,lpctlNOFREE) ||
       (!(orig_lp->lpret == lpOPTIMAL || orig_lp->lpret == lpUNBOUNDED ||
-	 orig_lp->lpret == lpINFEAS)))
+	 orig_lp->lpret == lpINFEAS || orig_lp->lpret == lpITERLIM)))
   { orig_sys = orig_lp->consys ;
     if (dy_origvars != NULL)
     { (void) consys_detach(orig_sys,(void **) &dy_origvars,TRUE) ;

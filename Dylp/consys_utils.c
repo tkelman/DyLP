@@ -192,7 +192,8 @@ static bool empty_col (consys_struct *consys, int colndx, bool *rescan)
     rescan:	(o) Set to TRUE if the column deletion affected the current
 		    maximum length row, FALSE otherwise.
   
-  Returns: TRUE if the column is emptied without error, FALSE otherwise.
+  Returns: TRUE if the column is emptied without error, FALSE otherwise
+	   (paranoia only)
 */
 
 { int rowndx ;
@@ -299,7 +300,8 @@ static bool empty_row (consys_struct *consys, int rowndx, bool *rescan)
     rescan:	(o) Set to TRUE if the row deletion affected the current
 		    maximum length column, FALSE otherwise.
   
-  Returns: TRUE if the row is emptied without error, FALSE otherwise.
+  Returns: TRUE if the row is emptied without error, FALSE otherwise
+	   (paranoia only).
 */
 
 { int colndx ;
@@ -1127,7 +1129,8 @@ bool consys_attach (consys_struct *consys, flags what, int elsze, void **pvec)
 		    vector will be created
 		(o) *pvec holds address of vector
 
-  Returns: TRUE if the attachment is successful, FALSE otherwise.
+  Returns: TRUE if the attachment is successful, FALSE otherwise (paranoia
+	   only).
 */
 
 { int ndx ;
@@ -1261,7 +1264,8 @@ bool consys_update (consys_struct *consys, void *old, void *new)
   for (attvhdr = consys->attvecs ; attvhdr != NULL ; attvhdr = attvhdr->nxt)
     if (attvhdr->vec == old) break ;
   if (attvhdr == NULL)
-  { errmsg(104,rtnnme,consys->nme,old) ;
+  { setflg(consys->opts,CONSYS_CORRUPT) ;
+    errmsg(104,rtnnme,consys->nme,old) ;
     return (FALSE) ; }
 /*
   Do the update.
@@ -1334,7 +1338,8 @@ bool consys_detach (consys_struct *consys, void **pvec, bool all)
        pattvhdr = &attvhdr->nxt, attvhdr = *pattvhdr)
     if (attvhdr->vec == vec) break ;
   if (attvhdr == NULL)
-  { errmsg(104,rtnnme,consys->nme,vec) ;
+  { setflg(consys->opts,CONSYS_CORRUPT) ;
+    errmsg(104,rtnnme,consys->nme,vec) ;
     return (FALSE) ; }
 # ifdef PARANOIA
   if (attvhdr->pveclst == NULL)
@@ -1362,7 +1367,8 @@ bool consys_detach (consys_struct *consys, void **pvec, bool all)
       else
       { plnk = &lnk->llnxt ; } }
     if (pvec_seen == FALSE)
-    { errmsg(109,rtnnme,consys->nme,pvec,consys_assocnme(NULL,attvhdr->what),
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(109,rtnnme,consys->nme,pvec,consys_assocnme(NULL,attvhdr->what),
 	     attvhdr->vec) ;
       return (FALSE) ; }
     if (attvhdr->pveclst == NULL)
@@ -1655,7 +1661,8 @@ bool consys_addcol_pk (consys_struct *consys,
     avail = consys->colsze ;
   if (avail < consys->varcnt+1)
     if (consys_realloc(consys,'c',0) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,
 	     "capacity expansion","column",pkcol->nme,pkcol->ndx) ;
       return (FALSE) ; }
 /*
@@ -1694,6 +1701,11 @@ bool consys_addcol_pk (consys_struct *consys,
     for (vecndx = 0 ; vecndx < pkcol->cnt ; vecndx++)
     { if (pkcoeff->ndx <= 0 || pkcoeff->ndx > consys->concnt)
       { errmsg(102,rtnnme,consys->nme,"row",pkcoeff->ndx,1,consys->concnt) ;
+	return (FALSE) ; }
+      if (fabs(pkcoeff->val) >= consys->inf)
+      { setflg(consys->opts,CONSYS_CORRUPT) ;
+        errmsg(128,rtnnme,consys->nme,pkcoeff->ndx,colndx,pkcoeff->val,
+	       "column",colhdr->nme) ;
 	return (FALSE) ; }
       if (pkcoeff->val != 0.0)
       { rowhdr = consys->mtx.rows[pkcoeff->ndx] ;
@@ -1814,7 +1826,8 @@ bool consys_addcol_ex (consys_struct *consys,
     avail = consys->colsze ;
   if (avail < consys->varcnt+1)
     if (consys_realloc(consys,'c',0) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,
 	     "capacity expansion","column",*nme,excol[0]) ;
       return (FALSE) ; }
 /*
@@ -1842,7 +1855,12 @@ bool consys_addcol_ex (consys_struct *consys,
   already in existence.
 */
   for (rowndx = 1 ; rowndx <= consys->concnt ; rowndx++)
-  { if (excol[rowndx] != 0.0)
+  { if (fabs(excol[rowndx]) >= consys->inf)
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(128,rtnnme,consys->nme,rowndx,colndx,excol[rowndx],
+	     "column",colhdr->nme) ;
+      return (FALSE) ; }
+    if (excol[rowndx] != 0.0)
     { colhdr->len++ ;
       rowhdr = consys->mtx.rows[rowndx] ;
 #     ifdef PARANOIA
@@ -1984,12 +2002,14 @@ bool consys_addrow_pk (consys_struct *consys, char class,
 */
   if (consys->rowsze < consys->concnt+1)
     if (consys_realloc(consys,'r',0) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,
 	     "capacity expansion","row",pkrow->nme,pkrow->ndx) ;
       return (FALSE) ; }
   if (rowndx < consys->concnt+1)
     if (move_row(consys,rowndx,consys->concnt+1) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,"swap","row",
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,"swap","row",
 	     consys_nme(consys,'c',rowndx,FALSE,NULL),rowndx) ;
       return (FALSE) ; }
 /*
@@ -2027,6 +2047,11 @@ bool consys_addrow_pk (consys_struct *consys, char class,
     for (vecndx = 0 ; vecndx < pkrow->cnt ; vecndx++)
     { if (pkcoeff->ndx <= 0 || pkcoeff->ndx > consys->varcnt)
       { errmsg(102,rtnnme,consys->nme,"column",pkcoeff->ndx,1,consys->varcnt) ;
+	return (FALSE) ; }
+      if (fabs(pkcoeff->val) >= consys->inf)
+      { setflg(consys->opts,CONSYS_CORRUPT) ;
+        errmsg(128,rtnnme,consys->nme,rowndx,pkcoeff->ndx,pkcoeff->val,
+	       "row",rowhdr->nme) ;
 	return (FALSE) ; }
       if (pkcoeff->val != 0.0)
       { colhdr = consys->mtx.cols[pkcoeff->ndx] ;
@@ -2082,17 +2107,20 @@ bool consys_addrow_pk (consys_struct *consys, char class,
   if (flgon(consys->opts,CONSYS_LVARS))
   { if (consys->archvcnt > 0)
       if (move_col(consys,consys->logvcnt+1,consys->varcnt+1) == FALSE)
-      { errmsg(112,rtnnme,consys->nme,"swap","column",
+      { setflg(consys->opts,CONSYS_CORRUPT) ;
+        errmsg(112,rtnnme,consys->nme,"swap","column",
 	       consys_nme(consys,'v',consys->logvcnt+1,FALSE,NULL),
 	       consys->logvcnt+1) ;
 	return (FALSE) ; }
     if (rowndx < consys->concnt)
       if (move_col(consys,rowndx,consys->logvcnt+1) == FALSE)
-      { errmsg(112,rtnnme,consys->nme,"swap","column",
+      { setflg(consys->opts,CONSYS_CORRUPT) ;
+        errmsg(112,rtnnme,consys->nme,"swap","column",
 	       consys_nme(consys,'c',rowndx,FALSE,NULL),rowndx) ;
 	return (FALSE) ; }
     if (add_logical(consys,rowndx) == FALSE)
-    { errmsg(121,rtnnme,consys->nme,rowhdr->nme,rowndx) ;
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(121,rtnnme,consys->nme,rowhdr->nme,rowndx) ;
       return (FALSE) ; } }
   
   return (TRUE) ; }
@@ -2113,7 +2141,8 @@ bool consys_getcol_pk (consys_struct *consys, int colndx, pkvec_struct **pkvec)
     pkvec:	(i) packed vector (if NULL, one will be created)
 		(o) packed vector, loaded with column
 
-  Returns: TRUE if the column is fetched without incident, FALSE otherwise.
+  Returns: TRUE if the column is fetched without incident, FALSE otherwise
+	   (paranoia or debug only).
 */
 
 { colhdr_struct *colhdr ;
@@ -2208,7 +2237,8 @@ bool consys_getcol_ex (consys_struct *consys, int colndx, double **vec)
     vec:	(i) vector (if NULL, one will be created)
 		(o) vector loaded with column
 
-  Returns: TRUE if the column is fetched without incident, FALSE otherwise.
+  Returns: TRUE if the column is fetched without incident, FALSE otherwise
+	   (paranoia or debug only).
 */
 
 { colhdr_struct *colhdr ;
@@ -2285,7 +2315,8 @@ bool consys_getrow_pk (consys_struct *consys, int rowndx, pkvec_struct **pkvec)
     pkvec:	(i) packed vector (if NULL, one will be created)
 		(o) packed vector, loaded with row
 
-  Returns: TRUE if the row is fetched without incident, FALSE otherwise.
+  Returns: TRUE if the row is fetched without incident, FALSE otherwise
+	   (paranoia or debug only).
 */
 
 { rowhdr_struct *rowhdr ;
@@ -2380,7 +2411,8 @@ bool consys_getrow_ex (consys_struct *consys, int rowndx, double **vec)
     vec:	(i) vector (if NULL, one will be created)
 		(o) vector loaded with row
 
-  Returns: TRUE if the row is fetched without incident, FALSE otherwise.
+  Returns: TRUE if the row is fetched without incident, FALSE otherwise
+	   (paranoia or debug only).
 */
 
 { rowhdr_struct *rowhdr ;
@@ -2495,7 +2527,8 @@ bool consys_delcol (consys_struct *consys, int colndx)
   current maximum length column.
 */
   if (empty_col(consys,colndx,&rescan_rows) == FALSE)
-  { errmsg(112,rtnnme,consys->nme,"empty","column",colhdr->nme,colndx) ;
+  { setflg(consys->opts,CONSYS_CORRUPT) ;
+    errmsg(112,rtnnme,consys->nme,"empty","column",colhdr->nme,colndx) ;
     return (FALSE) ; }
   if (colndx == consys->maxcolndx)
     rescan_cols = TRUE ;
@@ -2521,7 +2554,8 @@ bool consys_delcol (consys_struct *consys, int colndx)
 */
   if (colndx < consys->varcnt)
     if (move_col(consys,consys->varcnt,colndx) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,"swap","column",
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,"swap","column",
 	     consys_nme(consys,'v',consys->varcnt,FALSE,NULL),consys->varcnt) ;
       return (FALSE) ; }
   consys->archvcnt-- ;
@@ -2614,26 +2648,30 @@ bool consys_delrow (consys_struct *consys, int rowndx)
       return (FALSE) ; }
 #   endif
     if (empty_col(consys,colndx,&rescan_rows) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,"empty","column",colhdr->nme,colndx) ;
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,"empty","column",colhdr->nme,colndx) ;
       return (FALSE) ; }
     if (colhdr->nme != NULL) STRFREE(colhdr->nme) ;
     FREE(colhdr) ;
     if (colndx < consys->archccnt && consys->cutccnt > 0)
     { if (move_col(consys,consys->archccnt,colndx) == FALSE)
-      { errmsg(112,rtnnme,consys->nme,"swap","column",
+      { setflg(consys->opts,CONSYS_CORRUPT) ;
+        errmsg(112,rtnnme,consys->nme,"swap","column",
 	       consys_nme(consys,'v',consys->archccnt,FALSE,NULL),
 	       consys->archccnt) ;
 	return (FALSE) ; }
       colndx = consys->archccnt ; }
     if (colndx < consys->logvcnt)
       if (move_col(consys,consys->logvcnt,colndx) == FALSE)
-      { errmsg(112,rtnnme,consys->nme,"swap","column",
+      { setflg(consys->opts,CONSYS_CORRUPT) ;
+        errmsg(112,rtnnme,consys->nme,"swap","column",
 	       consys_nme(consys,'v',consys->logvcnt,FALSE,NULL),
 	       consys->logvcnt) ;
 	return (FALSE) ; }
     if (consys->archvcnt > 0)
       if (move_col(consys,consys->varcnt,consys->logvcnt) == FALSE)
-      { errmsg(112,rtnnme,consys->nme,"swap","column",
+      { setflg(consys->opts,CONSYS_CORRUPT) ;
+        errmsg(112,rtnnme,consys->nme,"swap","column",
 	       consys_nme(consys,'v',consys->varcnt,FALSE,NULL),
 	       consys->varcnt) ;
 	return (FALSE) ; }
@@ -2646,20 +2684,23 @@ bool consys_delrow (consys_struct *consys, int rowndx)
   constraints that we applied to the logicals.
 */
   if (empty_row(consys,rowndx,&rescan_cols) == FALSE)
-  { errmsg(112,rtnnme,consys->nme,"empty","row",rowhdr->nme,rowndx) ;
+  { setflg(consys->opts,CONSYS_CORRUPT) ;
+    errmsg(112,rtnnme,consys->nme,"empty","row",rowhdr->nme,rowndx) ;
     return (FALSE) ; }
   if (rowndx == consys->maxrowndx) rescan_rows = TRUE ;
   if (rowndx == consys->objndx) consys->objndx = -1 ;
   if (rowndx < consys->archccnt && consys->cutccnt > 0)
   { if (move_row(consys,consys->archccnt,rowndx) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,"swap","row",
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,"swap","row",
 	     consys_nme(consys,'c',consys->archccnt,FALSE,NULL),
 	     consys->archccnt) ;
       return (FALSE) ; }
     rowndx = consys->archccnt ; }
   if (rowndx < consys->concnt)
     if (move_row(consys,consys->concnt,rowndx) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,"swap","row",
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,"swap","row",
 	     consys_nme(consys,'c',consys->concnt,FALSE,NULL),consys->concnt) ;
       return (FALSE) ; }
   if (rowhdr->ndx <= consys->archccnt)
@@ -2758,26 +2799,30 @@ bool consys_delrow_stable (consys_struct *consys, int rowndx)
       return (FALSE) ; }
 #   endif
     if (empty_col(consys,colndx,&rescan_rows) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,"empty","column",colhdr->nme,colndx) ;
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,"empty","column",colhdr->nme,colndx) ;
       return (FALSE) ; }
     if (colhdr->nme != NULL) STRFREE(colhdr->nme) ;
     FREE(colhdr) ;
     if (colndx < consys->archccnt && consys->cutccnt > 0)
     { if (move_col(consys,consys->archccnt,colndx) == FALSE)
-      { errmsg(112,rtnnme,consys->nme,"swap","column",
+      { setflg(consys->opts,CONSYS_CORRUPT) ;
+        errmsg(112,rtnnme,consys->nme,"swap","column",
 	       consys_nme(consys,'v',consys->archccnt,FALSE,NULL),
 	       consys->archccnt) ;
 	return (FALSE) ; }
       colndx = consys->archccnt ; }
     if (colndx < consys->logvcnt)
       if (move_col(consys,consys->logvcnt,colndx) == FALSE)
-      { errmsg(112,rtnnme,consys->nme,"swap","column",
+      { setflg(consys->opts,CONSYS_CORRUPT) ;
+        errmsg(112,rtnnme,consys->nme,"swap","column",
 	       consys_nme(consys,'v',consys->logvcnt,FALSE,NULL),
 	       consys->logvcnt) ;
 	return (FALSE) ; }
     if (consys->archvcnt > 0)
       if (move_col(consys,consys->varcnt,consys->logvcnt) == FALSE)
-      { errmsg(112,rtnnme,consys->nme,"swap","column",
+      { setflg(consys->opts,CONSYS_CORRUPT) ;
+        errmsg(112,rtnnme,consys->nme,"swap","column",
 	       consys_nme(consys,'v',consys->varcnt,FALSE,NULL),
 	       consys->varcnt) ;
 	return (FALSE) ; }
@@ -2790,26 +2835,30 @@ bool consys_delrow_stable (consys_struct *consys, int rowndx)
   constraints that we applied to the logicals.
 */
   if (empty_row(consys,rowndx,&rescan_cols) == FALSE)
-  { errmsg(112,rtnnme,consys->nme,"empty","row",rowhdr->nme,rowndx) ;
+  { setflg(consys->opts,CONSYS_CORRUPT) ;
+    errmsg(112,rtnnme,consys->nme,"empty","row",rowhdr->nme,rowndx) ;
     return (FALSE) ; }
   if (rowndx == consys->maxrowndx) rescan_rows = TRUE ;
   if (rowndx == consys->objndx) consys->objndx = -1 ;
 
   if (rowndx < consys->archccnt && consys->cutccnt > 0)
   { if (move_row(consys,consys->archccnt,rowndx) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,"swap","row",
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,"swap","row",
 	     consys_nme(consys,'c',consys->archccnt,FALSE,NULL),
 	     consys->archccnt) ;
       return (FALSE) ; }
     rowndx = consys->archccnt ; }
   if (rowndx < consys->concnt)
     if (move_row(consys,consys->concnt,rowndx) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,"swap","row",
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,"swap","row",
 	     consys_nme(consys,'c',consys->concnt,FALSE,NULL),consys->concnt) ;
       return (FALSE) ; }
   for (i=rowndx; i<consys->concnt; i++)
   { if (move_row(consys,i+1,i) == FALSE)
-    { errmsg(112,rtnnme,consys->nme,"swap","row",
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(112,rtnnme,consys->nme,"swap","row",
 	     consys_nme(consys,'c',i+1,FALSE,NULL),i+1) ;
       return (FALSE) ; } }
   if (rowhdr->ndx <= consys->archccnt)
@@ -2851,7 +2900,7 @@ double consys_getcoeff (consys_struct *consys, int rowndx, int colndx)
 
   Returns: a<rowndx,colndx> if the coefficient exists,
 	   0 if rowndx and colndx are valid, but a<rowndx,colndx> is absent,
-	   NaN otherwise
+	   NaN otherwise (paranoia only)
 */
 
 { int lclndx ;
@@ -3012,6 +3061,11 @@ bool consys_setcoeff (consys_struct *consys,
 	   rowhdr) ;
     return (FALSE) ; }
 # endif
+  if (fabs(val) >= consys->inf)
+  { setflg(consys->opts,CONSYS_CORRUPT) ;
+    errmsg(128,rtnnme,consys->nme,rowndx,colndx,val,
+	   "coefficient","<no name>") ;
+    return (FALSE) ; }
 /*
   Scan the column for the requested coefficient. If we find it, we can change
   the value and we're finished.
@@ -3037,7 +3091,7 @@ bool consys_setcoeff (consys_struct *consys,
 #     endif
       if (lclndx == rowndx) break ; }
 /*
-  Set the value, or signal an error if the coefficient isn't present.
+  Found it. Set the value and we're done.
 */
     if (coeff != NULL)
     { coeff->val = val ;
@@ -3167,14 +3221,16 @@ bool consys_logicals (consys_struct *consys)
   ndx = consys->archvcnt+consys->concnt-consys->colsze ;
   if (ndx > 0)
     if (consys_realloc(consys,'c',ndx) == FALSE)
-    { errmsg(124,rtnnme,consys->nme) ;
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(124,rtnnme,consys->nme) ;
       return (FALSE) ; }
 /*
   Now step through the rows and create logical variables.
 */
   for (ndx = 1 ; ndx <= consys->concnt ; ndx++)
     if (add_logical(consys,ndx) == FALSE)
-    { errmsg(121,rtnnme,consys->nme,
+    { setflg(consys->opts,CONSYS_CORRUPT) ;
+      errmsg(121,rtnnme,consys->nme,
 	     consys_nme(consys,'c',ndx,FALSE,NULL),ndx) ;
       return (FALSE) ; }
 /*

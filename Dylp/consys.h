@@ -392,12 +392,18 @@ typedef enum { vartypINV = 0, vartypCON,
   CONSYS_FININF	`Finite infinity' --- the client is indulging in the common
 		trick of using a large finite value (most often, DBL_MAX) as
 		infinity.
+  CONSYS_CORRUPT The constraint system is corrupt --- an error has occurred
+		during construction or modification that caused an operation
+		to abort. Currently set only for errors that occur outside of
+		debug and paranoia (you're supposed to look at the error
+		messages for paranoia and debug).
 */
 
 #define CONSYS_LVARS	((flags) 1<<0)
 #define CONSYS_WRNZERO	((flags) 1<<1)
 #define CONSYS_WRNATT	((flags) 1<<2)
 #define CONSYS_FININF	((flags) 1<<3)
+#define CONSYS_CORRUPT	((flags) 1<<4)
 
 /*
   Constraint system header

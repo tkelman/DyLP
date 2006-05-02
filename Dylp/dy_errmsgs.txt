@@ -138,7 +138,7 @@
 @113@[%s]: parts flags indicate %s is present, but associated
 	pointer field is null.@
 @114@[%s]: unrecognised %s vector type(s) %#08x.@
-@115@<<open>>@
+@115@[%s]: constraint system is flagged as corrupt.@
 @116@[%s]: row %s (%d) claims %d coefficients but has %d.@
 @117@<<open>>@
 @118@[%s]: %s %s (%d) has length 0.@
@@ -156,7 +156,8 @@
 	mtx.hdr[%d] == %#08x.@
 @127@[%s]: null vector pointer in header (%#08x) for attached
 	vector type %s.@
-@128@<<open>>@
+@128@[%s]: coefficient a<%d,%d> = %g encountered while adding %s %s.
+	Aborting due to invalid value.@
 @129@[%s]: addition of %s (%d) gives %d %s; allocated
 	capacity is only %d.@
 @130@[%s]: explicit 0 a<%d,%d> suppressed while adding %s %s.@
