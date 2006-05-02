@@ -13,7 +13,16 @@ LIBSRC += dylib_io.c
 LIBSRC += dylib_littab.c
 LIBSRC += dylib_strrtns.c
 
-###############################################################################
+LIBINC :=
+
+LIBINC += dylib_bnfrdr.h
+LIBINC += dylib_errs.h
+LIBINC += dylib_fortran.h
+LIBINC += dylib_hash.h
+LIBINC += dylib_io.h
+LIBINC += dylib_keytab.h
+LIBINC += dylib_std.h
+LIBINC += dylib_strrtns.h
 
 # Invoke the configuration utilities to set DYLP_COMPILE_DEFS
 
@@ -57,7 +66,7 @@ default: library
 
 library: $(TARGETDIR)/$(LIBNAMEOPT)
 
-$(TARGETDIR)/$(LIBNAMEOPT): $(LIBSRC)
+$(TARGETDIR)/$(LIBNAMEOPT): $(LIBSRC) $(LIBINC)
 	$(MAKE) -f ${MakefileDir}/Makefile.lib library
 	@ mkdir -p $(BUILDS)
 	@ touch $(BUILDS)/$(TARGETDIR)

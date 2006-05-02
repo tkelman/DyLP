@@ -43,7 +43,14 @@ LIBSRC += glpluf.c
 LIBSRC += dy_options.c
 LIBSRC += vector_utils.c
 
-###############################################################################
+LIBINC :=
+LIBINC += consys.h
+LIBINC += dy_cmdint.h
+LIBINC += dylp.h
+LIBINC += glpinv.h
+LIBINC += glplib.h
+LIBINC += glpluf.h
+LIBINC += vector.h
 
 # Set DYLP_COMPILE_DEFS
 
@@ -111,7 +118,7 @@ default: library
 
 library: $(TARGETDIR)/$(LIBNAMEOPT)
 
-$(TARGETDIR)/$(LIBNAMEOPT): $(LIBSRC) -lDylpStdLib
+$(TARGETDIR)/$(LIBNAMEOPT): $(LIBSRC) $(LIBINC) -lDylpStdLib
 	$(MAKE) -f ${MakefileDir}/Makefile.lib library
 	@ mkdir -p $(BUILDS)
 	@ touch $(BUILDS)/$(TARGETDIR)
