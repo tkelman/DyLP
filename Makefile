@@ -24,8 +24,8 @@ export LibType := SHARED
 # the highest level of optimisation the compiler supports. If want something in
 # between then specify the exact level you want, e.g., -O1, -O2, etc.
 
-#export OptLevel := -g
-export OptLevel := -O
+export OptLevel := -g
+#export OptLevel := -O
 
 # Additional dylp compile-time options.
 
@@ -46,7 +46,7 @@ export OptLevel := -O
 # systems. Informational printing will produce annoying warnings about
 # numerical problems for some lps.
 
-export DYLP_OPTIONS :=
+export DYLP_OPTIONS := stats paranoia info zerofault
 
 # NOTE: Assignments to LibType, OptLevel, and DYLP_OPTIONS in subsidiary
 # makefiles are conditional (`?='), so that any definition here (including an
