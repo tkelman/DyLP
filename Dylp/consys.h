@@ -81,6 +81,10 @@
 	parameter to create_consys(). It's not a good idea to have infinity
 	popping up elsewhere, but IEEE infinity should work (because no
 	explicit checks are required for mathematical correctness).
+
+  NOTE: At the infinitesimal end, any coefficient with absolute value less
+	than 1.0e-20 will be dropped. Currently this is hardwired (see
+	consys_create). It may change if there's a need.
 */
 
 #include "vector.h"
@@ -417,6 +421,7 @@ typedef enum { vartypINV = 0, vartypCON,
 		supposed to be present.
   opts		Flags indicating various behavioural options.
   inf		The value of infinity.
+  tiny		The value of the infinitesimal.
   varcnt	The total number of variables (and the column dimension).
   archvcnt	The number of architectural variables. The number of continuous
 		architectural variables is archvcnt-(intvcnt+binvcnt).
@@ -469,6 +474,7 @@ typedef struct
   flags parts ;
   flags opts ;
   double inf ;
+  double tiny ;
   int varcnt ;
   int archvcnt ;
   int logvcnt ;

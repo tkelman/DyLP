@@ -149,6 +149,18 @@
   vectors addresses this -- vectors on the list are resized with the
   constraint system. Since the vector might be moved by realloc, each vector
   has a list of pointers which should be rewritten if the vector is moved.
+
+  Extreme coefficients are always a problem, at both ends. The infinitesimal
+  is easier, in some sense. By fiat, |a<ij>| < 1.0e-20 is dropped. The infinite
+  is harder. There's far too much code out there that thinks that infinity
+  should be a large finite number (typically, the maximum double precision
+  floating point value, DBL_MAX) rather than the IEEE FP standard value for
+  infinity. Finite and infinite infinity simply do not play well together.
+  So that we can implement scaling and avoid scaling finite infinity, you need
+  to tell consys_create what you plan to use for infinity. At some point, it
+  may become obvious that the same should apply at the infinitesimal end.
+
+  Don't get me started on NaN. Or numeric_limits in C++.
 */
 
 
@@ -818,6 +830,7 @@ consys_struct *consys_create (const char *nme, flags parts, flags opts,
     consys->nme = STRALLOC(nme) ;
   consys->opts = opts ;
   consys->inf = infinity ;
+  consys->tiny = 1.0e-20 ;
   if (finite(infinity)) setflg(consys->opts,CONSYS_FININF) ;
   consys->colsze = colsze ;
   consys->rowsze = rowsze ;
@@ -1707,7 +1720,7 @@ bool consys_addcol_pk (consys_struct *consys,
         errmsg(128,rtnnme,consys->nme,pkcoeff->ndx,colndx,pkcoeff->val,
 	       "column",colhdr->nme) ;
 	return (FALSE) ; }
-      if (pkcoeff->val != 0.0)
+      if (fabs(pkcoeff->val) > consys->tiny)
       { rowhdr = consys->mtx.rows[pkcoeff->ndx] ;
 #       ifdef PARANOIA
 	if (rowhdr == NULL)
@@ -1733,8 +1746,8 @@ bool consys_addcol_pk (consys_struct *consys,
 	  consys->maxrowndx = pkcoeff->ndx ; } }
 #     ifndef NDEBUG
       else
-      { warn(130,rtnnme,
-	     consys->nme,pkcoeff->ndx,colndx,"column",colhdr->nme) ; }
+      { warn(130,rtnnme,consys->nme,pkcoeff->ndx,colndx,pkcoeff->val,
+	     consys->tiny,"column",colhdr->nme) ; }
 #     endif
       pkcoeff++ ; }
 
@@ -1860,7 +1873,7 @@ bool consys_addcol_ex (consys_struct *consys,
       errmsg(128,rtnnme,consys->nme,rowndx,colndx,excol[rowndx],
 	     "column",colhdr->nme) ;
       return (FALSE) ; }
-    if (excol[rowndx] != 0.0)
+    if (fabs(excol[rowndx]) >= consys->tiny)
     { colhdr->len++ ;
       rowhdr = consys->mtx.rows[rowndx] ;
 #     ifdef PARANOIA
@@ -1882,7 +1895,14 @@ bool consys_addcol_ex (consys_struct *consys,
       rowhdr->len++ ;
       if (rowhdr->len > consys->maxrowlen)
       { consys->maxrowlen = rowhdr->len ;
-	consys->maxrowndx = rowndx ; } } }
+	consys->maxrowndx = rowndx ; } }
+#   ifndef NDEBUG
+    else
+    if (excol[rowndx] != 0.0)
+    { warn(130,rtnnme,consys->nme,rowndx,colndx,excol[rowndx],
+	   consys->tiny,"row",rowhdr->nme) ; }
+#   endif
+  }
 
   consys->mtx.coeffcnt += colhdr->len ;
   if (colhdr->len > consys->maxcollen)
@@ -2053,7 +2073,7 @@ bool consys_addrow_pk (consys_struct *consys, char class,
         errmsg(128,rtnnme,consys->nme,rowndx,pkcoeff->ndx,pkcoeff->val,
 	       "row",rowhdr->nme) ;
 	return (FALSE) ; }
-      if (pkcoeff->val != 0.0)
+      if (fabs(pkcoeff->val) > consys->tiny)
       { colhdr = consys->mtx.cols[pkcoeff->ndx] ;
 #       ifdef PARANOIA
 	if (colhdr == NULL)
@@ -2079,8 +2099,8 @@ bool consys_addrow_pk (consys_struct *consys, char class,
 	  consys->maxcolndx = pkcoeff->ndx ; } }
 #     ifndef NDEBUG
       else
-      { warn(130,rtnnme,
-	     consys->nme,rowndx,pkcoeff->ndx,"row",rowhdr->nme) ; }
+      { warn(130,rtnnme,consys->nme,rowndx,pkcoeff->ndx,pkcoeff->val,
+	     consys->tiny,"row",rowhdr->nme) ; }
 #     endif
       pkcoeff++ ; }
     rowhdr->len = nzcnt ;

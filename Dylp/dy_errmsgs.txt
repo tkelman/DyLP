@@ -160,7 +160,8 @@
 	Aborting due to invalid value.@
 @129@[%s]: addition of %s (%d) gives %d %s; allocated
 	capacity is only %d.@
-@130@[%s]: explicit 0 a<%d,%d> suppressed while adding %s %s.@
+@130@[%s]: infinitesimal a<%d,%d> = %.10g < %.10g suppressed
+	while adding %s %s.@
 @131@[%s]: logical variable count %d does not equal
 	constraint count %d.@
 @132@[%s]: multiplication of %s %s (%d) by 0.@
