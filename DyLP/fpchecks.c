@@ -228,8 +228,12 @@ static fpunion_t BE_Infbits = { { (unsigned char) '\177',
   normal operation.
 */
 #ifdef FP_NAN
-# define FP_QNAN FP_NAN
-# define FP_SNAN FP_NAN
+# ifndef FP_QNAN
+#  define FP_QNAN FP_NAN
+# endif
+# ifndef FP_SNAN
+#  define FP_SNAN FP_NAN
+# endif
 #endif
 
 

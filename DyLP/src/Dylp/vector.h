@@ -245,7 +245,9 @@
 */
 
 #ifdef FP_NAN
-# define FP_QNAN FP_NAN
+# ifndef FP_QNAN
+#  define FP_QNAN FP_NAN
+# endif
 #endif
 
 /*
@@ -268,7 +270,9 @@
 */
 
 #ifdef FP_NAN
-# define FP_SNAN FP_NAN
+# ifndef FP_SNAN
+#  define FP_SNAN FP_NAN
+# endif
 # define FP_NINF FP_INFINITE
 # define FP_PINF FP_INFINITE
 # define FP_NDENORM FP_SUBNORMAL
