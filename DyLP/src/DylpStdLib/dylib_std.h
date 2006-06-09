@@ -94,8 +94,12 @@
 #endif
 
 #ifdef __cplusplus
-#define FALSE false
-#define TRUE true
+#ifndef FALSE
+# define FALSE false
+#endif
+#ifndef TRUE
+# define TRUE true
+#endif
 #endif
 
 /*
