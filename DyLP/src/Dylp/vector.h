@@ -190,6 +190,11 @@
 # define HUGE_VAL (Infbits.fpdbl)
 #endif
 
+/* AW: I added this for HP machines */
+#ifdef _HPUX_SOURCE
+# define finite isfinite
+#endif
+
 /*
   In a Sun/Solaris environment, the definitions and functions that support
   IEEE floating point are in ieeefp.h. This seems to be true even if GNU

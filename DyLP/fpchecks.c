@@ -96,6 +96,11 @@
 # endif
 #endif
 
+/* AW: I added this for HP machines */
+#ifdef _HPUX_SOURCE
+# define finite isfinite
+#endif
+
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
