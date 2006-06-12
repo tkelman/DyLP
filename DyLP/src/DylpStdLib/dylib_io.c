@@ -666,7 +666,7 @@ bool ttyq (ioid id)
   const char *rtnnme = "ttyq" ;
 
   extern int isatty(int fildes) ;
-  extern int fileno(FILE *stream) ;
+  /*extern int fileno(FILE *stream) ;*/
 
 /*
   Check to make sure the stream ID is OK.

@@ -273,14 +273,30 @@
 # ifndef FP_SNAN
 #  define FP_SNAN FP_NAN
 # endif
-# define FP_NINF FP_INFINITE
-# define FP_PINF FP_INFINITE
-# define FP_NDENORM FP_SUBNORMAL
-# define FP_PDENORM FP_SUBNORMAL
-# define FP_NZERO FP_ZERO
-# define FP_PZERO FP_ZERO
-# define FP_NNORM FP_NORMAL
-# define FP_PNORM FP_NORMAL
+# ifndef FP_NINF
+#  define FP_NINF FP_INFINITE
+# endif
+# ifndef FP_PINF
+#  define FP_PINF FP_INFINITE
+# endif
+# ifndef FP_NDENORM
+#  define FP_NDENORM FP_SUBNORMAL
+# endif
+# ifndef FP_PDENORM
+#  define FP_PDENORM FP_SUBNORMAL
+# endif
+# ifndef FP_NZERO
+#  define FP_NZERO FP_ZERO
+# endif
+# ifndef FP_PZERO
+#  define FP_PZERO FP_ZERO
+# endif
+# ifndef FP_NNORM
+#  define FP_NNORM FP_NORMAL
+# endif
+# ifndef FP_PNORM
+#  define FP_PNORM FP_NORMAL
+# endif
 #endif
 
 
