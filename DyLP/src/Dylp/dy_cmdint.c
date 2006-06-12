@@ -196,9 +196,9 @@ static cmd_retval docmd (lex_struct *txt)
   the command, then revert to line-oriented mode to remove any trailing junk.
 */
   keywd = STRALLOC(txt->string) ;
-  (void) setmode(dy_cmdchn,'f') ;
+  (void) DyLPsetmode(dy_cmdchn,'f') ;
   retval = cmdHALTERROR ;
-  (void) setmode(dy_cmdchn,'f') ;
+  (void) DyLPsetmode(dy_cmdchn,'f') ;
   switch (cmd)
   { case LPPRINT_NDX:
     { retval = dy_printopt(keywd) ;
@@ -249,7 +249,7 @@ static cmd_retval docmd (lex_struct *txt)
       retval = cmdOK ;
       break ; } }
   STRFREE(keywd) ;
-  (void) setmode(dy_cmdchn,'l') ;
+  (void) DyLPsetmode(dy_cmdchn,'l') ;
 /*
   Check what happened, and clean up if necessary. Cleanup consists of
   scanning off whatever is left on the command line and echoing it.
@@ -299,7 +299,7 @@ static cmd_retval indcmd (bool silent)
   if (dy_cmdchn < 0)
   { dy_cmdchn = cmdchns[level].chn ;
     return (cmdHALTERROR) ; }
-  (void) setmode(dy_cmdchn,'l') ;
+  (void) DyLPsetmode(dy_cmdchn,'l') ;
 /*
   Acknowledge that the file is successfully opened.
 */

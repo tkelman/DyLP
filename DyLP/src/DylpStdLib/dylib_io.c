@@ -509,7 +509,7 @@ static bool setrwmode (filblk_struct *filblk, char *mode)
 
 
 
-bool setmode (ioid id, char mode)
+bool DyLPsetmode (ioid id, char mode)
 
 /*
   This routine is provided as an information-hiding function so that the
@@ -523,7 +523,7 @@ bool setmode (ioid id, char mode)
 */
 
 { filblk_struct *filblk ;
-  const char *rtnnme = "setmode" ;
+  const char *rtnnme = "DyLPsetmode" ;
 /*
   Check to make sure the stream ID is OK.
 */

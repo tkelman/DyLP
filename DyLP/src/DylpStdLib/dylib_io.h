@@ -92,7 +92,7 @@ extern void ioterm(void) ;
 extern ioid openfile(const char *path, const char *mode) ;
 extern bool isactive(ioid id) ;
 extern bool closefile(ioid id) ;
-/*extern bool setmode(ioid id, char mode), ttyq(ioid id) ;*/
+extern bool DyLPsetmode(ioid id, char mode), ttyq(ioid id) ;
 
 extern bool chgerrlog(const char *path, bool echo) ;
 
